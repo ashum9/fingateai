@@ -1,0 +1,6 @@
+{
+  "name": "fingate-ai",
+  "version": "1.0.0",
+  "description": "FinGate - Ultra-Low Latency Pre-Trade Singularity Firewall for Autonomous AI Trading Agents",
+  "type": "module"
+}

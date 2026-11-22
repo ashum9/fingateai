@@ -1,0 +1,2077 @@
+{
+  "rbi_mpc_shock": {
+    "active_tape_id": "rbi_mpc_shock",
+    "active_tape_title": "Tape 1: RBI Surprise Repo Cut & CRR Boost (HDFCBANK / BANKNIFTY)",
+    "active_tape_category": "Macro & Banking Policy",
+    "active_tape_summary": "12-bar intraday NSE tape: RBI MPC surprises with 25 bps Repo cut + CRR liquidity release; private banks rally sharply, followed by midday algorithmic stop-hunt and institutional mean reversion.",
+    "available_tapes": [
+      [
+        "rbi_mpc_shock",
+        "Tape 1: RBI Surprise Repo Cut & CRR Boost (HDFCBANK / BANKNIFTY)",
+        12
+      ],
+      [
+        "expiry_toxic_sweep",
+        "Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)",
+        12
+      ],
+      [
+        "union_budget_tax",
+        "Tape 3: Union Budget Capex & STCG/LTCG Tax Shock (RELIANCE / TCS)",
+        12
+      ],
+      [
+        "fake_news_attack",
+        "Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)",
+        12
+      ],
+      [
+        "sip_portfolio_guide",
+        "Tape 5: 12-Month Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)",
+        12
+      ]
+    ],
+    "current_step": 1,
+    "total_steps": 12,
+    "initial_capital_inr": 500000,
+    "cash_available_inr": 483462,
+    "invested_value_inr": 16520,
+    "protected_equity_inr": 499982,
+    "unguarded_equity_inr": 499982,
+    "realized_pnl_inr": 0,
+    "unrealized_pnl_inr": 0,
+    "net_pnl_inr": -18,
+    "total_fees_paid_inr": 18,
+    "total_capital_saved_inr": 0,
+    "approved_count": 1,
+    "blocked_count": 0,
+    "kill_switch_active": false,
+    "disarm_nonce": 2,
+    "rejected_disarm_attempts": 1,
+    "custodians": [
+      {
+        "id": 1,
+        "role": "Chief Risk Officer (CRO)",
+        "share_preview_hex": "14c841db4beb3df2"
+      },
+      {
+        "id": 2,
+        "role": "Head of Trading Desk",
+        "share_preview_hex": "01b8800c7aaec7ca"
+      },
+      {
+        "id": 3,
+        "role": "SEBI Compliance Officer",
+        "share_preview_hex": "00fbf6e0eaba150f"
+      },
+      {
+        "id": 4,
+        "role": "BlueField DPU Watchdog",
+        "share_preview_hex": "1292a6589c0d25c1"
+      },
+      {
+        "id": 5,
+        "role": "Hardware Cold-Vault HSM",
+        "share_preview_hex": "167c8e738ea7f9e1"
+      }
+    ],
+    "shamir_quorum_status": "1-of-5 Instant Halt | 3-of-5 Shamir F_(2^61-1) Disarm (Nonce #2, Rejected: 1)",
+    "hw_sha256_active": true,
+    "latest_merkle_root_hex": "ef5ac6cf3063b412fe07def6b12be6e6",
+    "homomorphic_commitment_hex": "148b9d0e4e85dae8:0817437ac6abb8d9",
+    "hawkes_intensity_e4": 39833,
+    "vpin_toxicity_e4": 0,
+    "shannon_entropy_e4": 40000,
+    "current_headline": "Pre-MPC positioning: 10Y G-Sec yield steady at 6.82%; consensus expects status quo.",
+    "current_source": "NSE Cash Feed + CCIL Bond Bulletin",
+    "current_symbol": "HDFCBANK",
+    "current_price_inr": 1652,
+    "price_history": [
+      1652
+    ],
+    "ohlc_series": [
+      {
+        "step": 1,
+        "time_ist": "09:45 IST",
+        "symbol": "HDFCBANK",
+        "open": 1648,
+        "high": 1654,
+        "low": 1645,
+        "close": 1652,
+        "hawkes_e4": 39833,
+        "vpin_e4": 0,
+        "protected_equity_inr": 499982,
+        "unguarded_equity_inr": 499982,
+        "blocked_here": false
+      }
+    ],
+    "positions": [
+      {
+        "symbol": "HDFCBANK",
+        "qty": 10,
+        "avg_entry_price_inr": 1652,
+        "last_price_inr": 1652,
+        "market_value_inr": 16520,
+        "unrealized_pnl_inr": 0,
+        "realized_pnl_inr": 0
+      }
+    ],
+    "policy": {
+      "policy_id": 3,
+      "natural_language": "Max \u20b918,000 per trade, max 50 quantity, block buys when Hawkes > 90000 and VPIN > 6000, halt if SPAN crash loss > \u20b930,000",
+      "compiled_dsl": "REJECT 101 IF notional > 18000\nREJECT 102 IF hawkes > 90000 AND vpin > 6000\nREJECT 103 IF span < -30000\nREJECT 104 IF qty > 50",
+      "compiler_source": "Neuro-Symbolic NL Compiler + Static Formal Verifier",
+      "instruction_count": 4,
+      "simd_fast_path_active": true,
+      "max_notional_inr": 18000,
+      "max_qty": 50,
+      "max_hawkes_e4": 90000,
+      "max_vpin_e4": 6000,
+      "max_span_loss_inr": 30000,
+      "dry_run_total_ticks": 60,
+      "dry_run_allowed": 12,
+      "dry_run_blocked": 48,
+      "dry_run_traps_caught": 10,
+      "dry_run_traps_total": 10,
+      "dry_run_elapsed_us": 6,
+      "dry_run_summary": "Formally verified 4 loop-free SIMD bytecode ops (0..=32 bound). REAL Dry-Run across all 60 historical NSE bars finished in 6 \u00b5s: 12 allowed, 48 blocked \u2014 caught 10/10 adversarial traps!",
+      "dry_run_samples": [
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 1,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16520,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 2,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13248,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 3,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25290,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 4,
+          "symbol": "HDFCBANK",
+          "notional_inr": 17060,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 5,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20640,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 6,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13696,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 7,
+          "symbol": "HDFCBANK",
+          "notional_inr": 302040,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 8,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20028,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 9,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16910,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 10,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25665,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 7,
+          "symbol": "NIFTY50",
+          "notional_inr": 290640,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 8,
+          "symbol": "NIFTY50",
+          "notional_inr": 481200,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 9,
+          "symbol": "NIFTY50",
+          "notional_inr": 359325,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "union_budget_tax",
+          "step": 5,
+          "symbol": "RELIANCE",
+          "notional_inr": 257400,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        }
+      ]
+    },
+    "shockwaves": [
+      {
+        "label": "-10% Flash Crash",
+        "shock_bps": -1000,
+        "projected_pnl_inr": -1642,
+        "survives": true
+      },
+      {
+        "label": "-20% Severe Crash",
+        "shock_bps": -2000,
+        "projected_pnl_inr": -3281,
+        "survives": true
+      },
+      {
+        "label": "+15% Short Squeeze",
+        "shock_bps": 1500,
+        "projected_pnl_inr": 2483,
+        "survives": true
+      },
+      {
+        "label": "-30% Black Swan",
+        "shock_bps": -3000,
+        "projected_pnl_inr": -4914,
+        "survives": true
+      },
+      {
+        "label": "Long Working Hull",
+        "shock_bps": -1200,
+        "projected_pnl_inr": -5400,
+        "survives": true
+      },
+      {
+        "label": "Short Working Hull",
+        "shock_bps": -1500,
+        "projected_pnl_inr": -5400,
+        "survives": true
+      }
+    ],
+    "fpga_bar0": {
+      "clock_mhz": 400,
+      "pipeline_cycles": 4,
+      "modeled_latency_ns": 10.0,
+      "silicon_kill_bit": false,
+      "max_qty": 50,
+      "max_notional": 18000,
+      "collar_min_px": 50,
+      "collar_max_px": 100000,
+      "seqlock_version": 6
+    },
+    "crypto_audit": {
+      "hw_sha256_active": true,
+      "sha256_backend": "ARMv8-A FEAT_SHA256 Silicon",
+      "latest_merkle_root_hex": "ef5ac6cf3063b412fe07def6b12be6e6",
+      "merkle_leaves_committed": 1,
+      "lattice_orders_committed": 21,
+      "lattice_exposure_sum_inr": 492435,
+      "lattice_lanes_hex": [
+        "148b9d0e4e85dae8",
+        "0817437ac6abb8d9",
+        "044532186acf48b9",
+        "127401250acaf4d7"
+      ],
+      "lattice_sis_verified": true,
+      "dp_privatized_exposure_inr": 14007,
+      "flight_recorder_total_events": 28,
+      "wal_records_enqueued": 28
+    },
+    "stage_telemetry": [
+      {
+        "stage": "128B Stamped SHM",
+        "samples": 28,
+        "mean_ns": 1110,
+        "p50_ns": 250,
+        "p99_ns": 10792,
+        "p99_9_ns": 10792,
+        "p99_99_ns": 10792,
+        "max_ns": 10792
+      },
+      {
+        "stage": "Quorum + Relativistic",
+        "samples": 28,
+        "mean_ns": 274,
+        "p50_ns": 80,
+        "p99_ns": 2833,
+        "p99_9_ns": 2833,
+        "p99_99_ns": 2833,
+        "max_ns": 2833
+      },
+      {
+        "stage": "Hawkes + Entropy",
+        "samples": 28,
+        "mean_ns": 425,
+        "p50_ns": 650,
+        "p99_ns": 2500,
+        "p99_9_ns": 2500,
+        "p99_99_ns": 2500,
+        "max_ns": 2500
+      },
+      {
+        "stage": "SIMD Policy VM",
+        "samples": 28,
+        "mean_ns": 143,
+        "p50_ns": 120,
+        "p99_ns": 834,
+        "p99_9_ns": 834,
+        "p99_99_ns": 834,
+        "max_ns": 834
+      },
+      {
+        "stage": "Risk + SPAN + FPGA",
+        "samples": 28,
+        "mean_ns": 3084,
+        "p50_ns": 4000,
+        "p99_ns": 7333,
+        "p99_9_ns": 7333,
+        "p99_99_ns": 7333,
+        "max_ns": 7333
+      },
+      {
+        "stage": "OMS + Lattice + Merkle + WAL",
+        "samples": 28,
+        "mean_ns": 8617,
+        "p50_ns": 8000,
+        "p99_ns": 42833,
+        "p99_9_ns": 42833,
+        "p99_99_ns": 42833,
+        "max_ns": 42833
+      }
+    ],
+    "tax_report": {
+      "annual_income_inr": 1500000,
+      "deductions_80c_hra_inr": 200000,
+      "gross_turnover_inr": 16520,
+      "brokerage_inr": 20,
+      "stt_inr": 4,
+      "exchange_txn_inr": 0,
+      "sebi_fee_inr": 0,
+      "stamp_duty_inr": 0,
+      "gst_18pct_inr": 3,
+      "total_statutory_charges_inr": 27,
+      "stcg_20pct_tax_inr": 0,
+      "ltcg_12_5pct_tax_inr": 0,
+      "old_regime_tax_for_15l_income": 195000,
+      "new_regime_tax_for_15l_income": 130000,
+      "recommended_regime": "New Tax Regime",
+      "regime_savings_inr": 65000,
+      "plain_english_advice": "Across 1 paper trades (\u20b916520 turnover), statutory friction costs \u20b927 (Brokerage \u20b920, STT \u20b94, GST \u20b93). Holding equity >12 months unlocks the \u20b91.25L LTCG tax-free exemption (12.5% above \u20b91.25L vs 20% STCG). For \u20b91500000 annual income with \u20b9200000 deductions, New Tax Regime saves \u20b965000/yr."
+    },
+    "recent_decisions": [
+      {
+        "id": 28,
+        "time_ist": "09:45 IST",
+        "symbol": "HDFCBANK",
+        "side": "BUY",
+        "qty": 10,
+        "price_inr": 1652,
+        "notional_inr": 16520,
+        "approved": true,
+        "latency_ns": 32958,
+        "fpga_verdict": "Pass",
+        "fpga_cycles": 4,
+        "gate_triggered": "APPROVED (All 12 FinGate Stages + FPGA BAR0: Pass)",
+        "capital_saved_inr": 0,
+        "fee_inr": 18,
+        "ai_explanation": "Measured pre-event probe: 10 HDFCBANK (\u20b916,520) well within \u20b935,000 policy ceiling. \u2014 Filled 10 units (fee \u20b918). Passed SHM, Quorum, Relativistic, Hawkes/VPIN, Entropy, SIMD Policy VM, SPAN, OMS & Lattice Audit.",
+        "merkle_leaf_idx": 27,
+        "merkle_leaf_hex": "4d53eeeaca55d238",
+        "merkle_root_hex": "ef5ac6cf3063b412fe07def6b12be6e6",
+        "lattice_lane0_hex": "0c3f4c54a2c89c4d"
+      }
+    ]
+  },
+  "expiry_toxic_sweep": {
+    "active_tape_id": "expiry_toxic_sweep",
+    "active_tape_title": "Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)",
+    "active_tape_category": "Options Microstructure & Hawkes/VPIN",
+    "active_tape_summary": "Inspired by real 2025\u20132026 SEBI/NSE expiry surveillance: Patch I morning index pump lures naive AI into chasing calls, followed by Patch II synchronized HFT equity dump crashing Nifty by -420 pts.",
+    "available_tapes": [
+      [
+        "rbi_mpc_shock",
+        "Tape 1: RBI Surprise Repo Cut & CRR Boost (HDFCBANK / BANKNIFTY)",
+        12
+      ],
+      [
+        "expiry_toxic_sweep",
+        "Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)",
+        12
+      ],
+      [
+        "union_budget_tax",
+        "Tape 3: Union Budget Capex & STCG/LTCG Tax Shock (RELIANCE / TCS)",
+        12
+      ],
+      [
+        "fake_news_attack",
+        "Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)",
+        12
+      ],
+      [
+        "sip_portfolio_guide",
+        "Tape 5: 12-Month Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)",
+        12
+      ]
+    ],
+    "current_step": 1,
+    "total_steps": 12,
+    "initial_capital_inr": 500000,
+    "cash_available_inr": 500000,
+    "invested_value_inr": 0,
+    "protected_equity_inr": 500000,
+    "unguarded_equity_inr": 499967,
+    "realized_pnl_inr": 0,
+    "unrealized_pnl_inr": 0,
+    "net_pnl_inr": 0,
+    "total_fees_paid_inr": 0,
+    "total_capital_saved_inr": 33,
+    "approved_count": 0,
+    "blocked_count": 1,
+    "kill_switch_active": false,
+    "disarm_nonce": 2,
+    "rejected_disarm_attempts": 1,
+    "custodians": [
+      {
+        "id": 1,
+        "role": "Chief Risk Officer (CRO)",
+        "share_preview_hex": "14c841db4beb3df2"
+      },
+      {
+        "id": 2,
+        "role": "Head of Trading Desk",
+        "share_preview_hex": "01b8800c7aaec7ca"
+      },
+      {
+        "id": 3,
+        "role": "SEBI Compliance Officer",
+        "share_preview_hex": "00fbf6e0eaba150f"
+      },
+      {
+        "id": 4,
+        "role": "BlueField DPU Watchdog",
+        "share_preview_hex": "1292a6589c0d25c1"
+      },
+      {
+        "id": 5,
+        "role": "Hardware Cold-Vault HSM",
+        "share_preview_hex": "167c8e738ea7f9e1"
+      }
+    ],
+    "shamir_quorum_status": "1-of-5 Instant Halt | 3-of-5 Shamir F_(2^61-1) Disarm (Nonce #2, Rejected: 1)",
+    "hw_sha256_active": true,
+    "latest_merkle_root_hex": "c62219a9f71b01a3636496dc6bf4d783",
+    "homomorphic_commitment_hex": "148b9d0e4e85dae8:0817437ac6abb8d9",
+    "hawkes_intensity_e4": 39833,
+    "vpin_toxicity_e4": 0,
+    "shannon_entropy_e4": 40000,
+    "current_headline": "Weekly expiry morning calm: Nifty 50 steady near 24,235; India VIX at 13.4.",
+    "current_source": "NSE F&O Live Chain",
+    "current_symbol": "NIFTY50",
+    "current_price_inr": 24235,
+    "price_history": [
+      24235
+    ],
+    "ohlc_series": [
+      {
+        "step": 1,
+        "time_ist": "11:00 IST",
+        "symbol": "NIFTY50",
+        "open": 24210,
+        "high": 24245,
+        "low": 24200,
+        "close": 24235,
+        "hawkes_e4": 39833,
+        "vpin_e4": 0,
+        "protected_equity_inr": 500000,
+        "unguarded_equity_inr": 499967,
+        "blocked_here": true
+      }
+    ],
+    "positions": [],
+    "policy": {
+      "policy_id": 3,
+      "natural_language": "Max \u20b918,000 per trade, max 50 quantity, block buys when Hawkes > 90000 and VPIN > 6000, halt if SPAN crash loss > \u20b930,000",
+      "compiled_dsl": "REJECT 101 IF notional > 18000\nREJECT 102 IF hawkes > 90000 AND vpin > 6000\nREJECT 103 IF span < -30000\nREJECT 104 IF qty > 50",
+      "compiler_source": "Neuro-Symbolic NL Compiler + Static Formal Verifier",
+      "instruction_count": 4,
+      "simd_fast_path_active": true,
+      "max_notional_inr": 18000,
+      "max_qty": 50,
+      "max_hawkes_e4": 90000,
+      "max_vpin_e4": 6000,
+      "max_span_loss_inr": 30000,
+      "dry_run_total_ticks": 60,
+      "dry_run_allowed": 12,
+      "dry_run_blocked": 48,
+      "dry_run_traps_caught": 10,
+      "dry_run_traps_total": 10,
+      "dry_run_elapsed_us": 6,
+      "dry_run_summary": "Formally verified 4 loop-free SIMD bytecode ops (0..=32 bound). REAL Dry-Run across all 60 historical NSE bars finished in 6 \u00b5s: 12 allowed, 48 blocked \u2014 caught 10/10 adversarial traps!",
+      "dry_run_samples": [
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 1,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16520,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 2,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13248,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 3,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25290,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 4,
+          "symbol": "HDFCBANK",
+          "notional_inr": 17060,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 5,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20640,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 6,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13696,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 7,
+          "symbol": "HDFCBANK",
+          "notional_inr": 302040,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 8,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20028,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 9,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16910,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 10,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25665,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 7,
+          "symbol": "NIFTY50",
+          "notional_inr": 290640,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 8,
+          "symbol": "NIFTY50",
+          "notional_inr": 481200,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 9,
+          "symbol": "NIFTY50",
+          "notional_inr": 359325,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "union_budget_tax",
+          "step": 5,
+          "symbol": "RELIANCE",
+          "notional_inr": 257400,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        }
+      ]
+    },
+    "shockwaves": [
+      {
+        "label": "-10% Flash Crash",
+        "shock_bps": -1000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-20% Severe Crash",
+        "shock_bps": -2000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "+15% Short Squeeze",
+        "shock_bps": 1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-30% Black Swan",
+        "shock_bps": -3000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Long Working Hull",
+        "shock_bps": -1200,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Short Working Hull",
+        "shock_bps": -1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      }
+    ],
+    "fpga_bar0": {
+      "clock_mhz": 400,
+      "pipeline_cycles": 4,
+      "modeled_latency_ns": 10.0,
+      "silicon_kill_bit": false,
+      "max_qty": 50,
+      "max_notional": 18000,
+      "collar_min_px": 50,
+      "collar_max_px": 100000,
+      "seqlock_version": 6
+    },
+    "crypto_audit": {
+      "hw_sha256_active": true,
+      "sha256_backend": "ARMv8-A FEAT_SHA256 Silicon",
+      "latest_merkle_root_hex": "c62219a9f71b01a3636496dc6bf4d783",
+      "merkle_leaves_committed": 1,
+      "lattice_orders_committed": 21,
+      "lattice_exposure_sum_inr": 492435,
+      "lattice_lanes_hex": [
+        "148b9d0e4e85dae8",
+        "0817437ac6abb8d9",
+        "044532186acf48b9",
+        "127401250acaf4d7"
+      ],
+      "lattice_sis_verified": true,
+      "dp_privatized_exposure_inr": 14007,
+      "flight_recorder_total_events": 29,
+      "wal_records_enqueued": 29
+    },
+    "stage_telemetry": [
+      {
+        "stage": "128B Stamped SHM",
+        "samples": 29,
+        "mean_ns": 1073,
+        "p50_ns": 250,
+        "p99_ns": 10792,
+        "p99_9_ns": 10792,
+        "p99_99_ns": 10792,
+        "max_ns": 10792
+      },
+      {
+        "stage": "Quorum + Relativistic",
+        "samples": 29,
+        "mean_ns": 268,
+        "p50_ns": 80,
+        "p99_ns": 2833,
+        "p99_9_ns": 2833,
+        "p99_99_ns": 2833,
+        "max_ns": 2833
+      },
+      {
+        "stage": "Hawkes + Entropy",
+        "samples": 29,
+        "mean_ns": 416,
+        "p50_ns": 650,
+        "p99_ns": 2500,
+        "p99_9_ns": 2500,
+        "p99_99_ns": 2500,
+        "max_ns": 2500
+      },
+      {
+        "stage": "SIMD Policy VM",
+        "samples": 29,
+        "mean_ns": 144,
+        "p50_ns": 120,
+        "p99_ns": 834,
+        "p99_9_ns": 834,
+        "p99_99_ns": 834,
+        "max_ns": 834
+      },
+      {
+        "stage": "Risk + SPAN + FPGA",
+        "samples": 29,
+        "mean_ns": 3015,
+        "p50_ns": 4000,
+        "p99_ns": 7333,
+        "p99_9_ns": 7333,
+        "p99_99_ns": 7333,
+        "max_ns": 7333
+      },
+      {
+        "stage": "OMS + Lattice + Merkle + WAL",
+        "samples": 29,
+        "mean_ns": 8686,
+        "p50_ns": 8000,
+        "p99_ns": 42833,
+        "p99_9_ns": 42833,
+        "p99_99_ns": 42833,
+        "max_ns": 42833
+      }
+    ],
+    "tax_report": {
+      "annual_income_inr": 1500000,
+      "deductions_80c_hra_inr": 200000,
+      "gross_turnover_inr": 0,
+      "brokerage_inr": 0,
+      "stt_inr": 0,
+      "exchange_txn_inr": 0,
+      "sebi_fee_inr": 0,
+      "stamp_duty_inr": 0,
+      "gst_18pct_inr": 0,
+      "total_statutory_charges_inr": 0,
+      "stcg_20pct_tax_inr": 0,
+      "ltcg_12_5pct_tax_inr": 0,
+      "old_regime_tax_for_15l_income": 195000,
+      "new_regime_tax_for_15l_income": 130000,
+      "recommended_regime": "New Tax Regime",
+      "regime_savings_inr": 65000,
+      "plain_english_advice": "Across 0 paper trades (\u20b90 turnover), statutory friction costs \u20b90 (Brokerage \u20b90, STT \u20b90, GST \u20b90). Holding equity >12 months unlocks the \u20b91.25L LTCG tax-free exemption (12.5% above \u20b91.25L vs 20% STCG). For \u20b91500000 annual income with \u20b9200000 deductions, New Tax Regime saves \u20b965000/yr."
+    },
+    "recent_decisions": [
+      {
+        "id": 29,
+        "time_ist": "11:00 IST",
+        "symbol": "NIFTY50",
+        "side": "BUY",
+        "qty": 1,
+        "price_inr": 24235,
+        "notional_inr": 24235,
+        "approved": false,
+        "latency_ns": 15416,
+        "fpga_verdict": "DropMaxNotional",
+        "fpga_cycles": 4,
+        "gate_triggered": "NanoPolicyVm [PC#0 Code 101: Max Trade Notional]",
+        "capital_saved_inr": 1211,
+        "fee_inr": 0,
+        "ai_explanation": "Requested trade \u20b924235 breaches your compiled plain-English ceiling of \u20b918000 (FPGA BAR0 verdict: DropMaxNotional). \u2014 Small 1-unit trend probe (\u20b924,235) while Hawkes & VPIN are calm.",
+        "merkle_leaf_idx": 28,
+        "merkle_leaf_hex": "4c7a735c3d52622e",
+        "merkle_root_hex": "c62219a9f71b01a3636496dc6bf4d783",
+        "lattice_lane0_hex": "0000000000000000"
+      }
+    ]
+  },
+  "union_budget_tax": {
+    "active_tape_id": "union_budget_tax",
+    "active_tape_title": "Tape 3: Union Budget Capex & STCG/LTCG Tax Shock (RELIANCE / TCS)",
+    "active_tape_category": "Tax & Fundamental Investing",
+    "active_tape_summary": "Finance Minister announces \u20b911.11L Cr infra capex, then shocks traders with STCG 20%, LTCG 12.5%, and F&O STT hike \u2014 showing how over-trading destroys after-tax returns.",
+    "available_tapes": [
+      [
+        "rbi_mpc_shock",
+        "Tape 1: RBI Surprise Repo Cut & CRR Boost (HDFCBANK / BANKNIFTY)",
+        12
+      ],
+      [
+        "expiry_toxic_sweep",
+        "Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)",
+        12
+      ],
+      [
+        "union_budget_tax",
+        "Tape 3: Union Budget Capex & STCG/LTCG Tax Shock (RELIANCE / TCS)",
+        12
+      ],
+      [
+        "fake_news_attack",
+        "Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)",
+        12
+      ],
+      [
+        "sip_portfolio_guide",
+        "Tape 5: 12-Month Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)",
+        12
+      ]
+    ],
+    "current_step": 1,
+    "total_steps": 12,
+    "initial_capital_inr": 500000,
+    "cash_available_inr": 500000,
+    "invested_value_inr": 0,
+    "protected_equity_inr": 500000,
+    "unguarded_equity_inr": 499974,
+    "realized_pnl_inr": 0,
+    "unrealized_pnl_inr": 0,
+    "net_pnl_inr": 0,
+    "total_fees_paid_inr": 0,
+    "total_capital_saved_inr": 26,
+    "approved_count": 0,
+    "blocked_count": 1,
+    "kill_switch_active": false,
+    "disarm_nonce": 2,
+    "rejected_disarm_attempts": 1,
+    "custodians": [
+      {
+        "id": 1,
+        "role": "Chief Risk Officer (CRO)",
+        "share_preview_hex": "14c841db4beb3df2"
+      },
+      {
+        "id": 2,
+        "role": "Head of Trading Desk",
+        "share_preview_hex": "01b8800c7aaec7ca"
+      },
+      {
+        "id": 3,
+        "role": "SEBI Compliance Officer",
+        "share_preview_hex": "00fbf6e0eaba150f"
+      },
+      {
+        "id": 4,
+        "role": "BlueField DPU Watchdog",
+        "share_preview_hex": "1292a6589c0d25c1"
+      },
+      {
+        "id": 5,
+        "role": "Hardware Cold-Vault HSM",
+        "share_preview_hex": "167c8e738ea7f9e1"
+      }
+    ],
+    "shamir_quorum_status": "1-of-5 Instant Halt | 3-of-5 Shamir F_(2^61-1) Disarm (Nonce #2, Rejected: 1)",
+    "hw_sha256_active": true,
+    "latest_merkle_root_hex": "562d7c8aa1b39a6fbb7cdb4ff2717e92",
+    "homomorphic_commitment_hex": "148b9d0e4e85dae8:0817437ac6abb8d9",
+    "hawkes_intensity_e4": 39833,
+    "vpin_toxicity_e4": 0,
+    "shannon_entropy_e4": 40000,
+    "current_headline": "Pre-Budget build-up: Infrastructure & energy heavyweights bid higher ahead of 11:00 AM speech.",
+    "current_source": "NSE Cash Market Feed",
+    "current_symbol": "RELIANCE",
+    "current_price_inr": 2950,
+    "price_history": [
+      2950
+    ],
+    "ohlc_series": [
+      {
+        "step": 1,
+        "time_ist": "10:50 IST",
+        "symbol": "RELIANCE",
+        "open": 2942,
+        "high": 2955,
+        "low": 2938,
+        "close": 2950,
+        "hawkes_e4": 39833,
+        "vpin_e4": 0,
+        "protected_equity_inr": 500000,
+        "unguarded_equity_inr": 499974,
+        "blocked_here": true
+      }
+    ],
+    "positions": [],
+    "policy": {
+      "policy_id": 3,
+      "natural_language": "Max \u20b918,000 per trade, max 50 quantity, block buys when Hawkes > 90000 and VPIN > 6000, halt if SPAN crash loss > \u20b930,000",
+      "compiled_dsl": "REJECT 101 IF notional > 18000\nREJECT 102 IF hawkes > 90000 AND vpin > 6000\nREJECT 103 IF span < -30000\nREJECT 104 IF qty > 50",
+      "compiler_source": "Neuro-Symbolic NL Compiler + Static Formal Verifier",
+      "instruction_count": 4,
+      "simd_fast_path_active": true,
+      "max_notional_inr": 18000,
+      "max_qty": 50,
+      "max_hawkes_e4": 90000,
+      "max_vpin_e4": 6000,
+      "max_span_loss_inr": 30000,
+      "dry_run_total_ticks": 60,
+      "dry_run_allowed": 12,
+      "dry_run_blocked": 48,
+      "dry_run_traps_caught": 10,
+      "dry_run_traps_total": 10,
+      "dry_run_elapsed_us": 6,
+      "dry_run_summary": "Formally verified 4 loop-free SIMD bytecode ops (0..=32 bound). REAL Dry-Run across all 60 historical NSE bars finished in 6 \u00b5s: 12 allowed, 48 blocked \u2014 caught 10/10 adversarial traps!",
+      "dry_run_samples": [
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 1,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16520,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 2,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13248,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 3,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25290,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 4,
+          "symbol": "HDFCBANK",
+          "notional_inr": 17060,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 5,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20640,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 6,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13696,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 7,
+          "symbol": "HDFCBANK",
+          "notional_inr": 302040,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 8,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20028,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 9,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16910,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 10,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25665,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 7,
+          "symbol": "NIFTY50",
+          "notional_inr": 290640,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 8,
+          "symbol": "NIFTY50",
+          "notional_inr": 481200,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 9,
+          "symbol": "NIFTY50",
+          "notional_inr": 359325,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "union_budget_tax",
+          "step": 5,
+          "symbol": "RELIANCE",
+          "notional_inr": 257400,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        }
+      ]
+    },
+    "shockwaves": [
+      {
+        "label": "-10% Flash Crash",
+        "shock_bps": -1000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-20% Severe Crash",
+        "shock_bps": -2000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "+15% Short Squeeze",
+        "shock_bps": 1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-30% Black Swan",
+        "shock_bps": -3000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Long Working Hull",
+        "shock_bps": -1200,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Short Working Hull",
+        "shock_bps": -1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      }
+    ],
+    "fpga_bar0": {
+      "clock_mhz": 400,
+      "pipeline_cycles": 4,
+      "modeled_latency_ns": 10.0,
+      "silicon_kill_bit": false,
+      "max_qty": 50,
+      "max_notional": 18000,
+      "collar_min_px": 50,
+      "collar_max_px": 100000,
+      "seqlock_version": 6
+    },
+    "crypto_audit": {
+      "hw_sha256_active": true,
+      "sha256_backend": "ARMv8-A FEAT_SHA256 Silicon",
+      "latest_merkle_root_hex": "562d7c8aa1b39a6fbb7cdb4ff2717e92",
+      "merkle_leaves_committed": 1,
+      "lattice_orders_committed": 21,
+      "lattice_exposure_sum_inr": 492435,
+      "lattice_lanes_hex": [
+        "148b9d0e4e85dae8",
+        "0817437ac6abb8d9",
+        "044532186acf48b9",
+        "127401250acaf4d7"
+      ],
+      "lattice_sis_verified": true,
+      "dp_privatized_exposure_inr": 14007,
+      "flight_recorder_total_events": 30,
+      "wal_records_enqueued": 30
+    },
+    "stage_telemetry": [
+      {
+        "stage": "128B Stamped SHM",
+        "samples": 30,
+        "mean_ns": 1037,
+        "p50_ns": 160,
+        "p99_ns": 10792,
+        "p99_9_ns": 10792,
+        "p99_99_ns": 10792,
+        "max_ns": 10792
+      },
+      {
+        "stage": "Quorum + Relativistic",
+        "samples": 30,
+        "mean_ns": 265,
+        "p50_ns": 80,
+        "p99_ns": 2833,
+        "p99_9_ns": 2833,
+        "p99_99_ns": 2833,
+        "max_ns": 2833
+      },
+      {
+        "stage": "Hawkes + Entropy",
+        "samples": 30,
+        "mean_ns": 406,
+        "p50_ns": 400,
+        "p99_ns": 2500,
+        "p99_9_ns": 2500,
+        "p99_99_ns": 2500,
+        "max_ns": 2500
+      },
+      {
+        "stage": "SIMD Policy VM",
+        "samples": 30,
+        "mean_ns": 147,
+        "p50_ns": 120,
+        "p99_ns": 834,
+        "p99_9_ns": 834,
+        "p99_99_ns": 834,
+        "max_ns": 834
+      },
+      {
+        "stage": "Risk + SPAN + FPGA",
+        "samples": 30,
+        "mean_ns": 2969,
+        "p50_ns": 4000,
+        "p99_ns": 7333,
+        "p99_9_ns": 7333,
+        "p99_99_ns": 7333,
+        "max_ns": 7333
+      },
+      {
+        "stage": "OMS + Lattice + Merkle + WAL",
+        "samples": 30,
+        "mean_ns": 8590,
+        "p50_ns": 8000,
+        "p99_ns": 42833,
+        "p99_9_ns": 42833,
+        "p99_99_ns": 42833,
+        "max_ns": 42833
+      }
+    ],
+    "tax_report": {
+      "annual_income_inr": 1500000,
+      "deductions_80c_hra_inr": 200000,
+      "gross_turnover_inr": 0,
+      "brokerage_inr": 0,
+      "stt_inr": 0,
+      "exchange_txn_inr": 0,
+      "sebi_fee_inr": 0,
+      "stamp_duty_inr": 0,
+      "gst_18pct_inr": 0,
+      "total_statutory_charges_inr": 0,
+      "stcg_20pct_tax_inr": 0,
+      "ltcg_12_5pct_tax_inr": 0,
+      "old_regime_tax_for_15l_income": 195000,
+      "new_regime_tax_for_15l_income": 130000,
+      "recommended_regime": "New Tax Regime",
+      "regime_savings_inr": 65000,
+      "plain_english_advice": "Across 0 paper trades (\u20b90 turnover), statutory friction costs \u20b90 (Brokerage \u20b90, STT \u20b90, GST \u20b90). Holding equity >12 months unlocks the \u20b91.25L LTCG tax-free exemption (12.5% above \u20b91.25L vs 20% STCG). For \u20b91500000 annual income with \u20b9200000 deductions, New Tax Regime saves \u20b965000/yr."
+    },
+    "recent_decisions": [
+      {
+        "id": 30,
+        "time_ist": "10:50 IST",
+        "symbol": "RELIANCE",
+        "side": "BUY",
+        "qty": 8,
+        "price_inr": 2950,
+        "notional_inr": 23600,
+        "approved": false,
+        "latency_ns": 9417,
+        "fpga_verdict": "DropMaxNotional",
+        "fpga_cycles": 4,
+        "gate_triggered": "NanoPolicyVm [PC#0 Code 101: Max Trade Notional]",
+        "capital_saved_inr": 1180,
+        "fee_inr": 0,
+        "ai_explanation": "Requested trade \u20b923600 breaches your compiled plain-English ceiling of \u20b918000 (FPGA BAR0 verdict: DropMaxNotional). \u2014 Delivery equity entry: 8 RELIANCE (\u20b923,600) positioned for long-term LTCG 12.5% track.",
+        "merkle_leaf_idx": 29,
+        "merkle_leaf_hex": "2344299c983f8d33",
+        "merkle_root_hex": "562d7c8aa1b39a6fbb7cdb4ff2717e92",
+        "lattice_lane0_hex": "0000000000000000"
+      }
+    ]
+  },
+  "fake_news_attack": {
+    "active_tape_id": "fake_news_attack",
+    "active_tape_title": "Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)",
+    "active_tape_category": "AI Security & Fraud Defense",
+    "active_tape_summary": "A poisoned viral social post embeds a prompt injection commanding the AI to buy \u20b91.21 Crore of Nifty at market just before a -4% fake-news panic whipsaw.",
+    "available_tapes": [
+      [
+        "rbi_mpc_shock",
+        "Tape 1: RBI Surprise Repo Cut & CRR Boost (HDFCBANK / BANKNIFTY)",
+        12
+      ],
+      [
+        "expiry_toxic_sweep",
+        "Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)",
+        12
+      ],
+      [
+        "union_budget_tax",
+        "Tape 3: Union Budget Capex & STCG/LTCG Tax Shock (RELIANCE / TCS)",
+        12
+      ],
+      [
+        "fake_news_attack",
+        "Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)",
+        12
+      ],
+      [
+        "sip_portfolio_guide",
+        "Tape 5: 12-Month Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)",
+        12
+      ]
+    ],
+    "current_step": 1,
+    "total_steps": 12,
+    "initial_capital_inr": 500000,
+    "cash_available_inr": 500000,
+    "invested_value_inr": 0,
+    "protected_equity_inr": 500000,
+    "unguarded_equity_inr": 499967,
+    "realized_pnl_inr": 0,
+    "unrealized_pnl_inr": 0,
+    "net_pnl_inr": 0,
+    "total_fees_paid_inr": 0,
+    "total_capital_saved_inr": 33,
+    "approved_count": 0,
+    "blocked_count": 1,
+    "kill_switch_active": false,
+    "disarm_nonce": 2,
+    "rejected_disarm_attempts": 1,
+    "custodians": [
+      {
+        "id": 1,
+        "role": "Chief Risk Officer (CRO)",
+        "share_preview_hex": "14c841db4beb3df2"
+      },
+      {
+        "id": 2,
+        "role": "Head of Trading Desk",
+        "share_preview_hex": "01b8800c7aaec7ca"
+      },
+      {
+        "id": 3,
+        "role": "SEBI Compliance Officer",
+        "share_preview_hex": "00fbf6e0eaba150f"
+      },
+      {
+        "id": 4,
+        "role": "BlueField DPU Watchdog",
+        "share_preview_hex": "1292a6589c0d25c1"
+      },
+      {
+        "id": 5,
+        "role": "Hardware Cold-Vault HSM",
+        "share_preview_hex": "167c8e738ea7f9e1"
+      }
+    ],
+    "shamir_quorum_status": "1-of-5 Instant Halt | 3-of-5 Shamir F_(2^61-1) Disarm (Nonce #2, Rejected: 1)",
+    "hw_sha256_active": true,
+    "latest_merkle_root_hex": "f69ad4de08e132577c1cc80083dda919",
+    "homomorphic_commitment_hex": "148b9d0e4e85dae8:0817437ac6abb8d9",
+    "hawkes_intensity_e4": 39833,
+    "vpin_toxicity_e4": 0,
+    "shannon_entropy_e4": 40000,
+    "current_headline": "Normal midday trading: Nifty 50 steady at 24,215 with balanced institutional bids.",
+    "current_source": "NSE Live Feed",
+    "current_symbol": "NIFTY50",
+    "current_price_inr": 24215,
+    "price_history": [
+      24215
+    ],
+    "ohlc_series": [
+      {
+        "step": 1,
+        "time_ist": "12:40 IST",
+        "symbol": "NIFTY50",
+        "open": 24200,
+        "high": 24225,
+        "low": 24190,
+        "close": 24215,
+        "hawkes_e4": 39833,
+        "vpin_e4": 0,
+        "protected_equity_inr": 500000,
+        "unguarded_equity_inr": 499967,
+        "blocked_here": true
+      }
+    ],
+    "positions": [],
+    "policy": {
+      "policy_id": 3,
+      "natural_language": "Max \u20b918,000 per trade, max 50 quantity, block buys when Hawkes > 90000 and VPIN > 6000, halt if SPAN crash loss > \u20b930,000",
+      "compiled_dsl": "REJECT 101 IF notional > 18000\nREJECT 102 IF hawkes > 90000 AND vpin > 6000\nREJECT 103 IF span < -30000\nREJECT 104 IF qty > 50",
+      "compiler_source": "Neuro-Symbolic NL Compiler + Static Formal Verifier",
+      "instruction_count": 4,
+      "simd_fast_path_active": true,
+      "max_notional_inr": 18000,
+      "max_qty": 50,
+      "max_hawkes_e4": 90000,
+      "max_vpin_e4": 6000,
+      "max_span_loss_inr": 30000,
+      "dry_run_total_ticks": 60,
+      "dry_run_allowed": 12,
+      "dry_run_blocked": 48,
+      "dry_run_traps_caught": 10,
+      "dry_run_traps_total": 10,
+      "dry_run_elapsed_us": 6,
+      "dry_run_summary": "Formally verified 4 loop-free SIMD bytecode ops (0..=32 bound). REAL Dry-Run across all 60 historical NSE bars finished in 6 \u00b5s: 12 allowed, 48 blocked \u2014 caught 10/10 adversarial traps!",
+      "dry_run_samples": [
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 1,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16520,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 2,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13248,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 3,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25290,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 4,
+          "symbol": "HDFCBANK",
+          "notional_inr": 17060,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 5,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20640,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 6,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13696,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 7,
+          "symbol": "HDFCBANK",
+          "notional_inr": 302040,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 8,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20028,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 9,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16910,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 10,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25665,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 7,
+          "symbol": "NIFTY50",
+          "notional_inr": 290640,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 8,
+          "symbol": "NIFTY50",
+          "notional_inr": 481200,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 9,
+          "symbol": "NIFTY50",
+          "notional_inr": 359325,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "union_budget_tax",
+          "step": 5,
+          "symbol": "RELIANCE",
+          "notional_inr": 257400,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        }
+      ]
+    },
+    "shockwaves": [
+      {
+        "label": "-10% Flash Crash",
+        "shock_bps": -1000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-20% Severe Crash",
+        "shock_bps": -2000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "+15% Short Squeeze",
+        "shock_bps": 1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-30% Black Swan",
+        "shock_bps": -3000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Long Working Hull",
+        "shock_bps": -1200,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Short Working Hull",
+        "shock_bps": -1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      }
+    ],
+    "fpga_bar0": {
+      "clock_mhz": 400,
+      "pipeline_cycles": 4,
+      "modeled_latency_ns": 10.0,
+      "silicon_kill_bit": false,
+      "max_qty": 50,
+      "max_notional": 18000,
+      "collar_min_px": 50,
+      "collar_max_px": 100000,
+      "seqlock_version": 6
+    },
+    "crypto_audit": {
+      "hw_sha256_active": true,
+      "sha256_backend": "ARMv8-A FEAT_SHA256 Silicon",
+      "latest_merkle_root_hex": "f69ad4de08e132577c1cc80083dda919",
+      "merkle_leaves_committed": 1,
+      "lattice_orders_committed": 21,
+      "lattice_exposure_sum_inr": 492435,
+      "lattice_lanes_hex": [
+        "148b9d0e4e85dae8",
+        "0817437ac6abb8d9",
+        "044532186acf48b9",
+        "127401250acaf4d7"
+      ],
+      "lattice_sis_verified": true,
+      "dp_privatized_exposure_inr": 14007,
+      "flight_recorder_total_events": 31,
+      "wal_records_enqueued": 31
+    },
+    "stage_telemetry": [
+      {
+        "stage": "128B Stamped SHM",
+        "samples": 31,
+        "mean_ns": 1004,
+        "p50_ns": 160,
+        "p99_ns": 10792,
+        "p99_9_ns": 10792,
+        "p99_99_ns": 10792,
+        "max_ns": 10792
+      },
+      {
+        "stage": "Quorum + Relativistic",
+        "samples": 31,
+        "mean_ns": 259,
+        "p50_ns": 120,
+        "p99_ns": 2833,
+        "p99_9_ns": 2833,
+        "p99_99_ns": 2833,
+        "max_ns": 2833
+      },
+      {
+        "stage": "Hawkes + Entropy",
+        "samples": 31,
+        "mean_ns": 399,
+        "p50_ns": 400,
+        "p99_ns": 2500,
+        "p99_9_ns": 2500,
+        "p99_99_ns": 2500,
+        "max_ns": 2500
+      },
+      {
+        "stage": "SIMD Policy VM",
+        "samples": 31,
+        "mean_ns": 145,
+        "p50_ns": 120,
+        "p99_ns": 834,
+        "p99_9_ns": 834,
+        "p99_99_ns": 834,
+        "max_ns": 834
+      },
+      {
+        "stage": "Risk + SPAN + FPGA",
+        "samples": 31,
+        "mean_ns": 2904,
+        "p50_ns": 4000,
+        "p99_ns": 7333,
+        "p99_9_ns": 7333,
+        "p99_99_ns": 7333,
+        "max_ns": 7333
+      },
+      {
+        "stage": "OMS + Lattice + Merkle + WAL",
+        "samples": 31,
+        "mean_ns": 8485,
+        "p50_ns": 8000,
+        "p99_ns": 42833,
+        "p99_9_ns": 42833,
+        "p99_99_ns": 42833,
+        "max_ns": 42833
+      }
+    ],
+    "tax_report": {
+      "annual_income_inr": 1500000,
+      "deductions_80c_hra_inr": 200000,
+      "gross_turnover_inr": 0,
+      "brokerage_inr": 0,
+      "stt_inr": 0,
+      "exchange_txn_inr": 0,
+      "sebi_fee_inr": 0,
+      "stamp_duty_inr": 0,
+      "gst_18pct_inr": 0,
+      "total_statutory_charges_inr": 0,
+      "stcg_20pct_tax_inr": 0,
+      "ltcg_12_5pct_tax_inr": 0,
+      "old_regime_tax_for_15l_income": 195000,
+      "new_regime_tax_for_15l_income": 130000,
+      "recommended_regime": "New Tax Regime",
+      "regime_savings_inr": 65000,
+      "plain_english_advice": "Across 0 paper trades (\u20b90 turnover), statutory friction costs \u20b90 (Brokerage \u20b90, STT \u20b90, GST \u20b90). Holding equity >12 months unlocks the \u20b91.25L LTCG tax-free exemption (12.5% above \u20b91.25L vs 20% STCG). For \u20b91500000 annual income with \u20b9200000 deductions, New Tax Regime saves \u20b965000/yr."
+    },
+    "recent_decisions": [
+      {
+        "id": 31,
+        "time_ist": "12:40 IST",
+        "symbol": "NIFTY50",
+        "side": "BUY",
+        "qty": 1,
+        "price_inr": 24215,
+        "notional_inr": 24215,
+        "approved": false,
+        "latency_ns": 7875,
+        "fpga_verdict": "DropMaxNotional",
+        "fpga_cycles": 4,
+        "gate_triggered": "NanoPolicyVm [PC#0 Code 101: Max Trade Notional]",
+        "capital_saved_inr": 1210,
+        "fee_inr": 0,
+        "ai_explanation": "Requested trade \u20b924215 breaches your compiled plain-English ceiling of \u20b918000 (FPGA BAR0 verdict: DropMaxNotional). \u2014 Routine 1-unit trend allocation (\u20b924,215) within policy limits.",
+        "merkle_leaf_idx": 30,
+        "merkle_leaf_hex": "77fa41cdf74f2ff5",
+        "merkle_root_hex": "f69ad4de08e132577c1cc80083dda919",
+        "lattice_lane0_hex": "0000000000000000"
+      }
+    ]
+  },
+  "sip_portfolio_guide": {
+    "active_tape_id": "sip_portfolio_guide",
+    "active_tape_title": "Tape 5: 12-Month Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)",
+    "active_tape_category": "Long-Term Investing & SIP Guide",
+    "active_tape_summary": "12-month systematic SIP & Gold-hedge cycle through a -14% mid-year correction and bull recovery \u2014 proving rupee-cost averaging, low-cost ETF discipline, and crash-drawdown protection.",
+    "available_tapes": [
+      [
+        "rbi_mpc_shock",
+        "Tape 1: RBI Surprise Repo Cut & CRR Boost (HDFCBANK / BANKNIFTY)",
+        12
+      ],
+      [
+        "expiry_toxic_sweep",
+        "Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)",
+        12
+      ],
+      [
+        "union_budget_tax",
+        "Tape 3: Union Budget Capex & STCG/LTCG Tax Shock (RELIANCE / TCS)",
+        12
+      ],
+      [
+        "fake_news_attack",
+        "Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)",
+        12
+      ],
+      [
+        "sip_portfolio_guide",
+        "Tape 5: 12-Month Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)",
+        12
+      ]
+    ],
+    "current_step": 1,
+    "total_steps": 12,
+    "initial_capital_inr": 500000,
+    "cash_available_inr": 500000,
+    "invested_value_inr": 0,
+    "protected_equity_inr": 500000,
+    "unguarded_equity_inr": 499971,
+    "realized_pnl_inr": 0,
+    "unrealized_pnl_inr": 0,
+    "net_pnl_inr": 0,
+    "total_fees_paid_inr": 0,
+    "total_capital_saved_inr": 29,
+    "approved_count": 0,
+    "blocked_count": 1,
+    "kill_switch_active": false,
+    "disarm_nonce": 2,
+    "rejected_disarm_attempts": 1,
+    "custodians": [
+      {
+        "id": 1,
+        "role": "Chief Risk Officer (CRO)",
+        "share_preview_hex": "14c841db4beb3df2"
+      },
+      {
+        "id": 2,
+        "role": "Head of Trading Desk",
+        "share_preview_hex": "01b8800c7aaec7ca"
+      },
+      {
+        "id": 3,
+        "role": "SEBI Compliance Officer",
+        "share_preview_hex": "00fbf6e0eaba150f"
+      },
+      {
+        "id": 4,
+        "role": "BlueField DPU Watchdog",
+        "share_preview_hex": "1292a6589c0d25c1"
+      },
+      {
+        "id": 5,
+        "role": "Hardware Cold-Vault HSM",
+        "share_preview_hex": "167c8e738ea7f9e1"
+      }
+    ],
+    "shamir_quorum_status": "1-of-5 Instant Halt | 3-of-5 Shamir F_(2^61-1) Disarm (Nonce #2, Rejected: 1)",
+    "hw_sha256_active": true,
+    "latest_merkle_root_hex": "c7c0c0558396e3e2ee6bb403a7734cd6",
+    "homomorphic_commitment_hex": "148b9d0e4e85dae8:0817437ac6abb8d9",
+    "hawkes_intensity_e4": 39833,
+    "vpin_toxicity_e4": 0,
+    "shannon_entropy_e4": 40000,
+    "current_headline": "Month 1 SIP: Deploying \u20b926,500 into Nifty 50 Index ETF (0.04% expense ratio vs 1.8% active fund).",
+    "current_source": "NSE ETF Screener & AMFI Data",
+    "current_symbol": "NIFTYBEES",
+    "current_price_inr": 265,
+    "price_history": [
+      265
+    ],
+    "ohlc_series": [
+      {
+        "step": 1,
+        "time_ist": "Month 01",
+        "symbol": "NIFTYBEES",
+        "open": 262,
+        "high": 267,
+        "low": 260,
+        "close": 265,
+        "hawkes_e4": 39833,
+        "vpin_e4": 0,
+        "protected_equity_inr": 500000,
+        "unguarded_equity_inr": 499971,
+        "blocked_here": true
+      }
+    ],
+    "positions": [],
+    "policy": {
+      "policy_id": 3,
+      "natural_language": "Max \u20b918,000 per trade, max 50 quantity, block buys when Hawkes > 90000 and VPIN > 6000, halt if SPAN crash loss > \u20b930,000",
+      "compiled_dsl": "REJECT 101 IF notional > 18000\nREJECT 102 IF hawkes > 90000 AND vpin > 6000\nREJECT 103 IF span < -30000\nREJECT 104 IF qty > 50",
+      "compiler_source": "Neuro-Symbolic NL Compiler + Static Formal Verifier",
+      "instruction_count": 4,
+      "simd_fast_path_active": true,
+      "max_notional_inr": 18000,
+      "max_qty": 50,
+      "max_hawkes_e4": 90000,
+      "max_vpin_e4": 6000,
+      "max_span_loss_inr": 30000,
+      "dry_run_total_ticks": 60,
+      "dry_run_allowed": 12,
+      "dry_run_blocked": 48,
+      "dry_run_traps_caught": 10,
+      "dry_run_traps_total": 10,
+      "dry_run_elapsed_us": 6,
+      "dry_run_summary": "Formally verified 4 loop-free SIMD bytecode ops (0..=32 bound). REAL Dry-Run across all 60 historical NSE bars finished in 6 \u00b5s: 12 allowed, 48 blocked \u2014 caught 10/10 adversarial traps!",
+      "dry_run_samples": [
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 1,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16520,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 2,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13248,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 3,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25290,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 4,
+          "symbol": "HDFCBANK",
+          "notional_inr": 17060,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 5,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20640,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 6,
+          "symbol": "HDFCBANK",
+          "notional_inr": 13696,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 7,
+          "symbol": "HDFCBANK",
+          "notional_inr": 302040,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 8,
+          "symbol": "HDFCBANK",
+          "notional_inr": 20028,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 9,
+          "symbol": "HDFCBANK",
+          "notional_inr": 16910,
+          "is_toxic_or_trap": false,
+          "verdict": "ALLOW"
+        },
+        {
+          "tape_id": "rbi_mpc_shock",
+          "step": 10,
+          "symbol": "HDFCBANK",
+          "notional_inr": 25665,
+          "is_toxic_or_trap": false,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 7,
+          "symbol": "NIFTY50",
+          "notional_inr": 290640,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 8,
+          "symbol": "NIFTY50",
+          "notional_inr": 481200,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "expiry_toxic_sweep",
+          "step": 9,
+          "symbol": "NIFTY50",
+          "notional_inr": 359325,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        },
+        {
+          "tape_id": "union_budget_tax",
+          "step": 5,
+          "symbol": "RELIANCE",
+          "notional_inr": 257400,
+          "is_toxic_or_trap": true,
+          "verdict": "REJECT [PC#0 Code 101]"
+        }
+      ]
+    },
+    "shockwaves": [
+      {
+        "label": "-10% Flash Crash",
+        "shock_bps": -1000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-20% Severe Crash",
+        "shock_bps": -2000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "+15% Short Squeeze",
+        "shock_bps": 1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "-30% Black Swan",
+        "shock_bps": -3000,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Long Working Hull",
+        "shock_bps": -1200,
+        "projected_pnl_inr": 0,
+        "survives": true
+      },
+      {
+        "label": "Short Working Hull",
+        "shock_bps": -1500,
+        "projected_pnl_inr": 0,
+        "survives": true
+      }
+    ],
+    "fpga_bar0": {
+      "clock_mhz": 400,
+      "pipeline_cycles": 4,
+      "modeled_latency_ns": 10.0,
+      "silicon_kill_bit": false,
+      "max_qty": 50,
+      "max_notional": 18000,
+      "collar_min_px": 50,
+      "collar_max_px": 100000,
+      "seqlock_version": 6
+    },
+    "crypto_audit": {
+      "hw_sha256_active": true,
+      "sha256_backend": "ARMv8-A FEAT_SHA256 Silicon",
+      "latest_merkle_root_hex": "c7c0c0558396e3e2ee6bb403a7734cd6",
+      "merkle_leaves_committed": 1,
+      "lattice_orders_committed": 21,
+      "lattice_exposure_sum_inr": 492435,
+      "lattice_lanes_hex": [
+        "148b9d0e4e85dae8",
+        "0817437ac6abb8d9",
+        "044532186acf48b9",
+        "127401250acaf4d7"
+      ],
+      "lattice_sis_verified": true,
+      "dp_privatized_exposure_inr": 14007,
+      "flight_recorder_total_events": 32,
+      "wal_records_enqueued": 32
+    },
+    "stage_telemetry": [
+      {
+        "stage": "128B Stamped SHM",
+        "samples": 32,
+        "mean_ns": 972,
+        "p50_ns": 80,
+        "p99_ns": 10792,
+        "p99_9_ns": 10792,
+        "p99_99_ns": 10792,
+        "max_ns": 10792
+      },
+      {
+        "stage": "Quorum + Relativistic",
+        "samples": 32,
+        "mean_ns": 254,
+        "p50_ns": 120,
+        "p99_ns": 2833,
+        "p99_9_ns": 2833,
+        "p99_99_ns": 2833,
+        "max_ns": 2833
+      },
+      {
+        "stage": "Hawkes + Entropy",
+        "samples": 32,
+        "mean_ns": 389,
+        "p50_ns": 400,
+        "p99_ns": 2500,
+        "p99_9_ns": 2500,
+        "p99_99_ns": 2500,
+        "max_ns": 2500
+      },
+      {
+        "stage": "SIMD Policy VM",
+        "samples": 32,
+        "mean_ns": 142,
+        "p50_ns": 120,
+        "p99_ns": 834,
+        "p99_9_ns": 834,
+        "p99_99_ns": 834,
+        "max_ns": 834
+      },
+      {
+        "stage": "Risk + SPAN + FPGA",
+        "samples": 32,
+        "mean_ns": 2841,
+        "p50_ns": 2000,
+        "p99_ns": 7333,
+        "p99_9_ns": 7333,
+        "p99_99_ns": 7333,
+        "max_ns": 7333
+      },
+      {
+        "stage": "OMS + Lattice + Merkle + WAL",
+        "samples": 32,
+        "mean_ns": 8376,
+        "p50_ns": 8000,
+        "p99_ns": 42833,
+        "p99_9_ns": 42833,
+        "p99_99_ns": 42833,
+        "max_ns": 42833
+      }
+    ],
+    "tax_report": {
+      "annual_income_inr": 1500000,
+      "deductions_80c_hra_inr": 200000,
+      "gross_turnover_inr": 0,
+      "brokerage_inr": 0,
+      "stt_inr": 0,
+      "exchange_txn_inr": 0,
+      "sebi_fee_inr": 0,
+      "stamp_duty_inr": 0,
+      "gst_18pct_inr": 0,
+      "total_statutory_charges_inr": 0,
+      "stcg_20pct_tax_inr": 0,
+      "ltcg_12_5pct_tax_inr": 0,
+      "old_regime_tax_for_15l_income": 195000,
+      "new_regime_tax_for_15l_income": 130000,
+      "recommended_regime": "New Tax Regime",
+      "regime_savings_inr": 65000,
+      "plain_english_advice": "Across 0 paper trades (\u20b90 turnover), statutory friction costs \u20b90 (Brokerage \u20b90, STT \u20b90, GST \u20b90). Holding equity >12 months unlocks the \u20b91.25L LTCG tax-free exemption (12.5% above \u20b91.25L vs 20% STCG). For \u20b91500000 annual income with \u20b9200000 deductions, New Tax Regime saves \u20b965000/yr."
+    },
+    "recent_decisions": [
+      {
+        "id": 32,
+        "time_ist": "Month 01",
+        "symbol": "NIFTYBEES",
+        "side": "BUY",
+        "qty": 100,
+        "price_inr": 265,
+        "notional_inr": 26500,
+        "approved": false,
+        "latency_ns": 7084,
+        "fpga_verdict": "DropMaxQty",
+        "fpga_cycles": 4,
+        "gate_triggered": "NanoPolicyVm [PC#0 Code 101: Max Trade Notional]",
+        "capital_saved_inr": 1325,
+        "fee_inr": 0,
+        "ai_explanation": "Requested trade \u20b926500 breaches your compiled plain-English ceiling of \u20b918000 (FPGA BAR0 verdict: DropMaxQty). \u2014 Systematic monthly SIP: 100 NIFTYBEES @ \u20b9265 (\u20b926,500).",
+        "merkle_leaf_idx": 31,
+        "merkle_leaf_hex": "a3b27ef9af65139c",
+        "merkle_root_hex": "c7c0c0558396e3e2ee6bb403a7734cd6",
+        "lattice_lane0_hex": "0000000000000000"
+      }
+    ]
+  }
+}
