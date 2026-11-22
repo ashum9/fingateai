@@ -1,1400 +1,3108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FinGate AI — Production NSE Co-Pilot & 12-Stage Singularity Rust Firewall</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinGate — NSE Risk Firewall & Paper Trading Co-Pilot</title>
   <style>
+    /* =========================================================================
+       Minimalist Light-Mode Financial Design System (Zerodha Kite × Stripe × Mercury)
+       ========================================================================= */
     :root {
-      --bg: #070b12;
-      --surface: #0e1420;
-      --surface-2: #131b2b;
-      --border: #1e2a3f;
-      --border-hi: #2d3e5c;
-      --text: #e6edf7;
-      --muted: #8b9bb4;
-      --emerald: #10b981;
-      --emerald-dim: rgba(16, 185, 129, 0.14);
-      --crimson: #ef4444;
-      --crimson-dim: rgba(239, 68, 68, 0.14);
-      --amber: #f59e0b;
-      --amber-dim: rgba(245, 158, 11, 0.14);
-      --blue: #3b82f6;
-      --cyan: #06b6d4;
-      --violet: #8b5cf6;
-      --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-      --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+      color-scheme: light;
+      --bg: #F6F8FA;
+      --surface: #FFFFFF;
+      --surface-subtle: #F9FAFB;
+      --border: #E5E7EB;
+      --border-strong: #D1D5DB;
+      --ink: #0F172A;
+      --ink-secondary: #334155;
+      --muted: #64748B;
+      --brand: #1D4ED8;
+      --brand-hover: #1E40AF;
+      --brand-soft: #EFF6FF;
+      --brand-border: #BFDBFE;
+      --green: #047857;
+      --green-soft: #ECFDF5;
+      --green-border: #A7F3D0;
+      --red: #B91C1C;
+      --red-soft: #FEF2F2;
+      --red-border: #FECACA;
+      --amber: #B45309;
+      --amber-soft: #FFFBEB;
+      --amber-border: #FDE68A;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 20px 40px -12px rgba(15, 23, 42, 0.16);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      --font-mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --header-h: 56px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
+    html {
+      container-type: scroll-state;
       background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 13px;
-      line-height: 1.45;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Header Command Bar */
-    header {
-      background: linear-gradient(180deg, #0d1320 0%, #090e18 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-logo {
-      background: linear-gradient(135deg, var(--blue), var(--violet));
-      color: #fff;
-      font-weight: 800;
+      color: var(--ink);
+      font-family: var(--font-sans);
       font-size: 14px;
-      letter-spacing: 0.04em;
-      padding: 7px 12px;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
-    }
-    .brand-title { font-weight: 700; font-size: 14.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .brand-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    .live-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-      padding: 2px 8px; border-radius: 999px;
-      background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16,185,129,0.4);
-    }
-    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); animation: pulse 1.8s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-    .kpi-strip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .kpi {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 12px;
-      min-width: 118px;
-    }
-    .kpi-lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
-    .kpi-val { font-size: 15px; font-weight: 700; font-family: var(--mono); margin-top: 1px; }
-    .kpi-saved { border-color: rgba(16,185,129,0.55); background: rgba(16,185,129,0.09); }
-    .kpi-saved .kpi-val { color: var(--emerald); font-size: 16.5px; }
-
-    .kill-btn {
-      padding: 9px 14px; border-radius: 8px; font-weight: 800; font-size: 11.5px;
-      letter-spacing: 0.04em; cursor: pointer; border: 1px solid transparent; transition: 0.15s;
-    }
-    .kill-armed { background: var(--crimson); color: #fff; }
-    .kill-armed:hover { filter: brightness(1.1); }
-    .kill-locked { background: var(--amber); color: #111; animation: pulse 1.2s infinite; }
-
-    /* Main 2-Column Workspace (Left: Live Market & Dual Charts | Right: Interactive Multi-Tab Terminal) */
-    .shell {
-      display: grid;
-      grid-template-columns: 440px 1fr;
-      gap: 14px;
-      padding: 14px 18px 20px;
-      flex: 1;
-      align-items: start;
-    }
-    @media (max-width: 1120px) { .shell { grid-template-columns: 1fr; } }
-
-    .stack { display: flex; flex-direction: column; gap: 12px; }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-    }
-    .card-hd {
-      display: flex; justify-content: space-between; align-items: center; gap: 8px;
-      margin-bottom: 10px;
-    }
-    .card-title {
-      font-size: 11px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--cyan);
-    }
-    .tag {
-      font-size: 10.5px; font-weight: 600; font-family: var(--mono);
-      padding: 2px 7px; border-radius: 5px;
-      background: var(--surface-2); border: 1px solid var(--border); color: var(--muted);
-    }
-    .tag-ok { color: var(--emerald); border-color: rgba(16,185,129,0.4); background: var(--emerald-dim); }
-    .tag-bad { color: var(--crimson); border-color: rgba(239,68,68,0.4); background: var(--crimson-dim); }
-    .tag-warn { color: var(--amber); border-color: rgba(245,158,11,0.4); background: var(--amber-dim); }
-
-    select, input, textarea {
-      width: 100%;
-      background: #080d16;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      padding: 8px 10px;
-      font-size: 12.5px;
-      font-family: var(--sans);
-    }
-    select:focus, input:focus, textarea:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
-    textarea { resize: vertical; min-height: 68px; line-height: 1.45; }
-
-    .btn-row { display: flex; gap: 7px; flex-wrap: wrap; }
-    .btn {
-      cursor: pointer; border-radius: 7px; border: 1px solid var(--border);
-      background: var(--surface-2); color: var(--text); font-weight: 700;
-      font-size: 12px; padding: 7px 12px; transition: 0.14s;
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    }
-    .btn:hover { border-color: var(--border-hi); background: #192439; }
-    .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
-    .btn-primary:hover { filter: brightness(1.1); }
-    .btn-emerald { background: var(--emerald); border-color: var(--emerald); color: #04251a; }
-    .btn-emerald:hover { filter: brightness(1.08); }
-    .btn-danger {
-      background: var(--crimson-dim); border-color: rgba(239,68,68,0.45); color: #fca5a5;
-      justify-content: flex-start; text-align: left;
-    }
-    .btn-danger:hover { background: var(--crimson); color: #fff; }
-    .btn-amber { background: var(--amber-dim); border-color: rgba(245,158,11,0.5); color: #fcd34d; }
-    .btn-sm { padding: 4px 8px; font-size: 11px; }
-
-    /* Dual Canvas Charts */
-    canvas.chart {
-      width: 100%;
-      height: 165px;
-      display: block;
-      background: #060a11;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-    canvas.chart-sm { height: 138px; }
-    .legend { display: flex; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
-    .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
-
-    .news-card {
-      background: #080d16;
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--blue);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-top: 10px;
-    }
-    .news-hl { font-size: 13px; font-weight: 600; line-height: 1.4; }
-    .news-src { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
-    /* Accessible Modern Tabs (from modern-web-guidance `tabs` guide) */
-    .tabs-shell {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .tablist {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: inline proximity;
-      border-bottom: 1px solid var(--border);
-      background: #0a101b;
-      scrollbar-width: none;
-    }
-    .tablist::-webkit-scrollbar { display: none; }
-    .tablist button[role="tab"] {
-      position: relative;
-      flex: none;
-      scroll-snap-align: start;
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 12px 15px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .tablist button[role="tab"]:hover { color: var(--text); }
-    .tablist button[role="tab"][aria-selected="true"] {
-      color: var(--cyan);
-    }
-    /* MANDATORY: shape indicator via border on pseudo-element (works in forced-colors mode, zero layout shift) */
-    .tablist button[role="tab"][aria-selected="true"]::after {
-      content: "";
-      position: absolute;
-      inset: auto 0 0;
-      border-block-end: 3px solid var(--cyan);
-    }
-    /* Place all tabpanels in a single grid cell so hidden="until-found" adds zero gaps */
-    .tabpanels-grid { display: grid; }
-    .tabpanels-grid > [role="tabpanel"] { grid-area: 1 / 1; }
-    .panel-inner { padding: 14px; display: flex; flex-direction: column; gap: 14px; }
-
-    /* Telemetry & Shockwave Grids */
-    .meter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    @media (max-width: 780px) { .meter-grid { grid-template-columns: repeat(2, 1fr); } }
-    .meter {
-      background: #080d16; border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px;
-    }
-    .meter-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    .meter-val { font-size: 15px; font-weight: 700; font-family: var(--mono); margin-top: 2px; }
-    .meter-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
-
-    .shock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    @media (max-width: 720px) { .shock-grid { grid-template-columns: repeat(2, 1fr); } }
-    .shock-cell {
-      background: #080d16; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .stage-bars { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    @media (max-width: 720px) { .stage-bars { grid-template-columns: 1fr; } }
-    .stage-row {
-      background: #080d16; border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px;
-    }
-    .stage-top { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
-    .bar-track { height: 5px; border-radius: 4px; background: #162033; overflow: hidden; }
-    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); border-radius: 4px; }
-
-    .code-box {
-      background: #05080f; border: 1px solid var(--border); border-radius: 8px;
-      padding: 10px 12px; font-family: var(--mono); font-size: 11.5px; color: #38bdf8;
-      white-space: pre-wrap; overflow-x: auto;
+    *, *::before, *::after {
+      box-sizing: border-box;
     }
 
-    /* Responsive Accessible Data Tables (from modern-web-guidance `responsive-table` guide) */
-    .table-wrapper {
-      overflow: auto;
-      max-inline-size: 100%;
-      max-block-size: min(380px, 55vh);
-      container-type: inline-size;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: #080d16;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      accent-color: var(--brand);
     }
-    table.fg-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 11.5px;
-    }
-    table.fg-table thead {
-      position: sticky;
-      inset-block-start: 0;
-      z-index: 2;
-      background: #0e1626;
-    }
-    table.fg-table th {
-      text-align: left;
-      padding: 8px 10px;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    table.fg-table td, table.fg-table tbody th {
-      padding: 8px 10px;
-      border-bottom: 1px solid rgba(30,42,63,0.65);
-      vertical-align: top;
-      font-weight: 500;
-      color: var(--text);
-    }
-    table.fg-table tbody th {
-      position: sticky;
-      inset-inline-start: 0;
-      background: #0a101b;
-      z-index: 1;
-      font-family: var(--mono);
-    }
-    table.fg-table tr.row-blocked { background: rgba(239, 68, 68, 0.06); }
-    table.fg-table tr.row-blocked th { background: #191019; }
 
-    @container (width < 520px) {
-      table.fg-table, table.fg-table thead, table.fg-table tbody,
-      table.fg-table tr, table.fg-table th, table.fg-table td { display: block; }
-      table.fg-table thead { display: none; }
-      table.fg-table tr { margin: 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-      table.fg-table tbody th { position: sticky; inset-block-start: 0; z-index: 2; background: #111a2c; }
-      table.fg-table td::before {
-        content: attr(data-label) ": ";
-        color: var(--muted);
+    /* Brand-consistent form control fallback where accent-color is unsupported */
+    @supports not (accent-color: #1D4ED8) {
+      .custodian-row input[type="checkbox"] {
+        position: absolute !important;
+        clip-path: inset(50%) !important;
+        overflow: hidden !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        white-space: nowrap !important;
+      }
+      .custodian-row {
+        position: relative;
+        padding-left: 38px !important;
+      }
+      .custodian-row input[type="checkbox"] + span::before {
+        content: "";
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid var(--border-strong);
+        background: var(--surface);
+        border-radius: 4px;
+      }
+      .custodian-row input[type="checkbox"]:focus-visible + span::before {
+        outline: 2px solid var(--brand);
+        outline-offset: 2px;
+      }
+      .custodian-row input[type="checkbox"]:checked + span::before {
+        background: var(--brand);
+        border-color: var(--brand);
+      }
+      .custodian-row input[type="checkbox"]:checked + span::after {
+        content: "✓";
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #FFFFFF;
+        font-size: 11px;
         font-weight: 700;
-        text-transform: uppercase;
-        font-size: 10px;
       }
     }
 
-    /* Form Grid & Custodians */
-    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    @media (max-width: 720px) { .form-grid { grid-template-columns: 1fr; } }
-    .field label { display: block; font-size: 10.5px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-
-    .custodian-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 8px; }
-    .cust-card {
-      background: #080d16; border: 1px solid var(--border); border-radius: 8px;
-      padding: 9px 10px; display: flex; gap: 8px; align-items: flex-start; cursor: pointer;
+    .num {
+      font-variant-numeric: tabular-nums;
     }
-    .cust-card input[type="checkbox"] { width: auto; margin-top: 2px; accent-color: var(--emerald); }
 
-    /* Chat Box */
-    .chat-log {
-      background: #060a11; border: 1px solid var(--border); border-radius: 8px;
-      padding: 12px; max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
     }
-    .chat-msg { padding: 9px 11px; border-radius: 8px; font-size: 12.5px; line-height: 1.48; }
-    .chat-user { background: #13223d; border: 1px solid #243e6b; align-self: flex-end; max-width: 85%; }
-    .chat-ai { background: #0d1624; border: 1px solid var(--border); align-self: flex-start; max-width: 94%; }
-    .chat-cite { font-size: 10.5px; color: var(--cyan); font-family: var(--mono); margin-top: 6px; border-top: 1px solid var(--border); padding-top: 5px; }
 
-    /* Native <dialog> Modal (from modern-web-guidance `dialog` guide) */
-    dialog {
-      margin: auto;
-      max-width: 680px;
-      width: calc(100% - 32px);
+    /* =========================================================================
+       Compact Single-Row Top Header (< 12% viewport height, auto-hides on scroll)
+       ========================================================================= */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: var(--header-h);
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      transition: transform 0.2s ease;
+    }
+
+    @container scroll-state((scrolled: bottom) and (scrollable: top)) {
+      .top-bar {
+        transform: translateY(-100%);
+      }
+    }
+
+    .top-bar:focus-within {
+      transform: none;
+    }
+
+    .top-bar.is-hidden:not(:focus-within) {
+      transform: translateY(-100%);
+    }
+
+    :target {
+      scroll-margin-top: 4.5rem;
+    }
+
+    .top-bar-inner {
+      max-width: 1320px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--ink);
+      color: #FFFFFF;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .env-tag {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    /* =========================================================================
+       Primary Product Tabs (Modern Web Guidance: tabs)
+       Single-row horizontal scroll, border-block-end pseudo-element underline
+       ========================================================================= */
+    .nav-tabs {
+      display: flex;
+      align-items: stretch;
+      height: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      scroll-snap-type: inline proximity;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-tabs [role="tab"] {
+      position: relative;
+      flex: none;
+      scroll-snap-align: start;
+      appearance: none;
+      background: transparent;
+      border: 0;
+      padding: 0 13px;
+      height: 100%;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s ease;
+    }
+
+    .nav-tabs [role="tab"]:hover {
+      color: var(--ink);
+    }
+
+    .nav-tabs [role="tab"]:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: -3px;
+      border-radius: 4px;
+    }
+
+    .nav-tabs [role="tab"][aria-selected="true"] {
+      color: var(--ink);
+    }
+
+    /* Forced-colors-safe underline using border on ::after (no box-shadow/background) */
+    .nav-tabs [role="tab"][aria-selected="true"]::after {
+      content: "";
+      position: absolute;
+      inset: auto 8px 0;
+      border-block-end: 2.5px solid var(--brand);
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--green-border);
+      background: var(--green-soft);
+      color: var(--green);
+      white-space: nowrap;
+    }
+
+    .status-pill.halted {
+      border-color: var(--red-border);
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .header-equity {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      padding-left: 10px;
+      border-left: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    /* =========================================================================
+       Main Page Shell
+       ========================================================================= */
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 20px 20px 48px;
+    }
+
+    /* =========================================================================
+       Interactive 5-Step Demo Walkthrough Strip (Optional, 1-click hideable)
+       ========================================================================= */
+    .guide-strip {
       background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border-hi);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--brand);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .guide-strip[hidden] {
+      display: none;
+    }
+
+    .guide-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .guide-steps {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .step-chip {
+      appearance: none;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 11px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+
+    .step-chip:hover {
+      border-color: var(--border-strong);
+      color: var(--ink);
+    }
+
+    .step-chip.active {
+      background: var(--brand-soft);
+      border-color: var(--brand-border);
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .step-chip.done {
+      background: var(--green-soft);
+      border-color: var(--green-border);
+      color: var(--green);
+    }
+
+    .guide-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .guide-copy {
+      min-width: 240px;
+      flex: 1;
+    }
+
+    .guide-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 0 0 2px;
+    }
+
+    .guide-desc {
+      font-size: 13px;
+      color: var(--ink-secondary);
+      margin: 0;
+    }
+
+    .guide-outcome {
+      margin-top: 8px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--green-soft);
+      border: 1px solid var(--green-border);
+      color: var(--green);
+      font-size: 12.5px;
+      font-weight: 500;
+    }
+
+    .guide-outcome[hidden] {
+      display: none;
+    }
+
+    .guide-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* =========================================================================
+       Shared Tab Panels Stack (Zero padding/border on [role="tabpanel"] itself!)
+       ========================================================================= */
+    .panels-grid {
+      display: grid;
+    }
+
+    .panels-grid > [role="tabpanel"] {
+      grid-area: 1 / 1;
+    }
+
+    .panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* =========================================================================
+       Cards, Grids, Buttons & Badges
+       ========================================================================= */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .card-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin: 2px 0 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    .kpi-foot {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-asymmetric {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    /* Buttons */
+    .btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.14s, border-color 0.14s, color 0.14s;
+    }
+
+    .btn:hover {
+      background: var(--surface-subtle);
+      border-color: #9CA3AF;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-hover);
+      border-color: var(--brand-hover);
+    }
+
+    .btn-success {
+      background: var(--green);
+      border-color: var(--green);
+      color: #FFFFFF;
+    }
+
+    .btn-success:hover {
+      background: #065F46;
+      border-color: #065F46;
+    }
+
+    .btn-danger-outline {
+      background: var(--surface);
+      border-color: var(--red-border);
+      color: var(--red);
+    }
+
+    .btn-danger-outline:hover {
+      background: var(--red-soft);
+      border-color: #FCA5A5;
+    }
+
+    .btn-danger {
+      background: var(--red);
+      border-color: var(--red);
+      color: #FFFFFF;
+    }
+
+    .btn-danger:hover {
+      background: #991B1B;
+      border-color: #991B1B;
+    }
+
+    .btn-ghost {
+      border-color: transparent;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 10px;
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg);
+      color: var(--ink);
+      border-color: transparent;
+    }
+
+    .btn-sm {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+
+    /* Badges & Text Helpers */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      color: var(--ink-secondary);
+      white-space: nowrap;
+    }
+
+    .badge-green {
+      background: var(--green-soft);
+      border-color: var(--green-border);
+      color: var(--green);
+    }
+
+    .badge-red {
+      background: var(--red-soft);
+      border-color: var(--red-border);
+      color: var(--red);
+    }
+
+    .badge-amber {
+      background: var(--amber-soft);
+      border-color: var(--amber-border);
+      color: var(--amber);
+    }
+
+    .badge-blue {
+      background: var(--brand-soft);
+      border-color: var(--brand-border);
+      color: var(--brand);
+    }
+
+    .text-green { color: var(--green); }
+    .text-red { color: var(--red); }
+    .text-amber { color: var(--amber); }
+    .text-muted { color: var(--muted); }
+    .text-brand { color: var(--brand); }
+
+    /* =========================================================================
+       Toolbar, News Ribbon & Progress Bars
+       ========================================================================= */
+    .replay-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .replay-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 240px;
+      flex-wrap: wrap;
+    }
+
+    .replay-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    select, input[type="text"], input[type="number"], textarea {
+      font-family: inherit;
+      font-size: 13.5px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+    }
+
+    .tape-select {
+      min-width: 280px;
+      max-width: 440px;
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .news-ribbon {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .news-ribbon.is-alert {
+      background: var(--red-soft);
+      border-color: var(--red-border);
+    }
+
+    .news-headline {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .news-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .meter-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #E5E7EB;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .meter-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--green);
+      transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    /* =========================================================================
+       Crisp Light-Mode Charts
+       ========================================================================= */
+    .chart-box {
+      position: relative;
+      width: 100%;
+      height: 250px;
+    }
+
+    .chart-box canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .legend-swatch.dashed {
+      background: repeating-linear-gradient(90deg, var(--red) 0 4px, transparent 4px 7px);
+    }
+
+    /* =========================================================================
+       Responsive Semantic Data Tables (Modern Web Guidance: responsive-table)
+       ========================================================================= */
+    .table-wrapper {
+      overflow: auto;
+      max-inline-size: 100%;
+      max-block-size: min(440px, 65vh);
+      container-type: inline-size;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+    }
+
+    .table-wrapper:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    thead {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+    }
+
+    thead th {
+      background: var(--surface-subtle);
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody th, tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #F1F5F9;
+      vertical-align: middle;
+    }
+
+    tbody th {
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 1;
+      background: var(--surface);
+      font-weight: 600;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody tr:hover th,
+    tbody tr:hover td {
+      background: #F8FAFC;
+    }
+
+    .reason-cell {
+      max-width: 340px;
+      color: var(--ink-secondary);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    @container (width < 560px) {
+      table, thead, tbody, tr, th, td {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        margin: 8px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+      tbody th {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 2;
+        background: var(--surface-subtle);
+        border-bottom: 1px solid var(--border);
+      }
+      tbody td {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        text-align: right;
+      }
+      tbody td::before {
+        content: attr(data-label) ": ";
+        font-weight: 600;
+        color: var(--muted);
+        text-align: left;
+      }
+    }
+
+    /* =========================================================================
+       Progressive Disclosure Accordions (Modern Web Guidance: accordion)
+       ========================================================================= */
+    .accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    details.disclosure {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-xs);
+    }
+
+    details.disclosure > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    details.disclosure > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.disclosure > summary::before {
+      content: "";
+      inline-size: 1em;
+      block-size: 1em;
+      flex-shrink: 0;
+      background-color: var(--muted);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='black' d='M3.2 5.4a.75.75 0 0 1 1.06 0L8 9.14l3.74-3.74a.75.75 0 1 1 1.06 1.06l-4.27 4.27a.75.75 0 0 1-1.06 0L3.2 6.46a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E") no-repeat center / contain;
+      rotate: -90deg;
+    }
+
+    details.disclosure[open] > summary::before {
+      rotate: 0deg;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      details.disclosure > summary::before {
+        transition: rotate 0.18s ease;
+      }
+    }
+
+    details.disclosure > summary:hover {
+      background: var(--surface-subtle);
+      border-radius: var(--radius);
+    }
+
+    details.disclosure::details-content {
+      interpolate-size: allow-keywords;
+      overflow: clip;
+      contain: layout;
+    }
+
+    details.disclosure:not([open])::details-content {
+      block-size: 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      details.disclosure::details-content {
+        transition: block-size 0.25s ease-in-out, content-visibility 0.25s ease-in-out, display 0.25s ease-in-out;
+        transition-behavior: allow-discrete;
+      }
+    }
+
+    .disclosure-body {
+      padding: 0 16px 16px;
+      border-top: 1px solid #F1F5F9;
+      padding-top: 14px;
+    }
+
+    /* =========================================================================
+       Order Ticket, Policy Studio, Protection & Tax Specific Layouts
+       ========================================================================= */
+    .segment {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .segment button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .segment button.active-buy {
+      background: var(--green);
+      color: #FFFFFF;
+    }
+
+    .segment button.active-sell {
+      background: var(--red);
+      color: #FFFFFF;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+    }
+
+    .summary-box {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .preset-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .preset-chip {
+      appearance: none;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--ink-secondary);
+      cursor: pointer;
+    }
+
+    .preset-chip:hover {
+      border-color: var(--brand-border);
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    .code-block {
+      margin: 0;
+      padding: 12px 14px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink);
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    /* Shockwaves */
+    .shock-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .shock-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      background: var(--surface-subtle);
+    }
+
+    .shock-item.breach {
+      background: var(--red-soft);
+      border-color: var(--red-border);
+    }
+
+    /* Attack Test Cards */
+    .attack-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .attack-card h3 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .attack-card p {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    /* Custodian Checkboxes */
+    .custodian-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .custodian-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-subtle);
+      cursor: pointer;
+      font-size: 12.5px;
+    }
+
+    .custodian-row:has(input:checked) {
+      background: var(--brand-soft);
+      border-color: var(--brand-border);
+    }
+
+    .banner-feedback {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      color: var(--ink);
+    }
+
+    .banner-feedback.ok {
+      background: var(--green-soft);
+      border-color: var(--green-border);
+      color: var(--green);
+    }
+
+    .banner-feedback.err {
+      background: var(--red-soft);
+      border-color: var(--red-border);
+      color: var(--red);
+    }
+
+    .banner-feedback[hidden] {
+      display: none;
+    }
+
+    /* Co-Pilot Answer */
+    .chat-box {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .citation-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* =========================================================================
+       Native Modal Dialog (Modern Web Guidance: dialog)
+       ========================================================================= */
+    dialog {
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 0;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.72);
+      width: min(620px, calc(100vw - 32px));
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: var(--shadow-lg);
     }
-    dialog[open] { display: flex; flex-direction: column; }
-    dialog:modal { overscroll-behavior: contain; }
+
+    dialog[open] {
+      display: flex;
+      flex-direction: column;
+    }
+
+    dialog:modal {
+      overscroll-behavior: contain;
+    }
+
     dialog::backdrop {
-      background: rgba(3, 6, 12, 0.76);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.35);
+      backdrop-filter: blur(2px);
       overflow: hidden;
       overscroll-behavior: contain;
     }
-    .dlg-hd {
-      padding: 14px 16px; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
+
+    .dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
     }
-    .dlg-body { padding: 16px; overflow-y: auto; max-height: 70vh; display: flex; flex-direction: column; gap: 10px; }
-    .dlg-ft { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+
+    .dialog-head h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .dialog-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      max-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dialog-foot {
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-subtle);
+    }
+
+    /* Live toast notification (non-blocking) */
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      max-width: 380px;
+      background: var(--ink);
+      color: #FFFFFF;
+      padding: 11px 15px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =========================================================================
+       Responsive Breakpoints
+       ========================================================================= */
+    @media (max-width: 1080px) {
+      .kpi-grid, .grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid-2, .grid-asymmetric {
+        grid-template-columns: 1fr;
+      }
+      .shock-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .kpi-grid, .grid-4, .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .shock-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .header-equity, .env-tag {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <div class="brand-logo">FinGate AI</div>
-      <div>
-        <div class="brand-title">
-          <span>Production NSE Co-Pilot &amp; 12-Stage Singularity Rust Firewall</span>
-          <span class="live-pill" id="sseBadge"><span class="live-dot"></span> SSE Live</span>
+  <!-- Compact Single-Row Top Header (< 12% viewport height) -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1.5L13.5 4.2V8.4C13.5 11.4 11.1 13.7 8 14.6C4.9 13.7 2.5 11.4 2.5 8.4V4.2L8 1.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M5.6 8.2L7.2 9.8L10.6 6.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-        <div class="brand-sub">Historical NSE OHLCV &amp; Paper Trading Only (Zero Real Money) • ARMv8 SHA2 / PQ Lattice / 400 MHz FPGA BAR0 Mirror</div>
+        <span class="brand-name">FinGate</span>
+        <span class="env-tag">NSE Paper · Historical</span>
       </div>
-    </div>
 
-    <div class="kpi-strip">
-      <div class="kpi">
-        <div class="kpi-lbl">Protected Equity</div>
-        <div class="kpi-val" id="kpiProtected">₹5,00,000</div>
+      <div class="nav-tabs" role="tablist" focusgroup="tablist nomemory" aria-label="FinGate workspace sections">
+        <button type="button" role="tab" id="tab-overview" aria-selected="true" focusgroupstart data-panel="panel-overview">Overview</button>
+        <button type="button" role="tab" id="tab-trade" aria-selected="false" data-panel="panel-trade">Trade</button>
+        <button type="button" role="tab" id="tab-rules" aria-selected="false" data-panel="panel-rules">Risk Rules</button>
+        <button type="button" role="tab" id="tab-protection" aria-selected="false" data-panel="panel-protection">Protection</button>
+        <button type="button" role="tab" id="tab-copilot" aria-selected="false" data-panel="panel-copilot">Co-Pilot &amp; Tax</button>
       </div>
-      <div class="kpi">
-        <div class="kpi-lbl">Unguarded AI</div>
-        <div class="kpi-val" id="kpiUnguarded" style="color:var(--muted)">₹5,00,000</div>
+
+      <div class="header-meta">
+        <span id="hdrStatus" class="status-pill"><span class="status-dot"></span><span>Firewall Active</span></span>
+        <span id="hdrEquity" class="header-equity num">₹5,00,000</span>
+        <button type="button" id="btnToggleGuide" class="btn btn-sm" aria-expanded="true">Hide Guide</button>
       </div>
-      <div class="kpi">
-        <div class="kpi-lbl">Real Net MTM P&amp;L</div>
-        <div class="kpi-val" id="kpiPnl">+₹0</div>
-      </div>
-      <div class="kpi kpi-saved">
-        <div class="kpi-lbl">Counterfactual ₹ Saved</div>
-        <div class="kpi-val" id="kpiSaved">₹0</div>
-      </div>
-      <button type="button" id="killTopBtn" class="kill-btn kill-armed" onclick="handleTopKillBtn()">
-        TRIP 1-OF-5 KILL SWITCH
-      </button>
     </div>
   </header>
 
-  <div class="shell">
-    <!-- LEFT COLUMN: Live NSE Tape Streamer, Candlestick + Toxicity Chart, & Dual Equity Curve -->
-    <aside class="stack">
-      <section class="card">
-        <div class="card-hd">
-          <span class="card-title">1. Historical NSE Market Tape Replay</span>
-          <span class="tag" id="stepTag">Bar 1 / 12</span>
+  <main class="shell">
+    <!-- Optional 5-Step Interactive Demo Storyline (ideal for onboarding & recording a 2-min product demo) -->
+    <section id="guideStrip" class="guide-strip" aria-label="Interactive walkthrough">
+      <div class="guide-top">
+        <div class="guide-steps" id="guideSteps">
+          <button type="button" class="step-chip active" data-step="0">1. Replay Crash</button>
+          <button type="button" class="step-chip" data-step="1">2. Risk Rule</button>
+          <button type="button" class="step-chip" data-step="2">3. Block Attack</button>
+          <button type="button" class="step-chip" data-step="3">4. 3-of-5 Unlock &amp; Proof</button>
+          <button type="button" class="step-chip" data-step="4">5. Co-Pilot &amp; Tax</button>
         </div>
-        <select id="tapeSelect" aria-label="Select NSE historical event tape" onchange="selectTape(this.value)">
-          <option value="rbi_mpc_shock">Tape 1: RBI Surprise Repo Cut &amp; CRR Boost (12 bars)</option>
-          <option value="expiry_toxic_sweep">Tape 2: Weekly Expiry HFT 'Two-Patch' Toxic Sweep (12 bars)</option>
-          <option value="union_budget_tax">Tape 3: Union Budget Capex &amp; STCG/LTCG Tax Shock (12 bars)</option>
-          <option value="fake_news_attack">Tape 4: Adversarial Fake-News Prompt-Injection Scam (12 bars)</option>
-          <option value="sip_portfolio_guide">Tape 5: 12-Month Smart SIP, ETF &amp; Gold Hedge (12 bars)</option>
-        </select>
-        <p id="tapeSummary" style="font-size:11.5px; color:var(--muted); margin-top:8px;"></p>
-
-        <div class="btn-row" style="margin-top:10px;">
-          <button type="button" class="btn btn-emerald" id="playBtn" style="flex:1" onclick="toggleAutoPlay()">▶ Auto-Play</button>
-          <button type="button" class="btn btn-primary" onclick="stepTick(1)">⏭ Step 1</button>
-          <button type="button" class="btn btn-amber" onclick="runBacktest()">⚡ Backtest All</button>
-          <button type="button" class="btn" onclick="resetEngine()">↺ Reset</button>
-        </div>
-        <div id="backtestBanner" style="display:none; margin-top:9px; padding:8px 10px; border-radius:7px; background:var(--emerald-dim); border:1px solid rgba(16,185,129,0.45); font-size:11.5px;"></div>
-      </section>
-
-      <section class="card">
-        <div class="card-hd">
-          <span class="card-title">OHLCV Price Tape (<span id="curSym">HDFCBANK</span>)</span>
-          <span style="font-family:var(--mono); font-weight:800; font-size:15px; color:var(--emerald);" id="curPx">₹1,652</span>
-        </div>
-        <canvas id="ohlcChart" class="chart" width="410" height="165"></canvas>
-        <div class="legend">
-          <span><span class="legend-dot" style="background:var(--emerald)"></span>Up Bar</span>
-          <span><span class="legend-dot" style="background:var(--crimson)"></span>Down Bar</span>
-          <span><span class="legend-dot" style="background:var(--amber)"></span>VPIN Toxicity</span>
-          <span><span class="legend-dot" style="background:#fff"></span>Blocked Trap</span>
-        </div>
-        <div class="news-card">
-          <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--cyan);">Grounded NSE / RBI / Filing Feed</div>
-          <div class="news-hl" id="newsHeadline">Loading NSE headline...</div>
-          <div class="news-src" id="newsSource">Source: NSE Historical Archive</div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-hd">
-          <span class="card-title">Live Dual Equity Curve (Real MTM Counterfactual)</span>
-          <span class="tag tag-ok" id="equityDeltaTag">+₹0 Edge</span>
-        </div>
-        <canvas id="equityChart" class="chart chart-sm" width="410" height="138"></canvas>
-        <div class="legend">
-          <span><span class="legend-dot" style="background:var(--emerald)"></span>FinGate Protected</span>
-          <span><span class="legend-dot" style="background:var(--crimson)"></span>Unguarded AI (No Firewall)</span>
-        </div>
-      </section>
-    </aside>
-
-    <!-- RIGHT COLUMN: Production Multi-Tab Institutional Command Center -->
-    <main class="tabs-shell">
-      <div class="tablist" role="tablist" aria-label="FinGate AI Production Workstation">
-        <button type="button" role="tab" id="tab-terminal" aria-selected="true">1. Firewall &amp; Chaos Terminal</button>
-        <button type="button" role="tab" id="tab-policy" aria-selected="false">2. Plain-English Policy Studio</button>
-        <button type="button" role="tab" id="tab-trading" aria-selected="false">3. Paper Order Ticket &amp; Holdings</button>
-        <button type="button" role="tab" id="tab-crypto" aria-selected="false">4. Crypto Audit &amp; 3-of-5 Shamir</button>
-        <button type="button" role="tab" id="tab-copilot" aria-selected="false">5. AI Co-Pilot &amp; India Tax</button>
+        <span class="text-muted" style="font-size:12px;">Interactive Product Walkthrough</span>
       </div>
+      <div class="guide-body">
+        <div class="guide-copy">
+          <h2 id="guideTitle" class="guide-title">Step 1 — Replay an NSE Expiry-Day Crash</h2>
+          <p id="guideDesc" class="guide-desc">Watch FinGate trade the same historical NSE market alongside an unguarded AI bot, blocking toxic traps in real time.</p>
+          <div id="guideOutcome" class="guide-outcome" hidden></div>
+        </div>
+        <div class="guide-actions">
+          <button type="button" id="btnRunGuideStep" class="btn btn-primary">Run Expiry Replay →</button>
+          <button type="button" id="btnNextGuideStep" class="btn">Next Step</button>
+        </div>
+      </div>
+    </section>
 
-      <div class="tabpanels-grid">
-        <!-- TAB 1: Firewall & Chaos Terminal -->
-        <div role="tabpanel" aria-labelledby="tab-terminal" tabindex="0">
-          <div class="panel-inner">
-            <!-- Top Microstructure Meters -->
-            <div class="meter-grid">
-              <div class="meter">
-                <div class="meter-lbl">Hawkes Intensity (λ)</div>
-                <div class="meter-val" id="mHawkes">10,000</div>
-                <div class="meter-sub">Point-Process 2.85 ns</div>
+    <!-- Tab Panels (shared grid cell; zero padding/border on [role="tabpanel"] itself) -->
+    <div class="panels-grid">
+
+      <!-- =====================================================================
+           TAB 1: OVERVIEW
+           ===================================================================== -->
+      <section role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
+        <div class="panel-body">
+          <!-- Top 4 Finance KPIs -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">
+                <span>Protected Portfolio</span>
+                <span class="badge badge-green" id="kpiPnlBadge">₹0</span>
               </div>
-              <div class="meter">
-                <div class="meter-lbl">VPIN Informed Flow</div>
-                <div class="meter-val" id="mVpin">0.00</div>
-                <div class="meter-sub">16-Bucket O(1) Shield</div>
-              </div>
-              <div class="meter">
-                <div class="meter-lbl">AI Action Entropy</div>
-                <div class="meter-val" id="mEntropy">3.60 bits</div>
-                <div class="meter-sub">Floor &lt; 0.35 = Halt</div>
-              </div>
-              <div class="meter">
-                <div class="meter-lbl">Pass / Block Ratio</div>
-                <div class="meter-val" id="mRatio">1 / 0</div>
-                <div class="meter-sub" id="mShaBackend">Silicon SHA-256</div>
-              </div>
+              <div class="kpi-value num" id="kpiProtectedEq">₹5,00,000</div>
+              <div class="kpi-foot num" id="kpiCashFoot">Cash ₹5,00,000 · Fees ₹0</div>
             </div>
 
-            <!-- 4 Adversarial Chaos Buttons -->
-            <div class="card" style="padding:12px;">
-              <div class="card-hd">
-                <span class="card-title" style="color:var(--crimson);">Adversarial Attack &amp; SessionBench Chaos Injector (4 Distinct Engines)</span>
-                <span class="tag">Click to Inject</span>
+            <div class="kpi-card">
+              <div class="kpi-label">
+                <span>Capital Preserved vs. Unguarded AI</span>
+                <span class="badge badge-blue">Counterfactual</span>
               </div>
-              <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
-                <button type="button" class="btn btn-danger" onclick="triggerChaos('fake_news')">
-                  🚨 1. Fake News Prompt Injection (₹1.21 Cr 500-Lot Buy → Policy VM)
-                </button>
-                <button type="button" class="btn btn-danger" onclick="triggerChaos('toxic_sweep')">
-                  📉 2. Expiry HFT 'Two-Patch' Dump (VPIN &gt; 0.85 → Hawkes Shield)
-                </button>
-                <button type="button" class="btn btn-danger" onclick="triggerChaos('martingale_loop')">
-                  🔁 3. AI Reconnect Amnesia Loop (64 Dups → Entropy Sentinel)
-                </button>
-                <button type="button" class="btn btn-danger" onclick="triggerChaos('ftl_spoof')">
-                  ⚡ 4. Relativistic FTL Signal Spoof (SG1→NSE 0.2ms → Light-Cone)
-                </button>
-              </div>
+              <div class="kpi-value num text-green" id="kpiSaved">+₹0</div>
+              <div class="kpi-foot num" id="kpiUnguardedFoot">Unguarded AI: ₹5,00,000</div>
             </div>
 
-            <!-- 12-Stage Live Latency + 6-Shockwave SPAN -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-              <div class="card" style="padding:12px;">
-                <div class="card-hd">
-                  <span class="card-title">Live Per-Stage Nanosecond Telemetry</span>
-                  <span class="tag tag-ok">0 B Heap Alloc</span>
+            <div class="kpi-card">
+              <div class="kpi-label">
+                <span>Orders Screened</span>
+                <span class="badge" id="kpiBlockRate">0 blocked</span>
+              </div>
+              <div class="kpi-value num" id="kpiScreened">1</div>
+              <div class="kpi-foot" id="kpiScreenedFoot">1 approved · 0 unsafe orders stopped</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">
+                <span>Market Toxicity</span>
+                <span class="badge badge-green" id="kpiToxBadge">Calm</span>
+              </div>
+              <div class="kpi-value num" id="kpiToxPct">14%</div>
+              <div class="meter-track"><div id="kpiToxBar" class="meter-fill" style="width:14%"></div></div>
+              <div class="kpi-foot mono" id="kpiToxRaw" style="font-size:11px;">VPIN 0.14 · Hawkes 10,000</div>
+            </div>
+          </div>
+
+          <!-- Historical NSE Scenario Replay Toolbar -->
+          <div class="replay-bar">
+            <div class="replay-left">
+              <label for="tapeSelect" style="font-size:12.5px;font-weight:600;color:var(--ink-secondary);white-space:nowrap;">NSE Session</label>
+              <select id="tapeSelect" class="tape-select" aria-label="Select historical NSE session"></select>
+              <span class="badge num" id="stepBadge">Bar 1 / 12</span>
+            </div>
+            <div class="replay-controls">
+              <button type="button" id="btnAutoPlay" class="btn">Play</button>
+              <button type="button" id="btnStep" class="btn">Step +1</button>
+              <button type="button" id="btnBacktest" class="btn btn-primary">Run 12-Bar Backtest</button>
+              <button type="button" id="btnReset" class="btn btn-ghost">Reset</button>
+            </div>
+          </div>
+
+          <!-- Live Market Headline Ribbon -->
+          <div id="newsRibbon" class="news-ribbon">
+            <div>
+              <p id="newsHeadline" class="news-headline">Loading NSE historical session…</p>
+              <div id="newsSource" class="news-meta">NSE Cash Feed</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:12px;color:var(--muted);" id="newsSymbol">HDFCBANK</div>
+              <div style="font-size:18px;font-weight:700;" class="num" id="newsPrice">₹1,652</div>
+            </div>
+          </div>
+
+          <!-- 2 Crisp Light-Mode Charts -->
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title" id="priceChartTitle">Price Action &amp; Blocked Traps</h3>
+                  <p class="card-sub">Historical NSE OHLC candlesticks — red markers show unsafe orders blocked by FinGate</p>
                 </div>
-                <div class="stage-bars" id="stageBars"></div>
-              </div>
-              <div class="card" style="padding:12px;">
-                <div class="card-hd">
-                  <span class="card-title">6-Shockwave Flash-Crash Counterfactual</span>
-                  <span class="tag">16-Pt SIMD SPAN</span>
+                <div class="chart-legend">
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--green)"></span>Up bar</span>
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--red)"></span>Down bar</span>
+                  <span class="legend-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span>Blocked trap</span>
                 </div>
-                <div class="shock-grid" id="shockGrid"></div>
+              </div>
+              <div class="chart-box">
+                <canvas id="priceCanvas" aria-label="NSE price candlestick chart"></canvas>
               </div>
             </div>
 
-            <!-- Forensic Decision Blotter -->
-            <div class="card" style="padding:12px;">
-              <div class="card-hd">
-                <span class="card-title">Real-Time 12-Stage Forensic Decision Blotter</span>
-                <span class="tag">Click "Verify Proof" for Live HW SHA-256 + PQ Lattice Audit</span>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Equity Curve: FinGate vs. Unguarded AI</h3>
+                  <p class="card-sub">Real mark-to-market ₹5,00,000 ledger including Indian statutory fees on every fill</p>
+                </div>
+                <div class="chart-legend">
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--green)"></span>With FinGate</span>
+                  <span class="legend-item"><span class="legend-swatch dashed"></span>Unguarded AI</span>
+                </div>
               </div>
-              <div class="table-wrapper" tabindex="0" role="region" aria-label="Forensic firewall decisions blotter">
-                <table class="fg-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Time / Symbol</th>
-                      <th>Order</th>
-                      <th>Verdict &amp; Gate</th>
-                      <th>Latency / FPGA</th>
-                      <th>Forensic Explanation</th>
-                      <th>Proof</th>
-                    </tr>
-                  </thead>
-                  <tbody id="decisionBody"></tbody>
-                </table>
+              <div class="chart-box">
+                <canvas id="equityCanvas" aria-label="Protected versus unguarded equity chart"></canvas>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- TAB 2: Plain-English Policy Studio -->
-        <div role="tabpanel" aria-labelledby="tab-policy" hidden="until-found">
-          <div class="panel-inner">
+          <!-- Live Firewall Decision Log -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Recent Order Decisions</h3>
+                <p class="card-sub">Every order is screened across all 12 defense stages and anchored to a verifiable SHA-256 Merkle proof</p>
+              </div>
+              <span class="badge" id="decisionsCountBadge">0 records</span>
+            </div>
+            <div tabindex="0" role="region" aria-label="Recent firewall order decisions" class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>Value</th>
+                    <th>Verdict</th>
+                    <th>Plain-English Explanation</th>
+                    <th>Proof</th>
+                  </tr>
+                </thead>
+                <tbody id="decisionsBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Progressive Disclosure: Under-the-Hood Systems Telemetry -->
+          <div class="accordion">
+            <details class="disclosure">
+              <summary>Under the Hood — 12-Stage Latency &amp; FPGA Hardware Mirror</summary>
+              <div class="disclosure-body">
+                <div class="grid-2">
+                  <div>
+                    <div style="font-size:12.5px;font-weight:600;margin-bottom:8px;color:var(--ink-secondary);">Per-Stage Latency Histograms (Wait-Free Atomics)</div>
+                    <div tabindex="0" role="region" aria-label="Pipeline stage latency telemetry" class="table-wrapper">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Stage</th>
+                            <th>Samples</th>
+                            <th>p50</th>
+                            <th>p99</th>
+                            <th>Max</th>
+                          </tr>
+                        </thead>
+                        <tbody id="stageTelemetryBody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:12.5px;font-weight:600;margin-bottom:8px;color:var(--ink-secondary);">400 MHz FPGA PCIe BAR0 Silicon Mirror</div>
+                    <div class="summary-box" id="fpgaSummaryBox"></div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           TAB 2: TRADE & PORTFOLIO
+           ===================================================================== -->
+      <section role="tabpanel" id="panel-trade" aria-labelledby="tab-trade" hidden="until-found">
+        <div class="panel-body">
+          <div class="grid-asymmetric">
+            <!-- Clean Zerodha-style Order Ticket -->
             <div class="card">
-              <div class="card-hd">
-                <span class="card-title">Neuro-Symbolic Policy Compiler (Plain English or Raw DSL → 1.09 ns SIMD Bytecode)</span>
-                <span class="tag tag-ok" id="policySimdBadge">SIMD Predicate-Matrix Active</span>
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Paper Order Ticket</h3>
+                  <p class="card-sub">Submit a live paper order through all 12 firewall checks</p>
+                </div>
+                <span class="badge badge-blue">₹5L Paper</span>
               </div>
-              <textarea id="nlPolicyInput" aria-label="Plain English risk rules or raw DSL">Max ₹35,000 per trade, max 150 quantity, block buys when Hawkes > 120000 and VPIN > 7000, halt if SPAN crash loss > ₹60,000</textarea>
-              <div class="btn-row" style="margin-top:8px;">
-                <button type="button" class="btn btn-primary" onclick="compilePolicy()">⚡ Compile, Formally Verify &amp; Dry-Run on 60 NSE Bars</button>
-                <button type="button" class="btn btn-sm" onclick="setPresetPolicy('strict')">Preset: Strict Retail (₹20k Cap)</button>
-                <button type="button" class="btn btn-sm" onclick="setPresetPolicy('prop')">Preset: Prop Desk (₹1.5L Cap)</button>
-                <button type="button" class="btn btn-sm" onclick="setPresetPolicy('raw')">Preset: Raw NanoPolicyVm DSL</button>
-              </div>
-              <div class="code-box" id="compiledDslBox" style="margin-top:10px;"></div>
-              <div id="dryRunSummary" style="margin-top:8px; font-size:12px; color:var(--emerald); font-weight:600;"></div>
+
+              <form id="orderForm" style="display:flex;flex-direction:column;gap:14px;">
+                <div class="segment" role="group" aria-label="Order side">
+                  <button type="button" id="btnSideBuy" class="active-buy">BUY</button>
+                  <button type="button" id="btnSideSell">SELL</button>
+                </div>
+
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="ordSymbol">Instrument</label>
+                    <select id="ordSymbol">
+                      <option value="NIFTYBEES" data-px="265" data-fno="false">NIFTYBEES (ETF · ₹265)</option>
+                      <option value="HDFCBANK" data-px="1686" data-fno="false">HDFCBANK (Cash · ₹1,686)</option>
+                      <option value="RELIANCE" data-px="2950" data-fno="false">RELIANCE (Cash · ₹2,950)</option>
+                      <option value="TCS" data-px="4135" data-fno="false">TCS (Cash · ₹4,135)</option>
+                      <option value="GOLDBEES" data-px="65" data-fno="false">GOLDBEES (ETF · ₹65)</option>
+                      <option value="NIFTY50" data-px="24200" data-fno="true">NIFTY50 (F&amp;O · ₹24,200)</option>
+                      <option value="BANKNIFTY" data-px="51400" data-fno="true">BANKNIFTY (F&amp;O · ₹51,400)</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="ordSegment">Market Segment</label>
+                    <select id="ordSegment">
+                      <option value="false">NSE Equity Delivery</option>
+                      <option value="true">NSE F&amp;O Derivatives</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="ordQty">Quantity</label>
+                    <input type="number" id="ordQty" min="1" max="50000" value="40" required class="num">
+                  </div>
+                  <div class="field">
+                    <label for="ordPrice">Price (₹)</label>
+                    <input type="number" id="ordPrice" min="1" max="200000" value="265" required class="num">
+                  </div>
+                </div>
+
+                <div class="summary-box">
+                  <div class="summary-row">
+                    <span class="text-muted">Estimated Order Value</span>
+                    <strong class="num" id="ordEstValue">₹10,600</strong>
+                  </div>
+                  <div class="summary-row">
+                    <span class="text-muted">Active Policy Limit</span>
+                    <span class="num" id="ordPolicyLimit">₹35,000 / 150 qty</span>
+                  </div>
+                </div>
+
+                <button type="submit" id="btnSubmitOrder" class="btn btn-success" style="padding:11px;">Place Paper BUY Order</button>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button type="button" id="btnQuickSafe" class="btn btn-sm" style="flex:1;">Try Safe Order (₹10,600)</button>
+                  <button type="button" id="btnQuickRisky" class="btn btn-sm btn-danger-outline" style="flex:1;">Try Oversized (₹12.1L)</button>
+                </div>
+
+                <div id="orderFeedback" class="banner-feedback" hidden></div>
+              </form>
             </div>
 
+            <!-- Live Holdings & Real MTM P&L -->
             <div class="card">
-              <div class="card-hd">
-                <span class="card-title">REAL 60-Tick Historical NSE Dry-Run Verification Results</span>
-                <span class="tag" id="dryRunStatsTag">0 µs</span>
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Holdings &amp; Mark-to-Market P&amp;L</h3>
+                  <p class="card-sub">Every fill deducts real Indian statutory charges (STT, Brokerage, Exchange, Stamp, 18% GST)</p>
+                </div>
+                <div class="num" style="text-align:right;">
+                  <div style="font-size:12px;color:var(--muted);">Available Cash</div>
+                  <div style="font-size:16px;font-weight:700;" id="portCash">₹5,00,000</div>
+                </div>
               </div>
-              <div class="table-wrapper" tabindex="0" role="region" aria-label="Policy dry-run results across historical NSE tapes">
-                <table class="fg-table">
+
+              <div class="grid-2" style="margin-bottom:14px;">
+                <div class="summary-box">
+                  <div class="summary-row"><span class="text-muted">Invested Value</span><strong class="num" id="portInvested">₹0</strong></div>
+                  <div class="summary-row"><span class="text-muted">Realized P&amp;L</span><strong class="num" id="portRealized">₹0</strong></div>
+                </div>
+                <div class="summary-box">
+                  <div class="summary-row"><span class="text-muted">Unrealized MTM</span><strong class="num" id="portUnrealized">₹0</strong></div>
+                  <div class="summary-row"><span class="text-muted">Statutory Fees Paid</span><strong class="num" id="portFees">₹0</strong></div>
+                </div>
+              </div>
+
+              <div tabindex="0" role="region" aria-label="Paper portfolio holdings" class="table-wrapper">
+                <table>
                   <thead>
                     <tr>
-                      <th>Tape</th>
-                      <th>Bar</th>
                       <th>Symbol</th>
-                      <th>Notional</th>
-                      <th>Ground Truth</th>
-                      <th>Compiled Bytecode Verdict</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dryRunBody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 3: Manual Paper Order Ticket & Real Holdings -->
-        <div role="tabpanel" aria-labelledby="tab-trading" hidden="until-found">
-          <div class="panel-inner">
-            <div class="card">
-              <div class="card-hd">
-                <span class="card-title">Manual Paper Order Ticket (Routes Live Through All 12 FinGate Rust Stages + FPGA BAR0)</span>
-                <span class="tag">Paper Trading Only</span>
-              </div>
-              <div class="form-grid">
-                <div class="field">
-                  <label for="ordSym">NSE Symbol</label>
-                  <select id="ordSym">
-                    <option value="HDFCBANK">HDFCBANK (₹1,680 ref)</option>
-                    <option value="NIFTY50">NIFTY50 (₹24,200 ref)</option>
-                    <option value="BANKNIFTY">BANKNIFTY (₹51,400 ref)</option>
-                    <option value="RELIANCE">RELIANCE (₹2,940 ref)</option>
-                    <option value="TCS">TCS (₹4,120 ref)</option>
-                    <option value="NIFTYBEES">NIFTYBEES ETF (₹265 ref)</option>
-                    <option value="GOLDBEES">GOLDBEES ETF (₹65 ref)</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="ordSide">Side</label>
-                  <select id="ordSide">
-                    <option value="BUY">BUY</option>
-                    <option value="SELL">SELL</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="ordSeg">Segment (Tax &amp; STT)</label>
-                  <select id="ordSeg">
-                    <option value="false">NSE Equity Delivery</option>
-                    <option value="true">NSE F&amp;O Derivatives</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="ordQty">Quantity</label>
-                  <input id="ordQty" type="number" min="1" max="50000" value="15" />
-                </div>
-                <div class="field">
-                  <label for="ordPx">Limit Price (₹)</label>
-                  <input id="ordPx" type="number" min="1" value="1680" />
-                </div>
-                <div class="field" style="display:flex; align-items:flex-end;">
-                  <button type="button" class="btn btn-emerald" style="width:100%;" onclick="submitManualOrder()">
-                    🚀 Route Through 12-Stage Firewall
-                  </button>
-                </div>
-              </div>
-              <div id="manualOrderResult" style="margin-top:10px; font-size:12px;"></div>
-            </div>
-
-            <div class="card">
-              <div class="card-hd">
-                <span class="card-title">Real Mark-to-Market Paper Holdings &amp; P&amp;L Ledger (Zero Fake PnL)</span>
-                <span class="tag" id="ledgerFeesTag">Fees Paid: ₹0</span>
-              </div>
-              <div class="table-wrapper" tabindex="0" role="region" aria-label="Paper trading open positions and MTM P&L">
-                <table class="fg-table">
-                  <thead>
-                    <tr>
-                      <th>Symbol</th>
-                      <th>Open Qty</th>
-                      <th>Avg Entry</th>
-                      <th>Last Price</th>
-                      <th>Market Value</th>
-                      <th>Unrealized MTM</th>
-                      <th>Realized P&amp;L</th>
-                    </tr>
-                  </thead>
-                  <tbody id="positionsBody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 4: Cryptographic Audit Vault & Interactive 3-of-5 Shamir Quorum -->
-        <div role="tabpanel" aria-labelledby="tab-crypto" hidden="until-found">
-          <div class="panel-inner">
-            <!-- Interactive 3-of-5 Shamir Custodian Console -->
-            <div class="card">
-              <div class="card-hd">
-                <span class="card-title">Interactive Asymmetric 1-of-5 Trip / 3-of-5 Shamir F_(2^61-1) Disarm Console</span>
-                <span class="tag" id="quorumStatusTag">Nonce #1</span>
-              </div>
-              <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">
-                Test information-theoretic threshold security live: select <strong>2 custodians</strong> (must FAIL), select <strong>3 custodians + Tamper 1 Bit</strong> (must FAIL HMAC), or select any <strong>3 valid custodians</strong> (reconstructs secret via Montgomery Batch + 70-mul Addition Chain &amp; disarms in ~300 ns!).
-              </p>
-              <div class="custodian-grid" id="custodianGrid"></div>
-              <div class="btn-row" style="margin-top:10px; align-items:center;">
-                <button type="button" class="btn btn-danger" onclick="tripKillSwitch()">🔴 Trip 1-of-5 Emergency Halt (&lt; 1 ns)</button>
-                <button type="button" class="btn btn-emerald" onclick="attemptShamirDisarm()">🔐 Submit Selected Shares to Disarm</button>
-                <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--amber); cursor:pointer;">
-                  <input type="checkbox" id="tamperToggle" style="width:auto;" /> Simulate 1-Bit Share Tamper Attack
-                </label>
-              </div>
-              <div id="quorumLog" class="code-box" style="margin-top:10px; color:var(--text);">Ready — trip Kill Switch and test 2-of-5 vs. 3-of-5 Shamir shares.</div>
-            </div>
-
-            <!-- Hardware SHA-256 Merkle + Post-Quantum Ajtai-SIS Lattice + 400 MHz FPGA BAR0 -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-              <div class="card">
-                <div class="card-hd">
-                  <span class="card-title">Post-Quantum Ajtai-SIS Lattice &amp; HW SHA-256 Vault</span>
-                  <span class="tag tag-ok" id="sisStatusTag">SIS Binding VALID</span>
-                </div>
-                <div class="code-box" id="cryptoVaultBox"></div>
-              </div>
-              <div class="card">
-                <div class="card-hd">
-                  <span class="card-title">400 MHz AMD Alveo FPGA PCIe BAR0 Seqlock Mirror</span>
-                  <span class="tag tag-ok">4 Cycles = 10.0 ns</span>
-                </div>
-                <div class="code-box" id="fpgaBar0Box"></div>
-              </div>
-            </div>
-
-            <!-- Crash-Surviving MAP_SHARED Black-Box Flight Recorder -->
-            <div class="card">
-              <div class="card-hd">
-                <span class="card-title">Crash-Surviving MAP_SHARED 64B Binary Flight Recorder</span>
-                <button type="button" class="btn btn-sm" onclick="refreshFlightRecorder()">🔄 Read Live mmap Ring</button>
-              </div>
-              <div class="table-wrapper" tabindex="0" role="region" aria-label="Black-box flight recorder binary ring dump">
-                <table class="fg-table">
-                  <thead>
-                    <tr>
-                      <th>Seq</th>
-                      <th>Kind</th>
-                      <th>Order ID</th>
-                      <th>Price</th>
                       <th>Qty</th>
-                      <th>Entropy</th>
-                      <th>SPAN Worst</th>
-                      <th>ARX Commit</th>
+                      <th>Avg Cost</th>
+                      <th>LTP</th>
+                      <th>Value</th>
+                      <th>Unrealized</th>
+                      <th>Realized</th>
                     </tr>
                   </thead>
-                  <tbody id="flightBody"></tbody>
+                  <tbody id="holdingsBody"></tbody>
                 </table>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- TAB 5: Grounded AI Financial Co-Pilot & Dynamic India Tax Workbench -->
-        <div role="tabpanel" aria-labelledby="tab-copilot" hidden="until-found">
-          <div class="panel-inner">
+      <!-- =====================================================================
+           TAB 3: RISK RULES (PLAIN-ENGLISH COMPILER + 60-TICK DRY-RUN + STRESS)
+           ===================================================================== -->
+      <section role="tabpanel" id="panel-rules" aria-labelledby="tab-rules" hidden="until-found">
+        <div class="panel-body">
+          <div class="grid-2">
+            <!-- Plain-English Policy Editor -->
             <div class="card">
-              <div class="card-hd">
-                <span class="card-title">Grounded AI NSE Financial, Risk &amp; Tax Co-Pilot</span>
-                <span class="tag tag-ok" id="copilotModeTag">Citation-Backed (Optional GEMINI_API_KEY)</span>
-              </div>
-              <div class="chat-log" id="chatLog">
-                <div class="chat-msg chat-ai">
-                  <strong>FinGate AI Co-Pilot:</strong> Ask me anything about the active NSE headline, your 6-shockwave SPAN crash survival, why a trade was blocked, SIP allocation, or your exact India Old vs. New Tax Regime &amp; STT/STCG/LTCG liability. Every figure is cited directly from the live Rust engine.
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Plain-English Safety Rules</h3>
+                  <p class="card-sub">Write limits in plain English — FinGate compiles them into deterministic bytecode &amp; syncs hardware registers</p>
                 </div>
+                <span class="badge badge-blue" id="policyIdBadge">Policy #1</span>
               </div>
-              <div class="btn-row" style="margin-top:8px;">
-                <button type="button" class="btn btn-sm" onclick="askPreset('Is my portfolio safe in a -20% flash crash?')">Crash Risk?</button>
-                <button type="button" class="btn btn-sm" onclick="askPreset('Compare Old vs New Tax Regime and my STT/STCG/LTCG impact')">Tax &amp; STT?</button>
-                <button type="button" class="btn btn-sm" onclick="askPreset('Should I buy on this NSE news headline right now?')">Analyze News?</button>
-                <button type="button" class="btn btn-sm" onclick="askPreset('Verify our Merkle, Post-Quantum Lattice and Shamir crypto proofs')">Crypto Status?</button>
+
+              <div class="preset-row" style="margin-bottom:10px;">
+                <button type="button" class="preset-chip" data-preset="Max ₹25,000 per trade, max 80 quantity, block buys when Hawkes > 100000 and VPIN > 6500, halt if SPAN crash loss > ₹40,000">Conservative (₹25k cap)</button>
+                <button type="button" class="preset-chip" data-preset="Max ₹35,000 per trade, max 150 quantity, block buys when Hawkes > 120000 and VPIN > 7000, halt if SPAN crash loss > ₹60,000">Balanced (₹35k cap)</button>
+                <button type="button" class="preset-chip" data-preset="Max ₹18,000 per trade, max 50 quantity, block buys when Hawkes > 90000 and VPIN > 6000, halt if SPAN crash loss > ₹30,000">Strict Anti-Crash (₹18k cap)</button>
               </div>
-              <div style="display:flex; gap:8px; margin-top:8px;">
-                <input id="chatInput" type="text" placeholder="Ask a question grounded in your live NSE portfolio & risk telemetry..." onkeydown="if(event.key==='Enter') sendChat()" />
-                <button type="button" class="btn btn-primary" onclick="sendChat()">Ask</button>
+
+              <div class="field" style="margin-bottom:12px;">
+                <label for="policyInput">Your Risk Rule (Plain English or raw <span class="mono">REJECT</span> DSL)</label>
+                <textarea id="policyInput" rows="4" style="resize:vertical;line-height:1.5;"></textarea>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                <span class="text-muted" style="font-size:12px;" id="policyMeta">Max ₹35,000 · Max 150 qty · VPIN 0.70</span>
+                <button type="button" id="btnCompilePolicy" class="btn btn-primary">Compile &amp; Backtest 60 NSE Ticks</button>
+              </div>
+
+              <div class="accordion" style="margin-top:14px;">
+                <details class="disclosure">
+                  <summary>View Compiled NanoPolicyVm Bytecode</summary>
+                  <div class="disclosure-body">
+                    <pre id="policyDslCode" class="code-block"></pre>
+                  </div>
+                </details>
               </div>
             </div>
 
+            <!-- Instant 60-Tick Historical NSE Dry-Run Proof -->
             <div class="card">
-              <div class="card-hd">
-                <span class="card-title">Dynamic India Old vs. New Tax Regime, STT &amp; STCG/LTCG Workbench</span>
-                <span class="tag tag-warn" id="taxRecBadge">New Tax Regime</span>
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Instant 60-Tick Historical Verification</h3>
+                  <p class="card-sub">Every rule change is automatically backtested across all 5 NSE sessions before going live</p>
+                </div>
+                <span class="badge badge-green num" id="dryRunSpeedBadge">0 µs</span>
               </div>
-              <div class="form-grid" style="grid-template-columns: 1fr 1fr auto;">
-                <div class="field">
-                  <label for="taxIncome">Annual Income (₹)</label>
-                  <input id="taxIncome" type="number" step="50000" value="1500000" />
+
+              <div class="grid-2" style="margin-bottom:14px;">
+                <div class="summary-box">
+                  <div class="summary-row"><span class="text-muted">Historical Traps Caught</span><strong class="num text-green" id="dryRunTraps">0 / 0</strong></div>
+                  <div class="summary-row"><span class="text-muted">Safe Trades Allowed</span><strong class="num" id="dryRunAllowed">0</strong></div>
                 </div>
-                <div class="field">
-                  <label for="taxDed">80C / 80D / HRA Deductions (₹)</label>
-                  <input id="taxDed" type="number" step="25000" value="200000" />
-                </div>
-                <div class="field" style="display:flex; align-items:flex-end;">
-                  <button type="button" class="btn btn-primary" onclick="recalcTax()">Recalculate Tax</button>
+                <div class="summary-box">
+                  <div class="summary-row"><span class="text-muted">Unsafe Trades Blocked</span><strong class="num text-red" id="dryRunBlocked">0</strong></div>
+                  <div class="summary-row"><span class="text-muted">Total Bars Verified</span><strong class="num" id="dryRunTotal">60</strong></div>
                 </div>
               </div>
-              <div class="code-box" id="taxDetailBox" style="margin-top:10px; color:var(--text);"></div>
+
+              <div tabindex="0" role="region" aria-label="Historical dry-run sample ticks" class="table-wrapper" style="max-block-size:230px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Session</th>
+                      <th>Symbol</th>
+                      <th>Order Value</th>
+                      <th>Type</th>
+                      <th>Result</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dryRunSamplesBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6-Scenario Flash Crash Stress Test -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Portfolio Flash-Crash Stress Test (Shadow Fork)</h3>
+                <p class="card-sub">Projected mark-to-market impact across sudden ±5%, ±10%, and ±15% NSE market shocks</p>
+              </div>
+            </div>
+            <div class="shock-grid" id="shockGrid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           TAB 4: PROTECTION (ATTACK SIMULATOR, 3-OF-5 SHAMIR, CRYPTO AUDIT)
+           ===================================================================== -->
+      <section role="tabpanel" id="panel-protection" aria-labelledby="tab-protection" hidden="until-found">
+        <div class="panel-body">
+          <!-- 4 One-Click Adversarial Attack Tests -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Simulate Real AI Trading Failures</h3>
+                <p class="card-sub">Inject real adversarial scenarios to watch each independent defense layer stop the threat automatically</p>
+              </div>
+            </div>
+
+            <div class="grid-4">
+              <div class="attack-card">
+                <div>
+                  <span class="badge badge-red" style="margin-bottom:8px;">Policy Cap + Halt</span>
+                  <h3>Prompt-Injected Fat Finger</h3>
+                  <p>Simulates a fake-news prompt tricking an AI into firing a ₹1.21 Crore Nifty order. Blocked by Policy VM &amp; auto-halts trading.</p>
+                </div>
+                <button type="button" class="btn btn-danger-outline" data-chaos="fake_news">Run ₹1.21 Cr Attack</button>
+              </div>
+
+              <div class="attack-card">
+                <div>
+                  <span class="badge badge-amber" style="margin-bottom:8px;">Hawkes + VPIN</span>
+                  <h3>Expiry-Day Flash Dump</h3>
+                  <p>Simulates an institutional expiry waterfall (VPIN &gt; 0.85). Blocked before your account catches a falling knife.</p>
+                </div>
+                <button type="button" class="btn btn-danger-outline" data-chaos="toxic_sweep">Run Toxic Sweep</button>
+              </div>
+
+              <div class="attack-card">
+                <div>
+                  <span class="badge badge-red" style="margin-bottom:8px;">Entropy Sentinel</span>
+                  <h3>Stuck AI Retry Loop</h3>
+                  <p>Fires 64 duplicate orders in 50 ms after a WebSocket disconnect. Shannon Entropy collapse detects the loop &amp; halts.</p>
+                </div>
+                <button type="button" class="btn btn-danger-outline" data-chaos="martingale_loop">Run 64x Retry Loop</button>
+              </div>
+
+              <div class="attack-card">
+                <div>
+                  <span class="badge badge-blue" style="margin-bottom:8px;">Speed-of-Light</span>
+                  <h3>Spoofed Cross-Venue Signal</h3>
+                  <p>Injects a back-dated Singapore → Mumbai NSE signal claiming 0.2 ms transit (physically impossible under 21 ms fiber floor).</p>
+                </div>
+                <button type="button" class="btn btn-danger-outline" data-chaos="ftl_spoof">Run FTL Spoof</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3-of-5 Custodian Kill-Switch Recovery -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Emergency Kill Switch &amp; 3-of-5 Custodian Recovery</h3>
+                <p class="card-sub">Any 1 officer can halt trading instantly, but resuming requires cryptographic approval from at least 3 of 5 custodians (Shamir over F<sub>2⁶¹−1</sub>)</p>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span id="quorumBadge" class="badge badge-green">Trading Active</span>
+                <button type="button" id="btnTripKill" class="btn btn-danger btn-sm">Emergency Halt (1-of-5)</button>
+              </div>
+            </div>
+
+            <div class="custodian-list" id="custodianList"></div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px;">
+              <label style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-secondary);cursor:pointer;">
+                <input type="checkbox" id="chkTamperShare">
+                <span>Simulate corrupted / tampered key share (verifies HMAC rejection)</span>
+              </label>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" id="btnTest2of5" class="btn btn-sm">Test 2-of-5 (Must Fail)</button>
+                <button type="button" id="btnDisarmQuorum" class="btn btn-primary btn-sm">Unlock with Selected Custodians</button>
+              </div>
+            </div>
+
+            <div id="quorumFeedback" class="banner-feedback" style="margin-top:12px;" hidden></div>
+          </div>
+
+          <!-- Cryptographic Audit & Flight Recorder -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Tamper-Evident Cryptographic Audit</h3>
+                <p class="card-sub">Every decision is sealed using hardware SHA-256 Merkle proofs and Post-Quantum Ajtai-SIS lattice commitments</p>
+              </div>
+              <button type="button" id="btnInspectLatestProof" class="btn btn-sm">Inspect Latest Proof</button>
+            </div>
+
+            <div class="kpi-grid" style="margin-bottom:14px;">
+              <div class="summary-box">
+                <span class="text-muted" style="font-size:12px;">Hash Acceleration</span>
+                <strong id="auditShaBackend" style="font-size:13px;">Hardware SHA-256</strong>
+              </div>
+              <div class="summary-box">
+                <span class="text-muted" style="font-size:12px;">Latest Merkle Root</span>
+                <strong id="auditMerkleRoot" class="mono" style="font-size:12.5px;">—</strong>
+              </div>
+              <div class="summary-box">
+                <span class="text-muted" style="font-size:12px;">Post-Quantum Lattice Audit</span>
+                <strong id="auditLatticeStatus" class="text-green" style="font-size:13px;">Verified</strong>
+              </div>
+              <div class="summary-box">
+                <span class="text-muted" style="font-size:12px;">Flight Recorder &amp; WAL</span>
+                <strong id="auditEventsCount" class="num" style="font-size:13px;">0 events</strong>
+              </div>
+            </div>
+
+            <div class="accordion">
+              <details class="disclosure" id="flightRecorderDetails">
+                <summary>Crash-Surviving Black-Box Flight Recorder (MAP_SHARED Ring)</summary>
+                <div class="disclosure-body">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <span class="text-muted" style="font-size:12.5px;">Live dump of the zero-allocation shared-memory forensic ring buffer</span>
+                    <button type="button" id="btnLoadFlight" class="btn btn-sm">Refresh Log</button>
+                  </div>
+                  <div tabindex="0" role="region" aria-label="Black-box flight recorder events" class="table-wrapper" style="max-block-size:260px;">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Seq</th>
+                          <th>Event</th>
+                          <th>Order ID</th>
+                          <th>Price</th>
+                          <th>Qty</th>
+                          <th>Proof Commit</th>
+                        </tr>
+                      </thead>
+                      <tbody id="flightBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </details>
+
+              <details class="disclosure">
+                <summary>Connect External AI Agents via MCP (JSON-RPC 2.0)</summary>
+                <div class="disclosure-body">
+                  <p class="card-sub" style="margin-bottom:10px;">External trading agents (Claude, Gemini, LangGraph, Cursor) can route paper orders directly through this server's firewall at <span class="mono">POST /mcp</span>.</p>
+                  <pre class="code-block">curl -s -X POST http://127.0.0.1:8080/mcp \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</pre>
+                </div>
+              </details>
             </div>
           </div>
         </div>
-      </div>
-    </main>
-  </div>
+      </section>
 
-  <!-- Native Modal <dialog> for Live Hardware SHA-256 Merkle & Post-Quantum Lattice Verification -->
-  <dialog id="proofDialog" closedby="any" aria-labelledby="proofDialogTitle">
-    <div class="dlg-hd">
-      <h2 id="proofDialogTitle" style="font-size:14px; color:var(--cyan);">Cryptographic Proof Inspector (HW SHA-256 Merkle + Post-Quantum Ajtai-SIS Lattice)</h2>
+      <!-- =====================================================================
+           TAB 5: CO-PILOT & INDIA TAX
+           ===================================================================== -->
+      <section role="tabpanel" id="panel-copilot" aria-labelledby="tab-copilot" hidden="until-found">
+        <div class="panel-body">
+          <div class="grid-2">
+            <!-- Grounded AI Financial Co-Pilot -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">FinGate Financial Co-Pilot</h3>
+                  <p class="card-sub">Answers grounded strictly in your live portfolio, firewall verdicts, and Indian tax calculations</p>
+                </div>
+                <span class="badge badge-blue" id="copilotModeBadge">Grounded Offline</span>
+              </div>
+
+              <div class="preset-row" style="margin-bottom:12px;">
+                <button type="button" class="preset-chip" data-q="Why was the latest unsafe order blocked and how much capital did FinGate protect?">Why was the last order blocked?</button>
+                <button type="button" class="preset-chip" data-q="Compare Old vs New Indian Tax Regime for my profile and explain STCG vs LTCG">Old vs New Tax Regime</button>
+                <button type="button" class="preset-chip" data-q="Summarize my current portfolio risk, toxicity, and 3-of-5 Shamir audit proof">Audit &amp; risk summary</button>
+              </div>
+
+              <form id="chatForm" style="display:flex;gap:8px;margin-bottom:14px;">
+                <input type="text" id="chatInput" placeholder="Ask about your trades, blocked risks, STT, STCG/LTCG…" style="flex:1;" aria-label="Ask FinGate Co-Pilot">
+                <button type="submit" class="btn btn-primary">Ask</button>
+              </form>
+
+              <div class="chat-box">
+                <div id="chatAnswer" style="font-size:13.5px;color:var(--ink);line-height:1.55;">
+                  Ask a question above or click a quick prompt to get a live, cited explanation from your current portfolio state.
+                </div>
+                <div id="chatCitations" class="citation-list"></div>
+              </div>
+            </div>
+
+            <!-- Indian Tax & Statutory Cost Estimator -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">India Tax &amp; Statutory Cost Estimator</h3>
+                  <p class="card-sub">Live FY26 Old vs. New Regime comparison + exact NSE STT, GST &amp; STCG/LTCG breakdown</p>
+                </div>
+                <span class="badge badge-green" id="taxRegimeBadge">New Regime</span>
+              </div>
+
+              <form id="taxForm" style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;">
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="taxIncome">Annual Income (₹)</label>
+                    <input type="number" id="taxIncome" value="1500000" min="300000" max="50000000" step="50000" class="num">
+                  </div>
+                  <div class="field">
+                    <label for="taxDeductions">80C / HRA Deductions (₹)</label>
+                    <input type="number" id="taxDeductions" value="200000" min="0" max="2000000" step="25000" class="num">
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;">
+                  <button type="submit" class="btn btn-primary btn-sm">Recalculate Tax</button>
+                </div>
+              </form>
+
+              <div class="summary-box" id="taxSummaryBox" style="margin-bottom:12px;"></div>
+              <p id="taxAdvice" style="margin:0;font-size:12.5px;color:var(--ink-secondary);line-height:1.5;"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
-    <div class="dlg-body" id="proofDialogBody">Loading proof...</div>
-    <div class="dlg-ft">
+  </main>
+
+  <!-- Native Modal Dialog for Live Cryptographic Proof Verification (Modern Web Guidance: dialog) -->
+  <dialog id="proofDialog" closedby="any" aria-labelledby="proofDialogTitle">
+    <div class="dialog-head">
+      <h2 id="proofDialogTitle">Cryptographic Decision Proof</h2>
       <form method="dialog">
-        <button type="submit" class="btn btn-primary" value="close" autofocus>Close Verifier</button>
+        <button type="submit" value="close" class="btn btn-ghost btn-sm" aria-label="Close proof dialog">✕</button>
+      </form>
+    </div>
+    <div class="dialog-body" id="proofDialogBody">
+      <p class="text-muted">Loading verification…</p>
+    </div>
+    <div class="dialog-foot">
+      <form method="dialog">
+        <button type="submit" value="done" class="btn btn-primary btn-sm" autofocus>Done</button>
       </form>
     </div>
   </dialog>
 
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
   <script>
-    let STATE = null;
-    let autoPlayTimer = null;
+    (() => {
+      'use strict';
 
-    const fmtINR = (n) => {
-      const v = Math.round(Number(n) || 0);
-      const sign = v < 0 ? '-' : '';
-      return sign + '₹' + Math.abs(v).toLocaleString('en-IN');
-    };
-    const fmtSignedINR = (n) => (Number(n) >= 0 ? '+' : '') + fmtINR(n);
+      // =======================================================================
+      // State & Utilities
+      // =======================================================================
+      let state = null;
+      let autoPlayTimer = null;
+      let orderSide = 'BUY';
+      let currentGuideStep = 0;
+      const completedGuideSteps = new Set();
 
-    // -------------------------------------------------------------------------
-    // Accessible Tabs (following modern-web-guidance `tabs` guide + beforematch)
-    // -------------------------------------------------------------------------
-    const tabButtons = Array.from(document.querySelectorAll('.tablist [role="tab"]'));
-    const tabPanels = Array.from(document.querySelectorAll('.tabpanels-grid > [role="tabpanel"]'));
+      const inr = (n) => {
+        const val = Number(n || 0);
+        const sign = val < 0 ? '-' : '';
+        return sign + '₹' + Math.abs(Math.round(val)).toLocaleString('en-IN');
+      };
 
-    function activateTab(tab) {
-      for (const t of tabButtons) {
-        const sel = t === tab;
-        t.setAttribute('aria-selected', sel ? 'true' : 'false');
-        t.tabIndex = sel ? 0 : -1;
+      const signedInr = (n) => {
+        const val = Number(n || 0);
+        return (val > 0 ? '+' : val < 0 ? '-' : '') + '₹' + Math.abs(Math.round(val)).toLocaleString('en-IN');
+      };
+
+      const fmtLatency = (ns) => {
+        const v = Number(ns || 0);
+        if (v < 1000) return `${v} ns`;
+        if (v < 1_000_000) return `${(v / 1000).toFixed(1)} µs`;
+        return `${(v / 1_000_000).toFixed(2)} ms`;
+      };
+
+      const esc = (s) => String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+      let toastTimer = null;
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
       }
-      for (const p of tabPanels) {
-        const match = p.getAttribute('aria-labelledby') === tab.id;
-        if (match) {
-          p.removeAttribute('hidden');
-          p.tabIndex = 0;
+
+      async function apiPost(path, payload = {}) {
+        const res = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        return res.json();
+      }
+
+      // =======================================================================
+      // Scroll-State Header Hide Fallback (Modern Web Guidance: content-first-noise-reduction)
+      // =======================================================================
+      if (!CSS.supports('container-type', 'scroll-state')) {
+        const bar = document.querySelector('.top-bar');
+        let lastY = window.scrollY;
+        window.addEventListener('scroll', () => {
+          const y = Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight));
+          if (y === lastY) return;
+          bar?.classList.toggle('is-hidden', y > lastY && y > bar.offsetHeight);
+          lastY = y;
+        }, { passive: true });
+      }
+
+      // =======================================================================
+      // Accessible Tabs + beforematch Sync (Modern Web Guidance: tabs)
+      // =======================================================================
+      const tabs = Array.from(document.querySelectorAll('.nav-tabs [role="tab"]'));
+      const panels = Array.from(document.querySelectorAll('.panels-grid > [role="tabpanel"]'));
+
+      function selectTab(tabEl, shouldFocus = false) {
+        const targetId = tabEl.dataset.panel;
+        for (const t of tabs) {
+          const active = t === tabEl;
+          t.setAttribute('aria-selected', String(active));
+          t.toggleAttribute('focusgroupstart', active);
+          t.tabIndex = active ? 0 : -1;
+        }
+        for (const p of panels) {
+          if (p.id === targetId) {
+            p.hidden = false;
+          } else {
+            p.hidden = 'until-found';
+          }
+        }
+        tabEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        if (shouldFocus) tabEl.focus();
+        if (targetId === 'panel-overview' && state) {
+          requestAnimationFrame(() => drawAllCharts(state));
+        }
+      }
+
+      tabs.forEach((tab, idx) => {
+        tab.tabIndex = idx === 0 ? 0 : -1;
+        tab.addEventListener('click', () => selectTab(tab));
+        tab.addEventListener('keydown', (e) => {
+          let next = null;
+          if (e.key === 'ArrowRight') next = tabs[(idx + 1) % tabs.length];
+          else if (e.key === 'ArrowLeft') next = tabs[(idx - 1 + tabs.length) % tabs.length];
+          else if (e.key === 'Home') next = tabs[0];
+          else if (e.key === 'End') next = tabs[tabs.length - 1];
+          if (next) {
+            e.preventDefault();
+            selectTab(next, true);
+          }
+        });
+      });
+
+      panels.forEach((panel) => {
+        panel.addEventListener('beforematch', () => {
+          const owner = tabs.find((t) => t.dataset.panel === panel.id);
+          if (owner) selectTab(owner);
+        });
+      });
+
+      // =======================================================================
+      // Native <dialog> Close Reset + Safari Light-Dismiss Fallback (Modern Web Guidance: dialog)
+      // =======================================================================
+      const proofDialog = document.getElementById('proofDialog');
+      proofDialog.addEventListener('close', () => {
+        proofDialog.returnValue = '';
+      });
+      if (!('closedBy' in HTMLDialogElement.prototype)) {
+        const outside = (e, dlg) => {
+          const r = dlg.getBoundingClientRect();
+          return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+        };
+        let pressedOutside = false;
+        proofDialog.addEventListener('pointerdown', (e) => { pressedOutside = outside(e, proofDialog); });
+        proofDialog.addEventListener('pointerup', (e) => {
+          if (pressedOutside && outside(e, proofDialog)) proofDialog.close();
+        });
+      }
+
+      // =======================================================================
+      // Interactive 5-Step Product Demo Walkthrough (for clarity & demo recording)
+      // =======================================================================
+      const GUIDE_STEPS = [
+        {
+          title: 'Step 1 — Replay an NSE Expiry-Day Crash',
+          desc: 'Run all 12 historical bars of Expiry-Day HFT Toxic Sweep. Compare the green FinGate curve against an unguarded AI trading the exact same signals.',
+          cta: 'Run Expiry Replay →',
+          tabId: 'tab-overview',
+          run: async () => {
+            selectTab(document.getElementById('tab-overview'));
+            await apiPost('/api/tape', { tape_id: 'expiry_toxic_sweep' });
+            const res = await apiPost('/api/backtest');
+            if (res.state) applyState(res.state);
+            const bt = res.backtest;
+            return `Replayed 12 NSE Expiry bars in ${bt.total_backtest_us} µs: FinGate preserved ${inr(bt.counterfactual_capital_saved_inr)} (${inr(bt.protected_final_equity_inr)} vs ${inr(bt.unguarded_final_equity_inr)} unguarded, ${bt.blocked_trades} traps blocked).`;
+          }
+        },
+        {
+          title: 'Step 2 — Compile a Plain-English Risk Rule & Backtest on 60 Ticks',
+          desc: 'Switch to Risk Rules, write a strict plain-English limit, and watch FinGate compile it to SIMD bytecode and backtest all 60 NSE bars in microseconds.',
+          cta: 'Compile & Backtest Rule →',
+          tabId: 'tab-rules',
+          run: async () => {
+            selectTab(document.getElementById('tab-rules'));
+            const rule = 'Max ₹25,000 per trade, max 80 quantity, block buys when Hawkes > 105000 and VPIN > 6800, halt if SPAN crash loss > ₹45,000';
+            document.getElementById('policyInput').value = rule;
+            const snap = await apiPost('/api/policy', { nl_text: rule });
+            applyState(snap);
+            return `Compiled Policy #${snap.policy.policy_id} and backtested all ${snap.policy.dry_run_total_ticks} historical NSE ticks in ${snap.policy.dry_run_elapsed_us} µs — caught ${snap.policy.dry_run_traps_caught}/${snap.policy.dry_run_traps_total} traps!`;
+          }
+        },
+        {
+          title: 'Step 3 — Simulate a Prompt-Injected ₹1.21 Crore Attack',
+          desc: 'Test what happens when a rogue prompt tricks an AI into buying 500 Nifty lots. FinGate blocks it immediately and trips the emergency kill switch.',
+          cta: 'Inject ₹1.21 Cr Attack →',
+          tabId: 'tab-protection',
+          run: async () => {
+            selectTab(document.getElementById('tab-protection'));
+            const snap = await apiPost('/api/chaos', { kind: 'fake_news' });
+            applyState(snap);
+            const latest = snap.recent_decisions[0];
+            return `Blocked ₹1.21 Cr order (${latest.gate_triggered}) in ${fmtLatency(latest.latency_ns)} and tripped the 1-of-5 Emergency Kill Switch.`;
+          }
+        },
+        {
+          title: 'Step 4 — Prove 3-of-5 Custodian Unlock & Hardware SHA-256 Proof',
+          desc: 'First verify that 2 custodians cannot unlock a halted desk, then unlock cleanly with 3-of-5 Shamir shares and inspect the hardware SHA-256 Merkle + Post-Quantum proof.',
+          cta: 'Unlock (3-of-5) & Open Proof →',
+          tabId: 'tab-protection',
+          run: async () => {
+            selectTab(document.getElementById('tab-protection'));
+            if (state && !state.kill_switch_active) {
+              const tripped = await apiPost('/api/quorum/trip');
+              applyState(tripped);
+            }
+            const fail2 = await apiPost('/api/quorum/disarm', { custodian_ids: [1, 2], tamper_share: false });
+            const ok3 = await apiPost('/api/quorum/disarm', { custodian_ids: [1, 3, 5], tamper_share: false });
+            if (ok3.state) applyState(ok3.state);
+            const qBox = document.getElementById('quorumFeedback');
+            qBox.hidden = false;
+            qBox.className = 'banner-feedback ok';
+            qBox.textContent = `2-of-5 attempt DENIED as expected. Valid 3-of-5 custodians [1, 3, 5] reconstructed the secret over F_(2^61-1) & unlocked trading in ${fmtLatency(ok3.quorum.elapsed_ns)}.`;
+            if (state && state.recent_decisions.length > 0) {
+              await openProofDialog(state.recent_decisions[0].id);
+            }
+            return `Verified 2-of-5 denial, unlocked with 3-of-5 Shamir in ${fmtLatency(ok3.quorum.elapsed_ns)}, and opened live SHA-256 Merkle + Post-Quantum Lattice proof.`;
+          }
+        },
+        {
+          title: 'Step 5 — Ask the Grounded AI Co-Pilot & Check India Taxes',
+          desc: 'Ask FinGate Co-Pilot about your live protected portfolio, STCG (20%) vs. LTCG (12.5%), and Old vs. New Tax Regime savings.',
+          cta: 'Ask AI Co-Pilot →',
+          tabId: 'tab-copilot',
+          run: async () => {
+            selectTab(document.getElementById('tab-copilot'));
+            const q = 'Summarize my protected equity, why unsafe orders were blocked, and compare Old vs New Indian Tax Regime for ₹15L income';
+            document.getElementById('chatInput').value = q;
+            await submitCopilotQuestion(q);
+            return 'Co-Pilot generated a grounded answer with live portfolio & Indian tax citations — demo complete!';
+          }
+        }
+      ];
+
+      function renderGuideStep(idx, outcomeText = '') {
+        currentGuideStep = idx;
+        const step = GUIDE_STEPS[idx];
+        document.getElementById('guideTitle').textContent = step.title;
+        document.getElementById('guideDesc').textContent = step.desc;
+        document.getElementById('btnRunGuideStep').textContent = step.cta;
+        const outEl = document.getElementById('guideOutcome');
+        if (outcomeText) {
+          outEl.textContent = outcomeText;
+          outEl.hidden = false;
         } else {
-          p.setAttribute('hidden', 'until-found');
-          p.removeAttribute('tabindex');
+          outEl.hidden = true;
         }
+        document.querySelectorAll('#guideSteps .step-chip').forEach((btn, i) => {
+          btn.classList.toggle('active', i === idx);
+          btn.classList.toggle('done', completedGuideSteps.has(i) && i !== idx);
+        });
       }
-      tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-      if (tab.id === 'tab-crypto') refreshFlightRecorder();
-    }
 
-    tabButtons.forEach((btn, idx) => {
-      btn.addEventListener('click', () => activateTab(btn));
-      btn.addEventListener('keydown', (e) => {
-        let next = null;
-        if (e.key === 'ArrowRight') next = tabButtons[(idx + 1) % tabButtons.length];
-        else if (e.key === 'ArrowLeft') next = tabButtons[(idx - 1 + tabButtons.length) % tabButtons.length];
-        else if (e.key === 'Home') next = tabButtons[0];
-        else if (e.key === 'End') next = tabButtons[tabButtons.length - 1];
-        if (next) {
-          e.preventDefault();
-          next.focus();
-          activateTab(next);
-        }
+      document.querySelectorAll('#guideSteps .step-chip').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const i = Number(btn.dataset.step);
+          renderGuideStep(i);
+          selectTab(document.getElementById(GUIDE_STEPS[i].tabId));
+        });
       });
-    });
 
-    tabPanels.forEach((panel) => {
-      panel.addEventListener('beforematch', () => {
-        const tab = document.getElementById(panel.getAttribute('aria-labelledby'));
-        if (tab) activateTab(tab);
-      });
-    });
-
-    // Native <dialog> Safari `closedby="any"` fallback + returnValue cleanup
-    const proofDialog = document.getElementById('proofDialog');
-    proofDialog.addEventListener('close', () => { proofDialog.returnValue = ''; });
-    if (!('closedBy' in HTMLDialogElement.prototype)) {
-      const outside = (e, dlg) => {
-        const r = dlg.getBoundingClientRect();
-        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
-      };
-      let pressedOutside = false;
-      proofDialog.addEventListener('pointerdown', (e) => { pressedOutside = outside(e, proofDialog); });
-      proofDialog.addEventListener('pointerup', (e) => { if (pressedOutside && outside(e, proofDialog)) proofDialog.close(); });
-    }
-
-    // -------------------------------------------------------------------------
-    // Real-Time Server-Sent Events (`/api/stream`) + Initial Fetch
-    // -------------------------------------------------------------------------
-    function connectSse() {
-      const badge = document.getElementById('sseBadge');
-      const es = new EventSource('/api/stream');
-      es.addEventListener('state', (ev) => {
+      document.getElementById('btnRunGuideStep').addEventListener('click', async () => {
+        const btn = document.getElementById('btnRunGuideStep');
+        const old = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Running…';
         try {
-          const snap = JSON.parse(ev.data);
-          renderAll(snap);
-          badge.innerHTML = '<span class="live-dot"></span> SSE Live';
-        } catch (_) {}
-      });
-      es.onerror = () => {
-        badge.textContent = 'SSE Reconnecting...';
-      };
-    }
-
-    async function apiPost(path, payload) {
-      const r = await fetch(path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload || {})
-      });
-      return r.json();
-    }
-
-    async function stepTick(n) { renderAll(await apiPost('/api/step', { count: n })); }
-    async function selectTape(id) {
-      stopAutoPlay();
-      document.getElementById('backtestBanner').style.display = 'none';
-      renderAll(await apiPost('/api/tape', { tape_id: id }));
-    }
-    async function resetEngine() {
-      stopAutoPlay();
-      document.getElementById('backtestBanner').style.display = 'none';
-      renderAll(await apiPost('/api/reset', {}));
-    }
-    async function runBacktest() {
-      stopAutoPlay();
-      const res = await apiPost('/api/backtest', {});
-      if (res.state) renderAll(res.state);
-      const bt = res.backtest;
-      if (bt) {
-        const b = document.getElementById('backtestBanner');
-        b.style.display = 'block';
-        b.innerHTML = `<strong>Full ${bt.ticks_replayed}-Bar Backtest (${bt.total_backtest_us} µs):</strong> Protected <strong>${fmtINR(bt.protected_final_equity_inr)}</strong> vs Unguarded <strong>${fmtINR(bt.unguarded_final_equity_inr)}</strong> → Saved <strong>${fmtINR(bt.counterfactual_capital_saved_inr)}</strong> (${bt.approved_trades} pass / ${bt.blocked_trades} blocked)`;
-      }
-    }
-
-    function toggleAutoPlay() {
-      if (autoPlayTimer) {
-        stopAutoPlay();
-      } else {
-        document.getElementById('playBtn').textContent = '⏸ Pause Live';
-        autoPlayTimer = setInterval(() => stepTick(1), 950);
-      }
-    }
-    function stopAutoPlay() {
-      if (autoPlayTimer) {
-        clearInterval(autoPlayTimer);
-        autoPlayTimer = null;
-      }
-      document.getElementById('playBtn').textContent = '▶ Auto-Play';
-    }
-
-    async function triggerChaos(kind) {
-      stopAutoPlay();
-      renderAll(await apiPost('/api/chaos', { kind }));
-    }
-
-    async function handleTopKillBtn() {
-      if (STATE && STATE.kill_switch_active) {
-        activateTab(document.getElementById('tab-crypto'));
-      } else {
-        await tripKillSwitch();
-      }
-    }
-    async function tripKillSwitch() { renderAll(await apiPost('/api/quorum/trip', {})); }
-
-    async function attemptShamirDisarm() {
-      const ids = Array.from(document.querySelectorAll('#custodianGrid input[type="checkbox"]:checked'))
-        .map((el) => Number(el.value));
-      const tamper = document.getElementById('tamperToggle').checked;
-      const res = await apiPost('/api/quorum/disarm', { custodian_ids: ids, tamper_share: tamper });
-      if (res.state) renderAll(res.state);
-      const q = res.quorum;
-      const box = document.getElementById('quorumLog');
-      box.style.color = q.success ? 'var(--emerald)' : '#fca5a5';
-      box.textContent = `[${q.success ? 'QUORUM VERIFIED' : 'ACCESS DENIED'} • ${q.elapsed_ns} ns • Shares: [${q.custodian_ids_used.join(', ')}]${q.tampered ? ' (TAMPERED)' : ''}]\n${q.message}`;
-    }
-
-    async function compilePolicy() {
-      const nl = document.getElementById('nlPolicyInput').value;
-      renderAll(await apiPost('/api/policy', { nl_text: nl }));
-    }
-    function setPresetPolicy(kind) {
-      const el = document.getElementById('nlPolicyInput');
-      if (kind === 'strict') el.value = 'Max ₹20,000 per trade, max 75 quantity, block buys when Hawkes > 100000 and VPIN > 6500, halt if SPAN crash loss > ₹30,000';
-      else if (kind === 'prop') el.value = 'Max ₹1,50,000 per trade, max 400 quantity, block buys when Hawkes > 140000 and VPIN > 7500, halt if SPAN crash loss > ₹1,20,000';
-      else el.value = 'REJECT 101 IF notional > 40000\nREJECT 102 IF hawkes > 115000 AND vpin > 6800\nREJECT 103 IF span < -50000\nREJECT 104 IF qty > 120';
-      compilePolicy();
-    }
-
-    async function submitManualOrder() {
-      const payload = {
-        symbol: document.getElementById('ordSym').value,
-        side: document.getElementById('ordSide').value,
-        is_fno: document.getElementById('ordSeg').value === 'true',
-        qty: Number(document.getElementById('ordQty').value),
-        price_inr: Number(document.getElementById('ordPx').value)
-      };
-      const res = await apiPost('/api/order', payload);
-      if (res.state) renderAll(res.state);
-      const d = res.decision;
-      const el = document.getElementById('manualOrderResult');
-      el.innerHTML = `<div class="code-box" style="color:${d.approved ? 'var(--emerald)' : '#fca5a5'}">[Order #${d.id} • ${d.approved ? 'APPROVED' : 'BLOCKED'} in ${d.latency_ns} ns | FPGA BAR0: ${d.fpga_verdict} (${d.fpga_cycles} cycles)]\nGate: ${d.gate_triggered}\n${d.ai_explanation}</div>`;
-    }
-
-    async function inspectProof(id) {
-      const body = document.getElementById('proofDialogBody');
-      body.textContent = 'Running live ARMv8 SHA2 Merkle & Post-Quantum Ajtai-SIS Lattice verification...';
-      proofDialog.showModal();
-      const r = await fetch(`/api/proof/verify?id=${id}`);
-      const p = await r.json();
-      if (p.error) {
-        body.innerHTML = `<div class="code-box" style="color:#fca5a5">${p.error}</div>`;
-        return;
-      }
-      body.innerHTML = `
-        <div class="meter-grid" style="grid-template-columns: repeat(2, 1fr);">
-          <div class="meter">
-            <div class="meter-lbl">Hardware SHA-256 Merkle Proof</div>
-            <div class="meter-val" style="color:${p.merkle_proof_valid ? 'var(--emerald)' : 'var(--crimson)'}">${p.merkle_proof_valid ? 'VERIFIED VALID' : 'INVALID'}</div>
-            <div class="meter-sub">Verified in ${p.merkle_verify_ns} ns (Leaf #${p.merkle_leaf_idx})</div>
-          </div>
-          <div class="meter">
-            <div class="meter-lbl">Post-Quantum Ajtai-SIS Lattice Audit</div>
-            <div class="meter-val" style="color:${p.lattice_sis_valid ? 'var(--emerald)' : 'var(--crimson)'}">${p.lattice_sis_valid ? 'SIS NORM VALID' : 'INVALID'}</div>
-            <div class="meter-sub">Verified in ${p.lattice_verify_ns} ns (Bound: ${p.lattice_norm_bound})</div>
-          </div>
-        </div>
-        <div class="code-box">Decision ID     : #${p.decision_id}
-Leaf SHA-256    : ${p.merkle_leaf_hash_hex}
-Chained Root    : ${p.merkle_root_hex}
-O(log N) Path   : [${p.merkle_sibling_hashes_hex.join(' -> ')}]</div>
-      `;
-    }
-
-    async function refreshFlightRecorder() {
-      const r = await fetch('/api/flight-recorder');
-      const data = await r.json();
-      const tbody = document.getElementById('flightBody');
-      tbody.innerHTML = (data.records || []).map((row) => `
-        <tr class="${row.event_kind !== 'PASS' ? 'row-blocked' : ''}">
-          <th>#${row.seq}</th>
-          <td data-label="Kind"><span class="tag ${row.event_kind === 'PASS' ? 'tag-ok' : 'tag-bad'}">${row.event_kind}</span></td>
-          <td data-label="Order ID">${row.cl_ord_id_hash}</td>
-          <td data-label="Price">${fmtINR(row.price_inr)}</td>
-          <td data-label="Qty">${row.qty}</td>
-          <td data-label="Entropy">${(row.entropy_e4 / 10000).toFixed(2)}b</td>
-          <td data-label="SPAN">${fmtINR(row.post_span_worst)}</td>
-          <td data-label="ARX" style="font-family:var(--mono); color:var(--cyan);">${row.proof_commit_hex}</td>
-        </tr>
-      `).join('');
-    }
-
-    async function recalcTax() {
-      const inc = Number(document.getElementById('taxIncome').value) || 1500000;
-      const ded = Number(document.getElementById('taxDed').value) || 200000;
-      renderAll(await apiPost('/api/tax', { annual_income_inr: inc, deductions_80c_hra_inr: ded }));
-    }
-
-    function askPreset(q) {
-      document.getElementById('chatInput').value = q;
-      sendChat();
-    }
-    async function sendChat() {
-      const inp = document.getElementById('chatInput');
-      const q = inp.value.trim();
-      if (!q) return;
-      inp.value = '';
-      const log = document.getElementById('chatLog');
-      log.insertAdjacentHTML('beforeend', `<div class="chat-msg chat-user">${escapeHtml(q)}</div>`);
-      const rep = await apiPost('/api/chat', { question: q });
-      document.getElementById('copilotModeTag').textContent = rep.mode;
-      const cites = (rep.citations || []).map((c) => `• ${escapeHtml(c)}`).join('<br/>');
-      log.insertAdjacentHTML('beforeend', `<div class="chat-msg chat-ai"><div>${escapeHtml(rep.answer)}</div><div class="chat-cite">${cites}</div></div>`);
-      log.scrollTop = log.scrollHeight;
-    }
-
-    function escapeHtml(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // -------------------------------------------------------------------------
-    // High-DPI Canvas Renderers (OHLC + VPIN Chart & Dual Equity Curve Chart)
-    // -------------------------------------------------------------------------
-    function drawOhlcChart(series) {
-      const c = document.getElementById('ohlcChart');
-      const ctx = c.getContext('2d');
-      const W = c.width, H = c.height;
-      ctx.clearRect(0, 0, W, H);
-      if (!series || !series.length) return;
-
-      const padL = 48, padR = 10, padT = 12, padB = 22;
-      const plotW = W - padL - padR, plotH = H - padT - padB;
-      let minP = Infinity, maxP = -Infinity;
-      for (const b of series) { minP = Math.min(minP, b.low); maxP = Math.max(maxP, b.high); }
-      const range = Math.max(maxP - minP, 10);
-      minP -= range * 0.08; maxP += range * 0.08;
-
-      const yOf = (p) => padT + (1 - (p - minP) / (maxP - minP)) * plotH;
-
-      // Grid lines
-      ctx.strokeStyle = 'rgba(30,42,63,0.7)';
-      ctx.fillStyle = '#64748b';
-      ctx.font = '10px ui-monospace, monospace';
-      for (let g = 0; g <= 3; g++) {
-        const y = padT + (g / 3) * plotH;
-        const val = Math.round(maxP - (g / 3) * (maxP - minP));
-        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-        ctx.fillText(val.toLocaleString('en-IN'), 4, y + 3);
-      }
-
-      const stepX = plotW / Math.max(series.length, 1);
-      const candleW = Math.max(5, Math.min(18, stepX * 0.56));
-
-      // VPIN Toxicity Overlay Ribbon (amber translucent bars along bottom)
-      series.forEach((b, i) => {
-        const cx = padL + (i + 0.5) * stepX;
-        const vpinFrac = Math.min(1, (b.vpin_e4 || 0) / 10000);
-        if (vpinFrac > 0.05) {
-          const vh = vpinFrac * (plotH * 0.35);
-          ctx.fillStyle = vpinFrac >= 0.7 ? 'rgba(239,68,68,0.28)' : 'rgba(245,158,11,0.18)';
-          ctx.fillRect(cx - candleW / 2, padT + plotH - vh, candleW, vh);
+          const msg = await GUIDE_STEPS[currentGuideStep].run();
+          completedGuideSteps.add(currentGuideStep);
+          renderGuideStep(currentGuideStep, msg);
+        } finally {
+          btn.disabled = false;
+          if (btn.textContent === 'Running…') btn.textContent = old;
         }
       });
 
-      // OHLC Candlesticks + Blocked Trap Markers
-      series.forEach((b, i) => {
-        const cx = padL + (i + 0.5) * stepX;
-        const up = b.close >= b.open;
-        ctx.strokeStyle = up ? '#10b981' : '#ef4444';
-        ctx.fillStyle = up ? '#10b981' : '#ef4444';
-        ctx.lineWidth = 1.5;
+      document.getElementById('btnNextGuideStep').addEventListener('click', () => {
+        const next = (currentGuideStep + 1) % GUIDE_STEPS.length;
+        renderGuideStep(next);
+        selectTab(document.getElementById(GUIDE_STEPS[next].tabId));
+      });
+
+      document.getElementById('btnToggleGuide').addEventListener('click', () => {
+        const strip = document.getElementById('guideStrip');
+        const btn = document.getElementById('btnToggleGuide');
+        const willHide = !strip.hidden;
+        strip.hidden = willHide;
+        btn.textContent = willHide ? 'Demo Guide' : 'Hide Guide';
+        btn.setAttribute('aria-expanded', String(!willHide));
+      });
+
+      // =======================================================================
+      // Render Full Dashboard Snapshot
+      // =======================================================================
+      function applyState(s) {
+        if (!s) return;
+        state = s;
+
+        // Top Bar
+        const hdrStatus = document.getElementById('hdrStatus');
+        hdrStatus.classList.toggle('halted', !!s.kill_switch_active);
+        hdrStatus.innerHTML = `<span class="status-dot"></span><span>${s.kill_switch_active ? 'Trading Halted' : 'Firewall Active'}</span>`;
+        document.getElementById('hdrEquity').textContent = inr(s.protected_equity_inr);
+
+        // Overview KPIs
+        document.getElementById('kpiProtectedEq').textContent = inr(s.protected_equity_inr);
+        const pnlBadge = document.getElementById('kpiPnlBadge');
+        pnlBadge.textContent = signedInr(s.net_pnl_inr);
+        pnlBadge.className = 'badge num ' + (s.net_pnl_inr >= 0 ? 'badge-green' : 'badge-red');
+        document.getElementById('kpiCashFoot').textContent =
+          `Cash ${inr(s.cash_available_inr)} · Invested ${inr(s.invested_value_inr)} · Fees ${inr(s.total_fees_paid_inr)}`;
+
+        const savedVal = Math.max(0, Number(s.protected_equity_inr - s.unguarded_equity_inr));
+        document.getElementById('kpiSaved').textContent = '+' + inr(savedVal);
+        document.getElementById('kpiUnguardedFoot').textContent =
+          `Without FinGate: ${inr(s.unguarded_equity_inr)} (${signedInr(s.unguarded_equity_inr - s.initial_capital_inr)})`;
+
+        const totalOrd = (s.approved_count || 0) + (s.blocked_count || 0);
+        document.getElementById('kpiScreened').textContent = totalOrd.toLocaleString('en-IN');
+        const blkBadge = document.getElementById('kpiBlockRate');
+        blkBadge.textContent = `${s.blocked_count} blocked`;
+        blkBadge.className = 'badge ' + (s.blocked_count > 0 ? 'badge-red' : 'badge-green');
+        document.getElementById('kpiScreenedFoot').textContent =
+          `${s.approved_count} approved · ${s.blocked_count} unsafe orders stopped`;
+
+        // Toxicity gauge
+        const vpinPct = Math.min(100, Math.round((Number(s.vpin_toxicity_e4 || 0) / 10000) * 100));
+        const toxBadge = document.getElementById('kpiToxBadge');
+        const toxBar = document.getElementById('kpiToxBar');
+        document.getElementById('kpiToxPct').textContent = `${vpinPct}%`;
+        toxBar.style.width = `${Math.max(4, vpinPct)}%`;
+        if (vpinPct >= 70 || s.hawkes_intensity_e4 >= 120000) {
+          toxBadge.textContent = 'Critical';
+          toxBadge.className = 'badge badge-red';
+          toxBar.style.background = 'var(--red)';
+        } else if (vpinPct >= 45) {
+          toxBadge.textContent = 'Elevated';
+          toxBadge.className = 'badge badge-amber';
+          toxBar.style.background = 'var(--amber)';
+        } else {
+          toxBadge.textContent = 'Calm';
+          toxBadge.className = 'badge badge-green';
+          toxBar.style.background = 'var(--green)';
+        }
+        document.getElementById('kpiToxRaw').textContent =
+          `VPIN ${(Number(s.vpin_toxicity_e4 || 0) / 10000).toFixed(2)} · Hawkes ${Number(s.hawkes_intensity_e4 || 0).toLocaleString('en-IN')}`;
+
+        // Tape selector
+        const sel = document.getElementById('tapeSelect');
+        if (sel.options.length !== (s.available_tapes || []).length) {
+          sel.innerHTML = '';
+          for (const [id, title, len] of s.available_tapes || []) {
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = `${title.replace(/^Tape \d+:\s*/, '')} (${len} bars)`;
+            sel.appendChild(opt);
+          }
+        }
+        sel.value = s.active_tape_id;
+        document.getElementById('stepBadge').textContent = `Bar ${s.current_step} / ${s.total_steps}`;
+
+        // News ribbon
+        const ribbon = document.getElementById('newsRibbon');
+        const latestDec = (s.recent_decisions || [])[0];
+        ribbon.classList.toggle('is-alert', Boolean(latestDec && !latestDec.approved));
+        document.getElementById('newsHeadline').textContent = s.current_headline;
+        document.getElementById('newsSource').textContent = `${s.current_source} · ${s.active_tape_category}`;
+        document.getElementById('newsSymbol').textContent = s.current_symbol;
+        document.getElementById('newsPrice').textContent = inr(s.current_price_inr);
+        document.getElementById('priceChartTitle').textContent = `${s.current_symbol} Price Action & Blocked Traps`;
+
+        // Decisions table
+        document.getElementById('decisionsCountBadge').textContent = `${(s.recent_decisions || []).length} records`;
+        const dBody = document.getElementById('decisionsBody');
+        dBody.innerHTML = (s.recent_decisions || []).slice(0, 14).map((d) => `
+          <tr>
+            <th class="mono">#${d.id}</th>
+            <td data-label="Time" class="num" style="white-space:nowrap;color:var(--muted);">${esc(d.time_ist)}</td>
+            <td data-label="Action" style="white-space:nowrap;">
+              <strong class="${d.side === 'BUY' ? 'text-green' : 'text-red'}">${esc(d.side)}</strong>
+              <span class="num">${d.qty} ${esc(d.symbol)}</span>
+              <span class="text-muted num">@ ${inr(d.price_inr)}</span>
+            </td>
+            <td data-label="Value" class="num" style="white-space:nowrap;font-weight:500;">${inr(d.notional_inr)}</td>
+            <td data-label="Verdict">
+              <span class="badge ${d.approved ? 'badge-green' : 'badge-red'}">${d.approved ? 'Approved' : 'Blocked'}</span>
+              <div class="mono text-muted" style="font-size:11px;margin-top:2px;">${fmtLatency(d.latency_ns)}</div>
+            </td>
+            <td data-label="Explanation" class="reason-cell">
+              <div style="font-weight:500;color:var(--ink);margin-bottom:2px;">${esc(d.gate_triggered)}</div>
+              <div>${esc(d.ai_explanation)}</div>
+            </td>
+            <td data-label="Proof">
+              <button type="button" class="btn btn-sm" data-proof-id="${d.id}">Verify</button>
+            </td>
+          </tr>
+        `).join('');
+
+        // Under-the-hood telemetry & FPGA BAR0
+        const stBody = document.getElementById('stageTelemetryBody');
+        stBody.innerHTML = (s.stage_telemetry || []).map((st) => `
+          <tr>
+            <th>${esc(st.stage)}</th>
+            <td data-label="Samples" class="num">${st.samples}</td>
+            <td data-label="p50" class="mono">${fmtLatency(st.p50_ns)}</td>
+            <td data-label="p99" class="mono">${fmtLatency(st.p99_ns)}</td>
+            <td data-label="Max" class="mono">${fmtLatency(st.max_ns)}</td>
+          </tr>
+        `).join('');
+
+        if (s.fpga_bar0) {
+          document.getElementById('fpgaSummaryBox').innerHTML = `
+            <div class="summary-row"><span class="text-muted">Silicon Target</span><strong>Alveo ${s.fpga_bar0.clock_mhz} MHz · ${s.fpga_bar0.pipeline_cycles} cycles (${s.fpga_bar0.modeled_latency_ns.toFixed(1)} ns)</strong></div>
+            <div class="summary-row"><span class="text-muted">Hardware Kill Bit</span><strong class="${s.fpga_bar0.silicon_kill_bit ? 'text-red' : 'text-green'}">${s.fpga_bar0.silicon_kill_bit ? 'SET (1 — HALTED)' : 'CLEAR (0 — OPEN)'}</strong></div>
+            <div class="summary-row"><span class="text-muted">Synced Max Notional</span><strong class="num">${inr(s.fpga_bar0.max_notional)}</strong></div>
+            <div class="summary-row"><span class="text-muted">Synced Max Quantity</span><strong class="num">${s.fpga_bar0.max_qty} units</strong></div>
+            <div class="summary-row"><span class="text-muted">BAR0 Seqlock Epoch</span><strong class="mono">#${s.fpga_bar0.seqlock_version}</strong></div>
+          `;
+        }
+
+        // Trade & Portfolio Tab
+        document.getElementById('ordPolicyLimit').textContent =
+          `${inr(s.policy.max_notional_inr)} / ${s.policy.max_qty} qty`;
+        document.getElementById('portCash').textContent = inr(s.cash_available_inr);
+        document.getElementById('portInvested').textContent = inr(s.invested_value_inr);
+        const rEl = document.getElementById('portRealized');
+        rEl.textContent = signedInr(s.realized_pnl_inr);
+        rEl.className = 'num ' + (s.realized_pnl_inr >= 0 ? 'text-green' : 'text-red');
+        const uEl = document.getElementById('portUnrealized');
+        uEl.textContent = signedInr(s.unrealized_pnl_inr);
+        uEl.className = 'num ' + (s.unrealized_pnl_inr >= 0 ? 'text-green' : 'text-red');
+        document.getElementById('portFees').textContent = inr(s.total_fees_paid_inr);
+
+        const hBody = document.getElementById('holdingsBody');
+        if (!s.positions || s.positions.length === 0) {
+          hBody.innerHTML = `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:24px;">No open positions yet — place a paper order or run a replay.</td></tr>`;
+        } else {
+          hBody.innerHTML = s.positions.map((p) => `
+            <tr>
+              <th>${esc(p.symbol)}</th>
+              <td data-label="Qty" class="num">${p.qty}</td>
+              <td data-label="Avg Cost" class="num">${inr(p.avg_entry_price_inr)}</td>
+              <td data-label="LTP" class="num">${inr(p.last_price_inr)}</td>
+              <td data-label="Value" class="num" style="font-weight:500;">${inr(p.market_value_inr)}</td>
+              <td data-label="Unrealized" class="num ${p.unrealized_pnl_inr >= 0 ? 'text-green' : 'text-red'}">${signedInr(p.unrealized_pnl_inr)}</td>
+              <td data-label="Realized" class="num ${p.realized_pnl_inr >= 0 ? 'text-green' : 'text-red'}">${signedInr(p.realized_pnl_inr)}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Risk Rules Tab
+        const pInput = document.getElementById('policyInput');
+        if (document.activeElement !== pInput) {
+          pInput.value = s.policy.natural_language;
+        }
+        document.getElementById('policyIdBadge').textContent = `Policy #${s.policy.policy_id}`;
+        document.getElementById('policyMeta').textContent =
+          `Max ${inr(s.policy.max_notional_inr)} · Max ${s.policy.max_qty} qty · VPIN ${(s.policy.max_vpin_e4 / 10000).toFixed(2)} · SPAN ${inr(s.policy.max_span_loss_inr)}`;
+        document.getElementById('policyDslCode').textContent =
+          `# ${s.policy.compiler_source} (${s.policy.instruction_count} SIMD ops)\n${s.policy.compiled_dsl}`;
+        document.getElementById('dryRunSpeedBadge').textContent = `Verified in ${s.policy.dry_run_elapsed_us} µs`;
+        document.getElementById('dryRunTraps').textContent = `${s.policy.dry_run_traps_caught} / ${s.policy.dry_run_traps_total}`;
+        document.getElementById('dryRunAllowed').textContent = s.policy.dry_run_allowed;
+        document.getElementById('dryRunBlocked').textContent = s.policy.dry_run_blocked;
+        document.getElementById('dryRunTotal').textContent = s.policy.dry_run_total_ticks;
+
+        document.getElementById('dryRunSamplesBody').innerHTML = (s.policy.dry_run_samples || []).map((row) => {
+          const shortTape = String(row.tape_id || '').split('_')[0];
+          const isAllow = row.verdict.startsWith('ALLOW');
+          const codeMatch = row.verdict.match(/Code\s+(\d+)/i);
+          const shortVerdict = isAllow ? 'Allow' : (codeMatch ? `Block #${codeMatch[1]}` : 'Blocked');
+          return `
+            <tr>
+              <th class="mono" style="font-size:12px;">${esc(shortTape)} #${row.step}</th>
+              <td data-label="Symbol">${esc(row.symbol)}</td>
+              <td data-label="Value" class="num">${inr(row.notional_inr)}</td>
+              <td data-label="Type"><span class="badge ${row.is_toxic_or_trap ? 'badge-amber' : ''}">${row.is_toxic_or_trap ? 'Trap' : 'Normal'}</span></td>
+              <td data-label="Result"><span class="badge ${isAllow ? 'badge-green' : 'badge-red'}" title="${esc(row.verdict)}">${esc(shortVerdict)}</span></td>
+            </tr>
+          `;
+        }).join('');
+
+        // Shockwaves
+        document.getElementById('shockGrid').innerHTML = (s.shockwaves || []).map((sw) => `
+          <div class="shock-item ${sw.survives ? '' : 'breach'}">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">${esc(sw.label)}</div>
+            <div class="num" style="font-size:16px;font-weight:700;color:${sw.projected_pnl_inr >= 0 ? 'var(--green)' : 'var(--red)'};">${signedInr(sw.projected_pnl_inr)}</div>
+            <div style="margin-top:6px;"><span class="badge ${sw.survives ? 'badge-green' : 'badge-red'}">${sw.survives ? 'Survives' : 'Limit Breach'}</span></div>
+          </div>
+        `).join('');
+
+        // Protection & 3-of-5 Shamir Tab
+        const qBadge = document.getElementById('quorumBadge');
+        qBadge.textContent = s.kill_switch_active ? `Halted · Nonce #${s.disarm_nonce}` : `Active · Nonce #${s.disarm_nonce}`;
+        qBadge.className = 'badge ' + (s.kill_switch_active ? 'badge-red' : 'badge-green');
+
+        const cList = document.getElementById('custodianList');
+        if (cList.children.length !== (s.custodians || []).length) {
+          cList.innerHTML = (s.custodians || []).map((c, idx) => `
+            <label class="custodian-row">
+              <input type="checkbox" name="custodian" value="${c.id}" ${idx < 3 ? 'checked' : ''}>
+              <span>
+                <strong style="display:block;color:var(--ink);">${esc(c.role)}</strong>
+                <span class="mono text-muted" style="font-size:11px;">Key #${c.id} · ${esc(c.share_preview_hex.slice(0, 8))}…</span>
+              </span>
+            </label>
+          `).join('');
+        }
+
+        if (s.crypto_audit) {
+          document.getElementById('auditShaBackend').textContent = s.crypto_audit.sha256_backend;
+          document.getElementById('auditMerkleRoot').textContent = s.crypto_audit.latest_merkle_root_hex.slice(0, 20) + '…';
+          const latEl = document.getElementById('auditLatticeStatus');
+          latEl.textContent = s.crypto_audit.lattice_sis_verified
+            ? `Valid (${s.crypto_audit.lattice_orders_committed} orders)`
+            : 'Mismatch';
+          latEl.className = s.crypto_audit.lattice_sis_verified ? 'text-green' : 'text-red';
+          document.getElementById('auditEventsCount').textContent =
+            `${s.crypto_audit.flight_recorder_total_events} ring · ${s.crypto_audit.wal_records_enqueued} WAL`;
+        }
+
+        // India Tax Tab
+        if (s.tax_report) {
+          const t = s.tax_report;
+          document.getElementById('taxRegimeBadge').textContent = `${t.recommended_regime} Saves ${inr(t.regime_savings_inr)}`;
+          const incIn = document.getElementById('taxIncome');
+          const dedIn = document.getElementById('taxDeductions');
+          if (document.activeElement !== incIn) incIn.value = t.annual_income_inr;
+          if (document.activeElement !== dedIn) dedIn.value = t.deductions_80c_hra_inr;
+
+          document.getElementById('taxSummaryBox').innerHTML = `
+            <div class="summary-row"><span class="text-muted">New Regime Tax (incl. 4% Cess)</span><strong class="num">${inr(t.new_regime_tax_for_15l_income)}</strong></div>
+            <div class="summary-row"><span class="text-muted">Old Regime Tax (after deductions)</span><strong class="num">${inr(t.old_regime_tax_for_15l_income)}</strong></div>
+            <div class="summary-row" style="padding-top:6px;border-top:1px solid var(--border);"><span class="text-muted">Short-Term Capital Gains (STCG 20%)</span><strong class="num text-red">${inr(t.stcg_20pct_tax_inr)}</strong></div>
+            <div class="summary-row"><span class="text-muted">Long-Term Capital Gains (LTCG 12.5% &gt; ₹1.25L)</span><strong class="num text-green">${inr(t.ltcg_12_5pct_tax_inr)}</strong></div>
+            <div class="summary-row" style="padding-top:6px;border-top:1px solid var(--border);"><span class="text-muted">Brokerage + STT + Exchange + Stamp + GST</span><strong class="num">${inr(t.total_statutory_charges_inr)}</strong></div>
+            <div class="summary-row"><span class="text-muted" style="font-size:12px;">Breakdown</span><span class="num text-muted" style="font-size:12px;">Brok ${inr(t.brokerage_inr)} · STT ${inr(t.stt_inr)} · GST ${inr(t.gst_18pct_inr)}</span></div>
+          `;
+          document.getElementById('taxAdvice').textContent = t.plain_english_advice;
+        }
+
+        // Draw crisp light-mode canvases
+        drawAllCharts(s);
+      }
+
+      // =======================================================================
+      // Crisp Retina Light-Mode Canvas Charts (Zero Dark Gradients, Pure Finance)
+      // =======================================================================
+      function setupCanvas(canvas) {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        const w = Math.max(260, Math.round(rect.width));
+        const h = Math.max(180, Math.round(rect.height));
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, w, h);
+        return { ctx, w, h };
+      }
+
+      function drawAllCharts(s) {
+        if (!s || !s.ohlc_series || s.ohlc_series.length === 0) return;
+        drawPriceCandles(s.ohlc_series);
+        drawEquityComparison(s.ohlc_series, s.initial_capital_inr);
+      }
+
+      function drawPriceCandles(series) {
+        const canvas = document.getElementById('priceCanvas');
+        if (!canvas || canvas.offsetParent === null) return;
+        const { ctx, w, h } = setupCanvas(canvas);
+        const padL = 56, padR = 14, padT = 16, padB = 26;
+        const plotW = w - padL - padR;
+        const plotH = h - padT - padB;
+
+        let minP = Infinity, maxP = -Infinity;
+        for (const p of series) {
+          minP = Math.min(minP, p.low);
+          maxP = Math.max(maxP, p.high);
+        }
+        const span = Math.max(10, maxP - minP);
+        minP -= span * 0.1;
+        maxP += span * 0.1;
+        const yOf = (val) => padT + plotH - ((val - minP) / (maxP - minP)) * plotH;
+
+        // Subtle horizontal gridlines + price axis
+        ctx.font = '11px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (let i = 0; i <= 4; i++) {
+          const val = minP + ((maxP - minP) * i) / 4;
+          const y = yOf(val);
+          ctx.strokeStyle = '#F1F5F9';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padL, y);
+          ctx.lineTo(w - padR, y);
+          ctx.stroke();
+
+          ctx.fillStyle = '#64748B';
+          ctx.fillText('₹' + Math.round(val).toLocaleString('en-IN'), padL - 8, y);
+        }
+
+        const n = series.length;
+        const stepX = plotW / Math.max(n, 1);
+        const candleW = Math.max(4, Math.min(18, stepX * 0.52));
+
+        series.forEach((p, idx) => {
+          const cx = padL + stepX * (idx + 0.5);
+          const up = p.close >= p.open;
+          const col = up ? '#047857' : '#B91C1C';
+
+          // Wick
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(cx, yOf(p.high));
+          ctx.lineTo(cx, yOf(p.low));
+          ctx.stroke();
+
+          // Body
+          const yOpen = yOf(p.open);
+          const yClose = yOf(p.close);
+          const top = Math.min(yOpen, yClose);
+          const bodyH = Math.max(2, Math.abs(yClose - yOpen));
+          ctx.fillStyle = col;
+          ctx.fillRect(cx - candleW / 2, top, candleW, bodyH);
+
+          // Subtle marker where FinGate blocked a toxic order
+          if (p.blocked_here) {
+            const markY = Math.max(padT + 8, yOf(p.high) - 10);
+            ctx.fillStyle = '#FEF2F2';
+            ctx.strokeStyle = '#B91C1C';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(cx, markY, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+
+          // Sparse X-axis time labels
+          const stride = Math.max(1, Math.ceil(n / 6));
+          if (idx % stride === 0 || idx === n - 1) {
+            ctx.fillStyle = '#64748B';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(p.time_ist.replace(' IST', ''), cx, h - padB + 8);
+          }
+        });
+      }
+
+      function drawEquityComparison(series, initCap) {
+        const canvas = document.getElementById('equityCanvas');
+        if (!canvas || canvas.offsetParent === null) return;
+        const { ctx, w, h } = setupCanvas(canvas);
+        const padL = 66, padR = 16, padT = 16, padB = 26;
+        const plotW = w - padL - padR;
+        const plotH = h - padT - padB;
+
+        const pts = [{ time_ist: 'Start', protected_equity_inr: initCap, unguarded_equity_inr: initCap }, ...series];
+        let minE = initCap, maxE = initCap;
+        for (const p of pts) {
+          minE = Math.min(minE, p.protected_equity_inr, p.unguarded_equity_inr);
+          maxE = Math.max(maxE, p.protected_equity_inr, p.unguarded_equity_inr);
+        }
+        const pad = Math.max(2000, (maxE - minE) * 0.18);
+        minE -= pad;
+        maxE += pad;
+
+        const xOf = (i) => padL + (plotW * i) / Math.max(pts.length - 1, 1);
+        const yOf = (val) => padT + plotH - ((val - minE) / (maxE - minE)) * plotH;
+
+        ctx.font = '11px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (let i = 0; i <= 4; i++) {
+          const val = minE + ((maxE - minE) * i) / 4;
+          const y = yOf(val);
+          ctx.strokeStyle = '#F1F5F9';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padL, y);
+          ctx.lineTo(w - padR, y);
+          ctx.stroke();
+
+          ctx.fillStyle = '#64748B';
+          ctx.fillText('₹' + (val / 100000).toFixed(2) + 'L', padL - 8, y);
+        }
+
+        // Baseline ₹5.00L hairline
+        const yBase = yOf(initCap);
+        ctx.strokeStyle = '#CBD5E1';
+        ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.moveTo(cx, yOf(b.high));
-        ctx.lineTo(cx, yOf(b.low));
+        ctx.moveTo(padL, yBase);
+        ctx.lineTo(w - padR, yBase);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Soft fill under Protected line
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+          const x = xOf(i), y = yOf(p.protected_equity_inr);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.lineTo(xOf(pts.length - 1), padT + plotH);
+        ctx.lineTo(xOf(0), padT + plotH);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(4, 120, 87, 0.06)';
+        ctx.fill();
+
+        // Unguarded AI dashed crimson line
+        ctx.strokeStyle = '#B91C1C';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+          const x = xOf(i), y = yOf(p.unguarded_equity_inr);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // FinGate Protected solid emerald line
+        ctx.strokeStyle = '#047857';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+          const x = xOf(i), y = yOf(p.protected_equity_inr);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
         ctx.stroke();
 
-        const yO = yOf(b.open), yC = yOf(b.close);
-        const top = Math.min(yO, yC), bh = Math.max(2.5, Math.abs(yC - yO));
-        ctx.fillRect(cx - candleW / 2, top, candleW, bh);
-
-        if (b.blocked_here) {
-          ctx.fillStyle = '#ffffff';
+        // End dots
+        const last = pts[pts.length - 1];
+        const lx = xOf(pts.length - 1);
+        for (const [val, col] of [[last.unguarded_equity_inr, '#B91C1C'], [last.protected_equity_inr, '#047857']]) {
+          ctx.fillStyle = col;
           ctx.beginPath();
-          ctx.arc(cx, Math.max(padT + 5, yOf(b.high) - 6), 3.5, 0, Math.PI * 2);
+          ctx.arc(lx, yOf(val), 3.8, 0, Math.PI * 2);
           ctx.fill();
         }
-      });
-    }
 
-    function drawEquityChart(series) {
-      const c = document.getElementById('equityChart');
-      const ctx = c.getContext('2d');
-      const W = c.width, H = c.height;
-      ctx.clearRect(0, 0, W, H);
-      if (!series || !series.length) return;
-
-      const padL = 56, padR = 10, padT = 12, padB = 18;
-      const plotW = W - padL - padR, plotH = H - padT - padB;
-      const vals = series.flatMap((b) => [b.protected_equity_inr, b.unguarded_equity_inr]);
-      let minV = Math.min(...vals, 495000);
-      let maxV = Math.max(...vals, 505000);
-      const rng = Math.max(maxV - minV, 5000);
-      minV -= rng * 0.08; maxV += rng * 0.08;
-
-      const xOf = (i) => padL + (series.length === 1 ? plotW / 2 : (i / (series.length - 1)) * plotW);
-      const yOf = (v) => padT + (1 - (v - minV) / (maxV - minV)) * plotH;
-
-      ctx.strokeStyle = 'rgba(30,42,63,0.7)';
-      ctx.fillStyle = '#64748b';
-      ctx.font = '10px ui-monospace, monospace';
-      for (let g = 0; g <= 2; g++) {
-        const y = padT + (g / 2) * plotH;
-        const val = Math.round(maxV - (g / 2) * (maxV - minV));
-        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-        ctx.fillText((val / 1000).toFixed(0) + 'k', 6, y + 3);
+        // X labels
+        const stride = Math.max(1, Math.ceil(pts.length / 6));
+        ctx.fillStyle = '#64748B';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        pts.forEach((p, i) => {
+          if (i % stride === 0 || i === pts.length - 1) {
+            ctx.fillText(p.time_ist.replace(' IST', ''), xOf(i), h - padB + 8);
+          }
+        });
       }
 
-      // Unguarded AI Equity (Crimson Dashed)
-      ctx.save();
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 4]);
-      ctx.beginPath();
-      series.forEach((b, i) => {
-        const x = xOf(i), y = yOf(b.unguarded_equity_inr);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      ctx.restore();
-
-      // FinGate Protected Equity (Emerald Solid)
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 2.4;
-      ctx.beginPath();
-      series.forEach((b, i) => {
-        const x = xOf(i), y = yOf(b.protected_equity_inr);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-    }
-
-    // -------------------------------------------------------------------------
-    // Master UI State Renderer
-    // -------------------------------------------------------------------------
-    function renderAll(s) {
-      STATE = s;
-
-      // Top KPIs
-      document.getElementById('kpiProtected').textContent = fmtINR(s.protected_equity_inr);
-      document.getElementById('kpiUnguarded').textContent = fmtINR(s.unguarded_equity_inr);
-      document.getElementById('kpiUnguarded').style.color = s.unguarded_equity_inr < s.initial_capital_inr ? 'var(--crimson)' : 'var(--muted)';
-      const pnlEl = document.getElementById('kpiPnl');
-      pnlEl.textContent = fmtSignedINR(s.net_pnl_inr);
-      pnlEl.style.color = s.net_pnl_inr >= 0 ? 'var(--emerald)' : 'var(--crimson)';
-      document.getElementById('kpiSaved').textContent = fmtINR(s.total_capital_saved_inr);
-
-      const kBtn = document.getElementById('killTopBtn');
-      if (s.kill_switch_active) {
-        kBtn.textContent = '🔒 LOCKED — OPEN 3-OF-5 SHAMIR DISARM';
-        kBtn.className = 'kill-btn kill-locked';
-      } else {
-        kBtn.textContent = 'TRIP 1-OF-5 KILL SWITCH';
-        kBtn.className = 'kill-btn kill-armed';
+      // =======================================================================
+      // Cryptographic Proof Dialog Loader
+      // =======================================================================
+      async function openProofDialog(decisionId) {
+        const body = document.getElementById('proofDialogBody');
+        body.innerHTML = `<p class="text-muted">Verifying Hardware SHA-256 Merkle &amp; Post-Quantum Lattice proof for Order #${decisionId}…</p>`;
+        if (!proofDialog.open) proofDialog.showModal();
+        try {
+          const res = await fetch(`/api/proof/verify?id=${decisionId}`);
+          const rep = await res.json();
+          if (rep.error) {
+            body.innerHTML = `<div class="banner-feedback err">${esc(rep.error)}</div>`;
+            return;
+          }
+          body.innerHTML = `
+            <div class="grid-2">
+              <div class="summary-box">
+                <span class="text-muted" style="font-size:12px;">SHA-256 Merkle Inclusion</span>
+                <strong class="${rep.merkle_proof_valid ? 'text-green' : 'text-red'}">${rep.merkle_proof_valid ? 'VERIFIED VALID' : 'INVALID'} (${fmtLatency(rep.merkle_verify_ns)})</strong>
+              </div>
+              <div class="summary-box">
+                <span class="text-muted" style="font-size:12px;">Post-Quantum Ajtai-SIS Lattice</span>
+                <strong class="${rep.lattice_sis_valid ? 'text-green' : 'text-red'}">${rep.lattice_sis_valid ? 'VERIFIED VALID' : 'INVALID'} (${fmtLatency(rep.lattice_verify_ns)})</strong>
+              </div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-row"><span class="text-muted">Order Decision ID</span><strong class="mono">#${rep.decision_id} (Leaf #${rep.merkle_leaf_idx})</strong></div>
+              <div class="summary-row"><span class="text-muted">Leaf Hash</span><span class="mono" style="font-size:12px;">${esc(rep.merkle_leaf_hash_hex)}</span></div>
+              <div class="summary-row"><span class="text-muted">Sealed Merkle Root</span><span class="mono" style="font-size:12px;">${esc(rep.merkle_root_hex)}</span></div>
+              <div class="summary-row"><span class="text-muted">SIS Norm Bound</span><span class="mono">${rep.lattice_norm_bound}</span></div>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--ink-secondary);margin-bottom:6px;">Merkle Sibling Path (${(rep.merkle_sibling_hashes_hex || []).length} hashes)</div>
+              <pre class="code-block">${(rep.merkle_sibling_hashes_hex || []).map((h, i) => `[level ${i}] ${h}`).join('\n') || 'Single-leaf root'}</pre>
+            </div>
+          `;
+        } catch (err) {
+          body.innerHTML = `<div class="banner-feedback err">Verification request failed: ${esc(err.message)}</div>`;
+        }
       }
 
-      // Left Column Market
-      document.getElementById('tapeSelect').value = s.active_tape_id;
-      document.getElementById('stepTag').textContent = `Bar ${s.current_step} / ${s.total_steps}`;
-      document.getElementById('tapeSummary').textContent = s.active_tape_summary;
-      document.getElementById('curSym').textContent = s.current_symbol;
-      document.getElementById('curPx').textContent = fmtINR(s.current_price_inr);
-      document.getElementById('newsHeadline').textContent = s.current_headline;
-      document.getElementById('newsSource').textContent = 'Source: ' + s.current_source;
+      document.getElementById('decisionsBody').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-proof-id]');
+        if (btn) openProofDialog(btn.dataset.proofId);
+      });
 
-      const edge = s.protected_equity_inr - s.unguarded_equity_inr;
-      document.getElementById('equityDeltaTag').textContent = (edge >= 0 ? '+' : '') + fmtINR(edge) + ' vs Unguarded';
-      drawOhlcChart(s.ohlc_series);
-      drawEquityChart(s.ohlc_series);
+      document.getElementById('btnInspectLatestProof').addEventListener('click', () => {
+        if (state && state.recent_decisions && state.recent_decisions.length > 0) {
+          openProofDialog(state.recent_decisions[0].id);
+        } else {
+          showToast('No decisions recorded yet.');
+        }
+      });
 
-      // Meters
-      const hEl = document.getElementById('mHawkes');
-      hEl.textContent = Number(s.hawkes_intensity_e4).toLocaleString('en-IN');
-      hEl.style.color = s.hawkes_intensity_e4 > 110000 ? 'var(--crimson)' : 'var(--emerald)';
-      const vEl = document.getElementById('mVpin');
-      vEl.textContent = (s.vpin_toxicity_e4 / 10000).toFixed(2);
-      vEl.style.color = s.vpin_toxicity_e4 >= 7000 ? 'var(--crimson)' : 'var(--emerald)';
-      const eEl = document.getElementById('mEntropy');
-      eEl.textContent = (s.shannon_entropy_e4 / 10000).toFixed(2) + ' bits';
-      eEl.style.color = s.shannon_entropy_e4 < 8000 ? 'var(--crimson)' : 'var(--cyan)';
-      document.getElementById('mRatio').textContent = `${s.approved_count} / ${s.blocked_count}`;
-      document.getElementById('mShaBackend').textContent = s.crypto_audit.sha256_backend;
+      // =======================================================================
+      // Interactive Handlers Across All 5 Views
+      // =======================================================================
+      // 1. Overview Replay Controls
+      document.getElementById('tapeSelect').addEventListener('change', async (e) => {
+        stopAutoPlay();
+        const snap = await apiPost('/api/tape', { tape_id: e.target.value });
+        applyState(snap);
+        showToast(`Loaded session: ${snap.active_tape_title}`);
+      });
 
-      // Stage Latency Bars
-      const maxMean = Math.max(...s.stage_telemetry.map((st) => st.p50_ns), 100);
-      document.getElementById('stageBars').innerHTML = s.stage_telemetry.map((st) => `
-        <div class="stage-row">
-          <div class="stage-top">
-            <span style="color:var(--text); font-weight:600;">${st.stage}</span>
-            <span style="font-family:var(--mono); color:var(--cyan);">p50 ${st.p50_ns}ns · p99 ${st.p99_ns}ns</span>
-          </div>
-          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, Math.max(8, (st.p50_ns / maxMean) * 100))}%"></div></div>
-        </div>
-      `).join('');
+      document.getElementById('btnStep').addEventListener('click', async () => {
+        const snap = await apiPost('/api/step', { count: 1 });
+        applyState(snap);
+      });
 
-      // 6-Shockwave SPAN Grid
-      document.getElementById('shockGrid').innerHTML = s.shockwaves.map((sw) => `
-        <div class="shock-cell">
-          <div style="font-size:10px; color:var(--muted);">${sw.label}</div>
-          <div style="font-family:var(--mono); font-weight:700; font-size:13px; margin-top:2px; color:${sw.projected_pnl_inr < 0 ? 'var(--crimson)' : 'var(--emerald)'}">
-            ${fmtSignedINR(sw.projected_pnl_inr)}
-          </div>
-          <div style="font-size:10px; color:${sw.survives ? 'var(--emerald)' : 'var(--crimson)'};">${sw.survives ? '✓ Survives' : '✕ Margin Call'}</div>
-        </div>
-      `).join('');
+      function stopAutoPlay() {
+        if (autoPlayTimer) {
+          clearInterval(autoPlayTimer);
+          autoPlayTimer = null;
+          document.getElementById('btnAutoPlay').textContent = 'Play';
+        }
+      }
 
-      // Forensic Decisions Table
-      document.getElementById('decisionBody').innerHTML = s.recent_decisions.map((d) => `
-        <tr class="${d.approved ? '' : 'row-blocked'}">
-          <th>#${d.id}</th>
-          <td data-label="Time / Sym"><strong>${escapeHtml(d.symbol)}</strong><br/><span style="color:var(--muted); font-size:10px;">${escapeHtml(d.time_ist)}</span></td>
-          <td data-label="Order" style="font-family:var(--mono);">${d.side} ${d.qty}<br/>@ ${fmtINR(d.price_inr)}</td>
-          <td data-label="Verdict">
-            <span class="tag ${d.approved ? 'tag-ok' : 'tag-bad'}">${d.approved ? 'PASS' : 'BLOCK'}</span>
-            <div style="font-size:10.5px; color:var(--amber); margin-top:3px; font-weight:600;">${escapeHtml(d.gate_triggered)}</div>
-          </td>
-          <td data-label="Latency" style="font-family:var(--mono); font-size:10.5px;">${d.latency_ns} ns<br/><span style="color:var(--muted);">FPGA: ${escapeHtml(d.fpga_verdict)}</span></td>
-          <td data-label="Explanation" style="font-size:11px; color:#cbd5e1; max-width:290px;">${escapeHtml(d.ai_explanation)}</td>
-          <td data-label="Proof"><button type="button" class="btn btn-sm" onclick="inspectProof(${d.id})">Verify</button></td>
-        </tr>
-      `).join('');
+      document.getElementById('btnAutoPlay').addEventListener('click', () => {
+        if (autoPlayTimer) {
+          stopAutoPlay();
+        } else {
+          document.getElementById('btnAutoPlay').textContent = 'Pause';
+          autoPlayTimer = setInterval(async () => {
+            const snap = await apiPost('/api/step', { count: 1 });
+            applyState(snap);
+            if (snap.current_step >= snap.total_steps) stopAutoPlay();
+          }, 950);
+        }
+      });
 
-      // Tab 2: Policy Studio + 60-Tick Dry-Run
-      document.getElementById('policySimdBadge').textContent = s.policy.simd_fast_path_active
-        ? `SIMD Predicate-Matrix Active (${s.policy.instruction_count} ops)`
-        : `DAG VM (${s.policy.instruction_count} ops)`;
-      document.getElementById('compiledDslBox').textContent = `# Policy #${s.policy.policy_id} (${s.policy.compiler_source})\n` + s.policy.compiled_dsl;
-      document.getElementById('dryRunSummary').textContent = s.policy.dry_run_summary;
-      document.getElementById('dryRunStatsTag').textContent = `${s.policy.dry_run_total_ticks} ticks in ${s.policy.dry_run_elapsed_us} µs`;
-      document.getElementById('dryRunBody').innerHTML = (s.policy.dry_run_samples || []).map((r) => `
-        <tr class="${r.verdict.startsWith('REJECT') ? 'row-blocked' : ''}">
-          <th>${escapeHtml(r.tape_id)}</th>
-          <td data-label="Bar">#${r.step}</td>
-          <td data-label="Symbol">${escapeHtml(r.symbol)}</td>
-          <td data-label="Notional" style="font-family:var(--mono);">${fmtINR(r.notional_inr)}</td>
-          <td data-label="Type">${r.is_toxic_or_trap ? '<span class="tag tag-bad">ADVERSARIAL TRAP</span>' : '<span class="tag">Normal Bar</span>'}</td>
-          <td data-label="Verdict"><span class="tag ${r.verdict === 'ALLOW' ? 'tag-ok' : 'tag-bad'}">${escapeHtml(r.verdict)}</span></td>
-        </tr>
-      `).join('');
+      document.getElementById('btnBacktest').addEventListener('click', async () => {
+        stopAutoPlay();
+        const res = await apiPost('/api/backtest');
+        if (res.state) applyState(res.state);
+        if (res.backtest) {
+          const bt = res.backtest;
+          showToast(`12-bar backtest (${bt.total_backtest_us} µs): Protected ${inr(bt.protected_final_equity_inr)} vs Unguarded ${inr(bt.unguarded_final_equity_inr)}`);
+        }
+      });
 
-      // Tab 3: Holdings Blotter
-      document.getElementById('ledgerFeesTag').textContent = `Cash: ${fmtINR(s.cash_available_inr)} · Fees Paid: ${fmtINR(s.total_fees_paid_inr)}`;
-      const posBody = document.getElementById('positionsBody');
-      if (!s.positions || !s.positions.length) {
-        posBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:16px;">No open paper positions yet — step a tape or place a manual paper order above.</td></tr>';
-      } else {
-        posBody.innerHTML = s.positions.map((p) => `
+      document.getElementById('btnReset').addEventListener('click', async () => {
+        stopAutoPlay();
+        const snap = await apiPost('/api/reset');
+        applyState(snap);
+        showToast('Paper ledger & firewall reset cleanly to ₹5,00,000');
+      });
+
+      // 2. Trade Order Ticket
+      function updateOrderPreview() {
+        const q = Number(document.getElementById('ordQty').value || 0);
+        const px = Number(document.getElementById('ordPrice').value || 0);
+        document.getElementById('ordEstValue').textContent = inr(q * px);
+        const sub = document.getElementById('btnSubmitOrder');
+        sub.textContent = `Place Paper ${orderSide} Order`;
+        sub.className = 'btn ' + (orderSide === 'BUY' ? 'btn-success' : 'btn-danger');
+      }
+
+      document.getElementById('btnSideBuy').addEventListener('click', () => {
+        orderSide = 'BUY';
+        document.getElementById('btnSideBuy').className = 'active-buy';
+        document.getElementById('btnSideSell').className = '';
+        updateOrderPreview();
+      });
+
+      document.getElementById('btnSideSell').addEventListener('click', () => {
+        orderSide = 'SELL';
+        document.getElementById('btnSideSell').className = 'active-sell';
+        document.getElementById('btnSideBuy').className = '';
+        updateOrderPreview();
+      });
+
+      document.getElementById('ordSymbol').addEventListener('change', (e) => {
+        const opt = e.target.selectedOptions[0];
+        document.getElementById('ordPrice').value = opt.dataset.px;
+        document.getElementById('ordSegment').value = opt.dataset.fno;
+        updateOrderPreview();
+      });
+
+      ['ordQty', 'ordPrice'].forEach((id) => document.getElementById(id).addEventListener('input', updateOrderPreview));
+
+      async function submitPaperOrder(symbol, side, qty, price_inr, is_fno) {
+        const res = await apiPost('/api/order', { symbol, side, qty, price_inr, is_fno });
+        if (res.state) applyState(res.state);
+        const fb = document.getElementById('orderFeedback');
+        const dec = res.decision;
+        fb.hidden = false;
+        fb.className = 'banner-feedback ' + (dec.approved ? 'ok' : 'err');
+        fb.innerHTML = `<strong>${dec.approved ? 'Approved' : 'Blocked'} in ${fmtLatency(dec.latency_ns)}</strong> — ${esc(dec.gate_triggered)}: ${esc(dec.ai_explanation)}`;
+      }
+
+      document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await submitPaperOrder(
+          document.getElementById('ordSymbol').value,
+          orderSide,
+          Number(document.getElementById('ordQty').value),
+          Number(document.getElementById('ordPrice').value),
+          document.getElementById('ordSegment').value === 'true'
+        );
+      });
+
+      document.getElementById('btnQuickSafe').addEventListener('click', async () => {
+        document.getElementById('ordSymbol').value = 'NIFTYBEES';
+        document.getElementById('ordQty').value = 40;
+        document.getElementById('ordPrice').value = 265;
+        document.getElementById('ordSegment').value = 'false';
+        orderSide = 'BUY';
+        document.getElementById('btnSideBuy').className = 'active-buy';
+        document.getElementById('btnSideSell').className = '';
+        updateOrderPreview();
+        await submitPaperOrder('NIFTYBEES', 'BUY', 40, 265, false);
+      });
+
+      document.getElementById('btnQuickRisky').addEventListener('click', async () => {
+        document.getElementById('ordSymbol').value = 'NIFTY50';
+        document.getElementById('ordQty').value = 50;
+        document.getElementById('ordPrice').value = 24200;
+        document.getElementById('ordSegment').value = 'true';
+        orderSide = 'BUY';
+        document.getElementById('btnSideBuy').className = 'active-buy';
+        document.getElementById('btnSideSell').className = '';
+        updateOrderPreview();
+        await submitPaperOrder('NIFTY50', 'BUY', 50, 24200, true);
+      });
+
+      // 3. Risk Rules Compiler
+      document.querySelectorAll('[data-preset]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          document.getElementById('policyInput').value = btn.dataset.preset;
+          const snap = await apiPost('/api/policy', { nl_text: btn.dataset.preset });
+          applyState(snap);
+          showToast(`Compiled & backtested 60 NSE ticks in ${snap.policy.dry_run_elapsed_us} µs`);
+        });
+      });
+
+      document.getElementById('btnCompilePolicy').addEventListener('click', async () => {
+        const text = document.getElementById('policyInput').value;
+        const snap = await apiPost('/api/policy', { nl_text: text });
+        applyState(snap);
+        showToast(`Policy #${snap.policy.policy_id} active — caught ${snap.policy.dry_run_traps_caught}/${snap.policy.dry_run_traps_total} historical traps`);
+      });
+
+      // 4. Protection: 4 Chaos Attack Simulators + Interactive 3-of-5 Shamir + Flight Recorder
+      document.querySelectorAll('[data-chaos]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const snap = await apiPost('/api/chaos', { kind: btn.dataset.chaos });
+          applyState(snap);
+          const d = snap.recent_decisions[0];
+          showToast(`Blocked: ${d.gate_triggered} (${fmtLatency(d.latency_ns)})`);
+        });
+      });
+
+      document.getElementById('btnTripKill').addEventListener('click', async () => {
+        const snap = await apiPost('/api/quorum/trip');
+        applyState(snap);
+        const fb = document.getElementById('quorumFeedback');
+        fb.hidden = false;
+        fb.className = 'banner-feedback err';
+        fb.textContent = '1-of-5 Emergency Kill Switch tripped. All outbound order routing is now halted until 3 of 5 custodians approve recovery.';
+      });
+
+      document.getElementById('btnTest2of5').addEventListener('click', async () => {
+        if (state && !state.kill_switch_active) {
+          applyState(await apiPost('/api/quorum/trip'));
+        }
+        const res = await apiPost('/api/quorum/disarm', { custodian_ids: [1, 2], tamper_share: false });
+        if (res.state) applyState(res.state);
+        const fb = document.getElementById('quorumFeedback');
+        fb.hidden = false;
+        fb.className = 'banner-feedback err';
+        fb.textContent = `2-of-5 Unlock DENIED: ${res.quorum.message}`;
+      });
+
+      document.getElementById('btnDisarmQuorum').addEventListener('click', async () => {
+        const ids = Array.from(document.querySelectorAll('#custodianList input[type="checkbox"]:checked'))
+          .map((el) => Number(el.value));
+        const tamper = document.getElementById('chkTamperShare').checked;
+        const res = await apiPost('/api/quorum/disarm', { custodian_ids: ids, tamper_share: tamper });
+        if (res.state) applyState(res.state);
+        const fb = document.getElementById('quorumFeedback');
+        fb.hidden = false;
+        fb.className = 'banner-feedback ' + (res.quorum.success ? 'ok' : 'err');
+        fb.textContent = `${res.quorum.success ? 'Unlocked' : 'Denied'} (${fmtLatency(res.quorum.elapsed_ns)}): ${res.quorum.message}`;
+      });
+
+      async function loadFlightRecorder() {
+        const data = await (await fetch('/api/flight-recorder')).json();
+        document.getElementById('flightBody').innerHTML = (data.records || []).map((r) => `
           <tr>
-            <th>${escapeHtml(p.symbol)}</th>
-            <td data-label="Qty" style="font-family:var(--mono);">${p.qty}</td>
-            <td data-label="Avg Entry" style="font-family:var(--mono);">${fmtINR(p.avg_entry_price_inr)}</td>
-            <td data-label="Last Px" style="font-family:var(--mono);">${fmtINR(p.last_price_inr)}</td>
-            <td data-label="Mkt Value" style="font-family:var(--mono);">${fmtINR(p.market_value_inr)}</td>
-            <td data-label="Unrealized" style="font-family:var(--mono); color:${p.unrealized_pnl_inr >= 0 ? 'var(--emerald)' : 'var(--crimson)'}">${fmtSignedINR(p.unrealized_pnl_inr)}</td>
-            <td data-label="Realized" style="font-family:var(--mono); color:${p.realized_pnl_inr >= 0 ? 'var(--emerald)' : 'var(--crimson)'}">${fmtSignedINR(p.realized_pnl_inr)}</td>
+            <th class="mono">#${r.seq}</th>
+            <td data-label="Event"><span class="badge ${r.event_kind === 'RISK_PASS' ? 'badge-green' : 'badge-red'}">${esc(r.event_kind)}</span></td>
+            <td data-label="Order" class="mono">#${r.cl_ord_id_hash}</td>
+            <td data-label="Price" class="num">${inr(r.price_inr)}</td>
+            <td data-label="Qty" class="num">${r.qty}</td>
+            <td data-label="Proof" class="mono" style="font-size:11.5px;">${esc(r.proof_commit_hex)}</td>
           </tr>
         `).join('');
       }
 
-      // Tab 4: Custodians, PQ Lattice & FPGA BAR0
-      document.getElementById('quorumStatusTag').textContent = `Nonce #${s.disarm_nonce} · Denied: ${s.rejected_disarm_attempts}`;
-      const cg = document.getElementById('custodianGrid');
-      if (cg.children.length === 0 && s.custodians) {
-        cg.innerHTML = s.custodians.map((c, idx) => `
-          <label class="cust-card">
-            <input type="checkbox" value="${c.id}" ${idx === 0 || idx === 2 || idx === 4 ? 'checked' : ''} />
-            <div>
-              <div style="font-weight:700; font-size:12px;">#${c.id}: ${escapeHtml(c.role)}</div>
-              <div style="font-family:var(--mono); font-size:10px; color:var(--cyan); margin-top:2px;">y = 0x${c.share_preview_hex}</div>
-            </div>
-          </label>
-        `).join('');
+      document.getElementById('btnLoadFlight').addEventListener('click', loadFlightRecorder);
+      document.getElementById('flightRecorderDetails').addEventListener('toggle', (e) => {
+        if (e.target.open) loadFlightRecorder();
+      });
+
+      // 5. Co-Pilot & Tax Tab
+      async function submitCopilotQuestion(q) {
+        const ansEl = document.getElementById('chatAnswer');
+        const citEl = document.getElementById('chatCitations');
+        ansEl.textContent = 'Analyzing live portfolio & risk metrics…';
+        citEl.innerHTML = '';
+        const rep = await apiPost('/api/chat', { question: q });
+        document.getElementById('copilotModeBadge').textContent = rep.mode.includes('Live LLM') ? 'Live Gemini + Grounded' : 'Grounded Offline';
+        ansEl.innerHTML = esc(rep.answer)
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/`([^`]+)`/g, '<code class="mono" style="font-size:12px;background:#EEF2FF;padding:1px 4px;border-radius:4px;">$1</code>')
+          .replace(/\n/g, '<br>');
+        citEl.innerHTML = (rep.citations || []).map((c) => `<span class="badge">${esc(c)}</span>`).join('');
       }
 
-      const ca = s.crypto_audit;
-      document.getElementById('sisStatusTag').textContent = ca.lattice_sis_verified ? 'SIS Norm Binding VALID' : 'INVALID';
-      document.getElementById('cryptoVaultBox').textContent =
-`SHA-256 Engine   : ${ca.sha256_backend} (hw=${ca.hw_sha256_active})
-Chained Root     : 0x${ca.latest_merkle_root_hex}... (${ca.merkle_leaves_committed} leaves)
-PQ Lattice (Zq^4): [${ca.lattice_lanes_hex[0]}, ${ca.lattice_lanes_hex[1]},
-                    ${ca.lattice_lanes_hex[2]}, ${ca.lattice_lanes_hex[3]}]
-Hidden Exposure  : ${fmtINR(ca.lattice_exposure_sum_inr)} across ${ca.lattice_orders_committed} commits
-epsilon-DP View  : ${fmtINR(ca.dp_privatized_exposure_inr)} (Laplace alpha-safe)
-Flight Recorder  : ${ca.flight_recorder_total_events} mmap records | WAL: ${ca.wal_records_enqueued} recs`;
+      document.getElementById('chatForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const q = document.getElementById('chatInput').value.trim();
+        if (q) await submitCopilotQuestion(q);
+      });
 
-      const fb = s.fpga_bar0;
-      document.getElementById('fpgaBar0Box').textContent =
-`Target Silicon   : AMD Alveo 400 MHz (${fb.pipeline_cycles} cycles = ${fb.modeled_latency_ns.toFixed(1)} ns)
-BAR0 Kill Bit 0  : ${fb.silicon_kill_bit ? 'TRIPPED (HARD HARDWARE DROP)' : 'CLEAR (ARMED)'}
-Seqlock Version  : v${fb.seqlock_version} (lock-free 64B cache line)
-Max Order Qty    : ${fb.max_qty} units
-Max Notional     : ${fmtINR(fb.max_notional)}
-Collar Band      : ${fmtINR(fb.collar_min_px)} .. ${fmtINR(fb.collar_max_px)}`;
+      document.querySelectorAll('[data-q]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          document.getElementById('chatInput').value = btn.dataset.q;
+          await submitCopilotQuestion(btn.dataset.q);
+        });
+      });
 
-      // Tab 5: India Tax Report
-      const t = s.tax_report;
-      document.getElementById('taxRecBadge').textContent = `${t.recommended_regime} (Saves ${fmtINR(t.regime_savings_inr)}/yr)`;
-      document.getElementById('taxDetailBox').textContent =
-`Gross Paper Turnover   : ${fmtINR(t.gross_turnover_inr)}
-Statutory Charges      : ${fmtINR(t.total_statutory_charges_inr)} (Brokerage ${fmtINR(t.brokerage_inr)} | STT ${fmtINR(t.stt_inr)} | NSE Txn ${fmtINR(t.exchange_txn_inr)} | Stamp ${fmtINR(t.stamp_duty_inr)} | 18% GST ${fmtINR(t.gst_18pct_inr)})
-Capital Gains Est.     : STCG @ 20% = ${fmtINR(t.stcg_20pct_tax_inr)}  |  LTCG @ 12.5% (above ₹1.25L exempt) = ${fmtINR(t.ltcg_12_5pct_tax_inr)}
-Income Tax Comparison  : Old Regime = ${fmtINR(t.old_regime_tax_for_15l_income)}  vs  New Regime = ${fmtINR(t.new_regime_tax_for_15l_income)}
-Recommendation         : ${t.recommended_regime} saves ${fmtINR(t.regime_savings_inr)}/yr
+      document.getElementById('taxForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const snap = await apiPost('/api/tax', {
+          annual_income_inr: Number(document.getElementById('taxIncome').value),
+          deductions_80c_hra_inr: Number(document.getElementById('taxDeductions').value),
+        });
+        applyState(snap);
+        showToast('Recalculated Indian tax & regime comparison');
+      });
 
-${t.plain_english_advice}`;
-    }
+      // =======================================================================
+      // Initial Load + Live SSE Sync + Responsive Chart Redraw
+      // =======================================================================
+      window.addEventListener('resize', () => {
+        if (state) drawAllCharts(state);
+      });
 
-    // Boot
-    fetch('/api/state').then((r) => r.json()).then(renderAll);
-    connectSse();
+      async function boot() {
+        renderGuideStep(0);
+        updateOrderPreview();
+        const initial = await (await fetch('/api/state')).json();
+        applyState(initial);
+
+        if ('EventSource' in window) {
+          const es = new EventSource('/api/stream');
+          es.addEventListener('state', (ev) => {
+            try { applyState(JSON.parse(ev.data)); } catch (_) {}
+          });
+        }
+      }
+
+      boot();
+    })();
   </script>
 </body>
 </html>

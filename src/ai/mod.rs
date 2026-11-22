@@ -1568,7 +1568,7 @@ impl FinGateAiEngine {
             format!(
                 "India Tax & Cost Analysis (Grounded in your live ledger): You have generated ₹{} gross turnover across {} paper trades with ₹{} in statutory fees (STT ₹{}, Brokerage ₹{}, GST ₹{}). For your ₹{} annual income and ₹{} deductions, the **{}** is optimal, saving **₹{}/yr** (New Regime: ₹{} vs Old Regime: ₹{}). Holding equity >12 months qualifies for the ₹1.25L annual LTCG exemption (12.5% above ₹1.25L vs 20% STCG).",
                 snap.tax_report.gross_turnover_inr,
-                snap.approved_count,
+                self.protected_portfolio.trades_executed,
                 snap.tax_report.total_statutory_charges_inr,
                 snap.tax_report.stt_inr,
                 snap.tax_report.brokerage_inr,
@@ -1689,14 +1689,7 @@ impl FinGateAiEngine {
 
         let prot_eq = self.protected_portfolio.total_equity_inr();
         let ungd_eq = self.unguarded_portfolio.total_equity_inr();
-        let real_counterfactual_saved = (prot_eq - ungd_eq).max(0);
-        let blocked_avoided_sum: i64 = self
-            .decisions
-            .iter()
-            .filter(|d| !d.approved)
-            .map(|d| d.capital_saved_inr)
-            .sum();
-        let total_saved = real_counterfactual_saved.max(blocked_avoided_sum);
+        let total_saved = (prot_eq - ungd_eq).max(0);
 
         let tax_report = compute_india_tax_and_costs_custom(
             self.protected_portfolio.gross_turnover_inr,
