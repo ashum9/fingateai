@@ -1,3 +1,29 @@
-//! FinGate AI — Neuro-Symbolic NSE Market Co-Pilot & Sub-Microsecond Rust Paper-Trading Firewall.
-
-pub mod core;
+pub mod config;
+pub mod listener;
+pub mod metrics;
+pub mod proxy;
+pub mod backend;
+pub mod reload;
+pub mod admin;
+pub mod env;
+pub mod ring;
+pub mod sys;
+pub mod fix;
+pub mod wal;
+pub mod venue;
+pub mod risk;
+pub mod shield;
+pub mod killswitch;
+pub mod reconcile;
+pub mod transport;
+pub mod attestation;
+pub mod dpu;
+pub mod hw_sync;
+pub mod protocol;
+pub mod ipc;
+pub mod oms;
+pub mod vopr;
+pub mod uplink;
+pub mod ffi;
+pub mod frontier;
+pub mod horizon;

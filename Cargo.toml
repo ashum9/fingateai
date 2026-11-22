@@ -1,16 +1,29 @@
 [package]
-name = "fingate_ai"
+name = "traffic_gateway"
 version = "0.1.0"
 edition = "2021"
-description = "FinGate AI — Neuro-Symbolic NSE Market Co-Pilot, Historical Event Backtester & Sub-Microsecond Rust Paper-Trading Firewall"
 
-[lib]
-name = "fingate_ai"
-path = "src/lib.rs"
+[features]
+default = []
+dpdk = []
+efvi = []
+io_uring = []
+nitro-enclave = []
 
-[[bin]]
-name = "fingateAI"
-path = "src/main.rs"
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+tracing = "0.1"
+tokio-util = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+arc-swap = "1"
+serde_json = "1"
+hdrhistogram = "7.5"
+rand = "0.8"
+crc32fast = "1.4"
+socket2 = "0.6"
 
 [profile.release]
 opt-level = 3
