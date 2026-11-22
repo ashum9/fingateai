@@ -239,17 +239,17 @@ impl FinGateAiEngine {
             }
             "toxic_sweep" => {
                 let base_ns = 2_000_000_000u64;
-                for k in 0..18 {
-                    let _ = self.hawkes.observe_flow(base_ns + k * 500, false, 650);
+                for k in 0..24 {
+                    let _ = self.hawkes.observe_flow(base_ns + k * 500, false, 150);
                 }
                 self.price_history.push(23_890);
                 self.evaluate_order_intent(
                     "14:55:00 IST [CHAOS]",
                     "NIFTY50",
                     "BUY",
-                    25,
+                    1,
                     23_890,
-                    650,
+                    150,
                     false,
                     "EXPIRY-DAY HFT TOXIC SWEEP: Supercritical sell cascade (VPIN > 0.85, Hawkes > 160,000) — naive AI attempts to catch falling knife!",
                     true,
