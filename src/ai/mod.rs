@@ -556,6 +556,9 @@ impl FinGateAiEngine {
             );
             self.entropy = OrderFlowEntropySentinel::new(SentinelThresholds::default());
             self.last_entropy_e4 = 36_000;
+            self.approved_count = 0;
+            self.blocked_count = 0;
+            self.decisions.clear();
             self.ohlc_series.clear();
             self.step_next_tick();
         }
@@ -584,11 +587,28 @@ impl FinGateAiEngine {
     }
 
     pub fn step_next_tick(&mut self) {
-        let tape = &self.tapes[self.active_tape_idx];
-        if tape.ticks.is_empty() {
+        let total_ticks = self.tapes[self.active_tape_idx].ticks.len();
+        if total_ticks == 0 {
             return;
         }
-        let tick = tape.ticks[self.step_idx % tape.ticks.len()].clone();
+        if self.step_idx >= total_ticks {
+            // Replay reached end of tape: loop back cleanly to Bar 1 with clean state
+            self.step_idx = 0;
+            self.protected_portfolio = PaperPortfolio::new(500_000);
+            self.unguarded_portfolio = PaperPortfolio::new(500_000);
+            self.portfolio_greeks = Self::build_portfolio_greeks();
+            self.risk_engine = Self::build_risk_engine(&self.symbol_ids);
+            self.hawkes = HawkesToxicFlowShield::new(
+                10_000, 12_000, 2_000_000, 90_000, 140_000, 7_500, 200,
+            );
+            self.entropy = OrderFlowEntropySentinel::new(SentinelThresholds::default());
+            self.approved_count = 0;
+            self.blocked_count = 0;
+            self.decisions.clear();
+            self.ohlc_series.clear();
+        }
+        let tape = &self.tapes[self.active_tape_idx];
+        let tick = tape.ticks[self.step_idx].clone();
         self.step_idx += 1;
 
         // Update real MTM prices for BOTH portfolios on every market bar!
@@ -650,6 +670,9 @@ impl FinGateAiEngine {
             10_000, 12_000, 2_000_000, 90_000, 140_000, 7_500, 200,
         );
         self.entropy = OrderFlowEntropySentinel::new(SentinelThresholds::default());
+        self.approved_count = 0;
+        self.blocked_count = 0;
+        self.decisions.clear();
         self.ohlc_series.clear();
         // If kill switch was tripped earlier, disarm cleanly for fresh backtest
         if self.quorum_guard.kill_switch_active.load(Ordering::Acquire) {
@@ -963,7 +986,7 @@ impl FinGateAiEngine {
         // Stage 1: Real 128B Single-MESI Sequence-Stamped SHM Publish & Poll
         // ---------------------------------------------------------------------
         let s0 = Instant::now();
-        let now_ns = 10_000_000_000 + order_id * 50_000_000;
+        let now_ns = 10_000_000_000 + order_id * 500_000_000;
         {
             let mut pod_ep = self.shm_channel.pod_endpoint();
             let mut gw_ep = self.shm_channel.gateway_endpoint();
@@ -1022,6 +1045,15 @@ impl FinGateAiEngine {
             }
             self.hawkes
                 .observe_flow(now_ns + 5_000, aggressive_buy, flow_vol)
+        } else if !is_toxic_or_trap {
+            // Normal multi-minute NSE bar sees well-spaced balanced two-way market-making liquidity
+            // (> 10x Hawkes tau apart so Hawkes relaxes to calm baseline while VPIN buckets rebalance).
+            for k in 0..8 {
+                let ts = now_ns.saturating_sub(420_000_000) + k * 50_000_000;
+                let _ = self.hawkes.observe_flow(ts, true, 100);
+                let _ = self.hawkes.observe_flow(ts + 22_000_000, false, 100);
+            }
+            self.hawkes.observe_flow(now_ns, aggressive_buy, flow_vol)
         } else {
             self.hawkes.observe_flow(now_ns, aggressive_buy, flow_vol)
         };

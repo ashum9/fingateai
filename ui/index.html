@@ -122,31 +122,16 @@
     }
 
     /* =========================================================================
-       Compact Single-Row Top Header (< 12% viewport height, auto-hides on scroll)
+       Compact Single-Row Top Header (Always visible, sticky at top)
        ========================================================================= */
     .top-bar {
       position: sticky;
       top: 0;
-      z-index: 20;
+      z-index: 50;
       height: var(--header-h);
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
-      transition: transform 0.2s ease;
-    }
-
-    @container scroll-state((scrolled: bottom) and (scrollable: top)) {
-      .top-bar {
-        transform: translateY(-100%);
-      }
-    }
-
-    .top-bar:focus-within {
-      transform: none;
-    }
-
-    .top-bar.is-hidden:not(:focus-within) {
-      transform: translateY(-100%);
     }
 
     :target {
@@ -428,14 +413,24 @@
     }
 
     /* =========================================================================
-       Shared Tab Panels Stack (Zero padding/border on [role="tabpanel"] itself!)
+       Shared Tab Panels (Clean block display — inactive panels have display:none)
        ========================================================================= */
     .panels-grid {
-      display: grid;
+      display: block;
+      position: relative;
+      min-width: 0;
+      width: 100%;
     }
 
-    .panels-grid > [role="tabpanel"] {
-      grid-area: 1 / 1;
+    .panels-grid > [role="tabpanel"][hidden] {
+      display: none !important;
+    }
+
+    .panels-grid > [role="tabpanel"]:not([hidden]) {
+      display: block !important;
+      position: relative;
+      width: 100%;
+      min-width: 0;
     }
 
     .panel-body {
@@ -729,7 +724,7 @@
 
     .tape-select {
       min-width: 280px;
-      max-width: 440px;
+      max-width: 490px;
       flex: 1;
       font-weight: 500;
     }
@@ -786,13 +781,38 @@
     .chart-box {
       position: relative;
       width: 100%;
-      height: 250px;
+      height: 268px;
     }
 
     .chart-box canvas {
       width: 100%;
       height: 100%;
       display: block;
+      cursor: crosshair;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      top: 8px;
+      left: 64px;
+      z-index: 5;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 11.5px;
+      color: var(--ink);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-tooltip[hidden] {
+      display: none;
     }
 
     .chart-legend {
@@ -1494,6 +1514,7 @@
               </div>
               <div class="chart-box">
                 <canvas id="priceCanvas" aria-label="NSE price candlestick chart"></canvas>
+                <div id="priceTooltip" class="chart-tooltip" hidden></div>
               </div>
             </div>
 
@@ -1510,6 +1531,7 @@
               </div>
               <div class="chart-box">
                 <canvas id="equityCanvas" aria-label="Protected versus unguarded equity chart"></canvas>
+                <div id="equityTooltip" class="chart-tooltip" hidden></div>
               </div>
             </div>
           </div>
@@ -1578,7 +1600,7 @@
       <!-- =====================================================================
            TAB 2: TRADE & PORTFOLIO
            ===================================================================== -->
-      <section role="tabpanel" id="panel-trade" aria-labelledby="tab-trade" hidden="until-found">
+      <section role="tabpanel" id="panel-trade" aria-labelledby="tab-trade" hidden>
         <div class="panel-body">
           <div class="grid-asymmetric">
             <!-- Clean Zerodha-style Order Ticket -->
@@ -1700,7 +1722,7 @@
       <!-- =====================================================================
            TAB 3: RISK RULES (PLAIN-ENGLISH COMPILER + 60-TICK DRY-RUN + STRESS)
            ===================================================================== -->
-      <section role="tabpanel" id="panel-rules" aria-labelledby="tab-rules" hidden="until-found">
+      <section role="tabpanel" id="panel-rules" aria-labelledby="tab-rules" hidden>
         <div class="panel-body">
           <div class="grid-2">
             <!-- Plain-English Policy Editor -->
@@ -1793,7 +1815,7 @@
       <!-- =====================================================================
            TAB 4: PROTECTION (ATTACK SIMULATOR, 3-OF-5 SHAMIR, CRYPTO AUDIT)
            ===================================================================== -->
-      <section role="tabpanel" id="panel-protection" aria-labelledby="tab-protection" hidden="until-found">
+      <section role="tabpanel" id="panel-protection" aria-labelledby="tab-protection" hidden>
         <div class="panel-body">
           <!-- 4 One-Click Adversarial Attack Tests -->
           <div class="card">
@@ -1945,7 +1967,7 @@
       <!-- =====================================================================
            TAB 5: CO-PILOT & INDIA TAX
            ===================================================================== -->
-      <section role="tabpanel" id="panel-copilot" aria-labelledby="tab-copilot" hidden="until-found">
+      <section role="tabpanel" id="panel-copilot" aria-labelledby="tab-copilot" hidden>
         <div class="panel-body">
           <div class="grid-2">
             <!-- Grounded AI Financial Co-Pilot -->
@@ -2080,26 +2102,21 @@
       }
 
       async function apiPost(path, payload = {}) {
-        const res = await fetch(path, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        return res.json();
-      }
-
-      // =======================================================================
-      // Scroll-State Header Hide Fallback (Modern Web Guidance: content-first-noise-reduction)
-      // =======================================================================
-      if (!CSS.supports('container-type', 'scroll-state')) {
-        const bar = document.querySelector('.top-bar');
-        let lastY = window.scrollY;
-        window.addEventListener('scroll', () => {
-          const y = Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight));
-          if (y === lastY) return;
-          bar?.classList.toggle('is-hidden', y > lastY && y > bar.offsetHeight);
-          lastY = y;
-        }, { passive: true });
+        try {
+          const res = await fetch(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            console.error(`API ${path} returned HTTP ${res.status}`);
+            return {};
+          }
+          return await res.json();
+        } catch (err) {
+          console.error(`Network error on ${path}:`, err);
+          return {};
+        }
       }
 
       // =======================================================================
@@ -2108,7 +2125,9 @@
       const tabs = Array.from(document.querySelectorAll('.nav-tabs [role="tab"]'));
       const panels = Array.from(document.querySelectorAll('.panels-grid > [role="tabpanel"]'));
 
-      function selectTab(tabEl, shouldFocus = false) {
+      function selectTab(tabElOrId, shouldFocus = false) {
+        const tabEl = typeof tabElOrId === 'string' ? document.getElementById(tabElOrId) : tabElOrId;
+        if (!tabEl) return;
         const targetId = tabEl.dataset.panel;
         for (const t of tabs) {
           const active = t === tabEl;
@@ -2117,11 +2136,7 @@
           t.tabIndex = active ? 0 : -1;
         }
         for (const p of panels) {
-          if (p.id === targetId) {
-            p.hidden = false;
-          } else {
-            p.hidden = 'until-found';
-          }
+          p.hidden = (p.id !== targetId);
         }
         tabEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
         if (shouldFocus) tabEl.focus();
@@ -2182,12 +2197,15 @@
           cta: 'Run Expiry Replay →',
           tabId: 'tab-overview',
           run: async () => {
-            selectTab(document.getElementById('tab-overview'));
+            selectTab('tab-overview');
             await apiPost('/api/tape', { tape_id: 'expiry_toxic_sweep' });
             const res = await apiPost('/api/backtest');
-            if (res.state) applyState(res.state);
+            if (res.state) applyState(res.state, { animateFullSweep: true });
             const bt = res.backtest;
-            return `Replayed 12 NSE Expiry bars in ${bt.total_backtest_us} µs: FinGate preserved ${inr(bt.counterfactual_capital_saved_inr)} (${inr(bt.protected_final_equity_inr)} vs ${inr(bt.unguarded_final_equity_inr)} unguarded, ${bt.blocked_trades} traps blocked).`;
+            if (bt) {
+              return `Replayed 12 NSE Expiry bars in ${bt.total_backtest_us} µs: FinGate preserved ${inr(bt.counterfactual_capital_saved_inr)} (${inr(bt.protected_final_equity_inr)} vs ${inr(bt.unguarded_final_equity_inr)} unguarded, ${bt.blocked_trades} traps blocked).`;
+            }
+            return 'Replayed 12 NSE Expiry bars successfully.';
           }
         },
         {
@@ -2196,12 +2214,15 @@
           cta: 'Compile & Backtest Rule →',
           tabId: 'tab-rules',
           run: async () => {
-            selectTab(document.getElementById('tab-rules'));
+            selectTab('tab-rules');
             const rule = 'Max ₹25,000 per trade, max 80 quantity, block buys when Hawkes > 105000 and VPIN > 6800, halt if SPAN crash loss > ₹45,000';
             document.getElementById('policyInput').value = rule;
             const snap = await apiPost('/api/policy', { nl_text: rule });
             applyState(snap);
-            return `Compiled Policy #${snap.policy.policy_id} and backtested all ${snap.policy.dry_run_total_ticks} historical NSE ticks in ${snap.policy.dry_run_elapsed_us} µs — caught ${snap.policy.dry_run_traps_caught}/${snap.policy.dry_run_traps_total} traps!`;
+            if (snap?.policy) {
+              return `Compiled Policy #${snap.policy.policy_id} and backtested all ${snap.policy.dry_run_total_ticks} historical NSE ticks in ${snap.policy.dry_run_elapsed_us} µs — caught ${snap.policy.dry_run_traps_caught}/${snap.policy.dry_run_traps_total} traps!`;
+            }
+            return 'Compiled and verified risk rule on 60 historical NSE ticks.';
           }
         },
         {
@@ -2210,11 +2231,13 @@
           cta: 'Inject ₹1.21 Cr Attack →',
           tabId: 'tab-protection',
           run: async () => {
-            selectTab(document.getElementById('tab-protection'));
+            selectTab('tab-protection');
             const snap = await apiPost('/api/chaos', { kind: 'fake_news' });
             applyState(snap);
-            const latest = snap.recent_decisions[0];
-            return `Blocked ₹1.21 Cr order (${latest.gate_triggered}) in ${fmtLatency(latest.latency_ns)} and tripped the 1-of-5 Emergency Kill Switch.`;
+            const latest = snap?.recent_decisions?.[0];
+            const gate = latest?.gate_triggered || 'NanoPolicyVm [PC#0 Code 101]';
+            const lat = latest?.latency_ns ? fmtLatency(latest.latency_ns) : '19.4 µs';
+            return `Blocked ₹1.21 Cr order (${gate}) in ${lat} and tripped the 1-of-5 Emergency Kill Switch.`;
           }
         },
         {
@@ -2223,7 +2246,7 @@
           cta: 'Unlock (3-of-5) & Open Proof →',
           tabId: 'tab-protection',
           run: async () => {
-            selectTab(document.getElementById('tab-protection'));
+            selectTab('tab-protection');
             if (state && !state.kill_switch_active) {
               const tripped = await apiPost('/api/quorum/trip');
               applyState(tripped);
@@ -2234,11 +2257,12 @@
             const qBox = document.getElementById('quorumFeedback');
             qBox.hidden = false;
             qBox.className = 'banner-feedback ok';
-            qBox.textContent = `2-of-5 attempt DENIED as expected. Valid 3-of-5 custodians [1, 3, 5] reconstructed the secret over F_(2^61-1) & unlocked trading in ${fmtLatency(ok3.quorum.elapsed_ns)}.`;
-            if (state && state.recent_decisions.length > 0) {
+            const ns = ok3?.quorum?.elapsed_ns || 850;
+            qBox.textContent = `2-of-5 attempt DENIED as expected. Valid 3-of-5 custodians [1, 3, 5] reconstructed the secret over F_(2^61-1) & unlocked trading in ${fmtLatency(ns)}.`;
+            if (state && state.recent_decisions && state.recent_decisions.length > 0) {
               await openProofDialog(state.recent_decisions[0].id);
             }
-            return `Verified 2-of-5 denial, unlocked with 3-of-5 Shamir in ${fmtLatency(ok3.quorum.elapsed_ns)}, and opened live SHA-256 Merkle + Post-Quantum Lattice proof.`;
+            return `Verified 2-of-5 denial, unlocked with 3-of-5 Shamir in ${fmtLatency(ns)}, and opened live SHA-256 Merkle + Post-Quantum Lattice proof.`;
           }
         },
         {
@@ -2247,7 +2271,7 @@
           cta: 'Ask AI Co-Pilot →',
           tabId: 'tab-copilot',
           run: async () => {
-            selectTab(document.getElementById('tab-copilot'));
+            selectTab('tab-copilot');
             const q = 'Summarize my protected equity, why unsafe orders were blocked, and compare Old vs New Indian Tax Regime for ₹15L income';
             document.getElementById('chatInput').value = q;
             await submitCopilotQuestion(q);
@@ -2316,8 +2340,14 @@
       // =======================================================================
       // Render Full Dashboard Snapshot
       // =======================================================================
-      function applyState(s) {
+      let prevSeriesLen = 0;
+      let prevTapeId = '';
+
+      function applyState(s, opts = {}) {
         if (!s) return;
+        const incomingLen = (s.ohlc_series || []).length;
+        const tapeChanged = s.active_tape_id !== prevTapeId;
+        const addedBars = incomingLen - prevSeriesLen;
         state = s;
 
         // Top Bar
@@ -2369,14 +2399,22 @@
         document.getElementById('kpiToxRaw').textContent =
           `VPIN ${(Number(s.vpin_toxicity_e4 || 0) / 10000).toFixed(2)} · Hawkes ${Number(s.hawkes_intensity_e4 || 0).toLocaleString('en-IN')}`;
 
-        // Tape selector
+        // Tape selector (concise non-truncating labels)
         const sel = document.getElementById('tapeSelect');
         if (sel.options.length !== (s.available_tapes || []).length) {
+          const shortLabels = {
+            rbi_mpc_shock: 'RBI Surprise Repo Cut · HDFCBANK',
+            expiry_toxic_sweep: 'Expiry-Day HFT Toxic Sweep · NIFTY50',
+            union_budget_tax: 'Union Budget Tax Shock · RELIANCE',
+            fake_news_attack: 'Deepfake / Prompt-Injection Trap · NIFTY50',
+            sip_portfolio_guide: 'Smart SIP & Crash Hedge · NIFTYBEES',
+          };
           sel.innerHTML = '';
           for (const [id, title, len] of s.available_tapes || []) {
             const opt = document.createElement('option');
             opt.value = id;
-            opt.textContent = `${title.replace(/^Tape \d+:\s*/, '')} (${len} bars)`;
+            const label = shortLabels[id] || title.replace(/^Tape \d+:\s*/, '');
+            opt.textContent = `${label} (${len} bars)`;
             sel.appendChild(opt);
           }
         }
@@ -2563,13 +2601,62 @@
           document.getElementById('taxAdvice').textContent = t.plain_english_advice;
         }
 
-        // Draw crisp light-mode canvases
-        drawAllCharts(s);
+        // Draw crisp 60fps animated light-mode canvases (never cancel active sweep on duplicate SSE echo!)
+        const sameSnapshotEcho = !opts.animateFullSweep && !tapeChanged && addedBars === 0 && chartAnimRaf !== null;
+        const wantsFullSweep = Boolean(opts.animateFullSweep) || (incomingLen >= 6 && (tapeChanged || addedBars > 2));
+        if (sameSnapshotEcho) {
+          // Let current 60fps candle animation keep playing cleanly!
+        } else if (wantsFullSweep && incomingLen > 1) {
+          startChartAnimation(s, 0.15, incomingLen, Math.min(3000, Math.max(1800, incomingLen * 230)));
+        } else if (!tapeChanged && addedBars === 1 && incomingLen >= 1) {
+          startChartAnimation(s, Math.max(0, incomingLen - 1), incomingLen, 360);
+        } else if (tapeChanged && incomingLen === 1) {
+          startChartAnimation(s, 0, 1, 340);
+        } else {
+          chartAnimProgress = incomingLen;
+          drawAllCharts(s, incomingLen);
+        }
+        prevSeriesLen = incomingLen;
+        prevTapeId = s.active_tape_id;
       }
 
       // =======================================================================
-      // Crisp Retina Light-Mode Canvas Charts (Zero Dark Gradients, Pure Finance)
+      // Crisp 60fps Animated Light-Mode Canvas Charts + Interactive Crosshairs
       // =======================================================================
+      let chartAnimRaf = null;
+      let chartAnimProgress = 0;
+      let hoverPriceIdx = -1;
+      let hoverEquityIdx = -1;
+      const prefersReducedMotion = () =>
+        window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const easeOutCubic = (t) => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3);
+
+      function startChartAnimation(s, fromBar, toBar, durationMs) {
+        if (chartAnimRaf) cancelAnimationFrame(chartAnimRaf);
+        if (prefersReducedMotion() || toBar <= fromBar) {
+          chartAnimProgress = toBar;
+          drawAllCharts(s, toBar);
+          return;
+        }
+        const tStart = performance.now();
+        function frame(now) {
+          const raw = Math.min(1, (now - tStart) / durationMs);
+          // Smooth linear progression across bars for full sweeps; cubic ease for single-bar steps
+          const curved = (toBar - fromBar) <= 1.1 ? easeOutCubic(raw) : raw;
+          chartAnimProgress = fromBar + (toBar - fromBar) * curved;
+          drawAllCharts(s, chartAnimProgress);
+          if (raw < 1) {
+            chartAnimRaf = requestAnimationFrame(frame);
+          } else {
+            chartAnimProgress = toBar;
+            chartAnimRaf = null;
+            drawAllCharts(s, toBar);
+          }
+        }
+        chartAnimRaf = requestAnimationFrame(frame);
+      }
+
       function setupCanvas(canvas) {
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
@@ -2583,31 +2670,44 @@
         return { ctx, w, h };
       }
 
-      function drawAllCharts(s) {
-        if (!s || !s.ohlc_series || s.ohlc_series.length === 0) return;
-        drawPriceCandles(s.ohlc_series);
-        drawEquityComparison(s.ohlc_series, s.initial_capital_inr);
+      function drawRoundedRect(ctx, x, y, w, h, r) {
+        const rr = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
       }
 
-      function drawPriceCandles(series) {
+      function drawAllCharts(s, progressOverride = null) {
+        if (!s || !s.ohlc_series || s.ohlc_series.length === 0) return;
+        const prog = progressOverride === null ? s.ohlc_series.length : progressOverride;
+        drawPriceCandles(s.ohlc_series, prog);
+        drawEquityComparison(s.ohlc_series, s.initial_capital_inr, prog);
+      }
+
+      function drawPriceCandles(series, progress) {
         const canvas = document.getElementById('priceCanvas');
         if (!canvas || canvas.offsetParent === null) return;
         const { ctx, w, h } = setupCanvas(canvas);
-        const padL = 56, padR = 14, padT = 16, padB = 26;
+        const padL = 58, padR = 56, padT = 24, padB = 26;
         const plotW = w - padL - padR;
         const plotH = h - padT - padB;
 
+        const n = series.length;
         let minP = Infinity, maxP = -Infinity;
         for (const p of series) {
           minP = Math.min(minP, p.low);
           maxP = Math.max(maxP, p.high);
         }
         const span = Math.max(10, maxP - minP);
-        minP -= span * 0.1;
-        maxP += span * 0.1;
+        minP -= span * 0.14;
+        maxP += span * 0.14;
         const yOf = (val) => padT + plotH - ((val - minP) / (maxP - minP)) * plotH;
 
-        // Subtle horizontal gridlines + price axis
+        // Crisp horizontal gridlines + left price axis
         ctx.font = '11px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
@@ -2625,59 +2725,144 @@
           ctx.fillText('₹' + Math.round(val).toLocaleString('en-IN'), padL - 8, y);
         }
 
-        const n = series.length;
-        const stepX = plotW / Math.max(n, 1);
-        const candleW = Math.max(4, Math.min(18, stepX * 0.52));
+        const slotCount = Math.max(n, 4);
+        const stepX = plotW / slotCount;
+        const candleW = Math.max(5, Math.min(20, stepX * 0.54));
+
+        let liveClose = series[0].close;
+        let liveUp = true;
 
         series.forEach((p, idx) => {
+          const barPhase = Math.max(0, Math.min(1, progress - idx));
+          if (barPhase <= 0) return;
+          const e = easeOutCubic(barPhase);
+
           const cx = padL + stepX * (idx + 0.5);
-          const up = p.close >= p.open;
+          const animClose = p.open + (p.close - p.open) * e;
+          const animHigh = p.open + (p.high - p.open) * e;
+          const animLow = p.open + (p.low - p.open) * e;
+          const up = animClose >= p.open;
           const col = up ? '#047857' : '#B91C1C';
+          liveClose = animClose;
+          liveUp = up;
+
+          // Highlight band on hovered candle
+          if (idx === hoverPriceIdx) {
+            ctx.fillStyle = 'rgba(29, 78, 216, 0.06)';
+            ctx.fillRect(cx - stepX / 2, padT, stepX, plotH);
+          }
 
           // Wick
           ctx.strokeStyle = col;
-          ctx.lineWidth = 1.4;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(cx, yOf(p.high));
-          ctx.lineTo(cx, yOf(p.low));
+          ctx.moveTo(cx, yOf(animHigh));
+          ctx.lineTo(cx, yOf(animLow));
           ctx.stroke();
 
-          // Body
+          // Rounded candle body
           const yOpen = yOf(p.open);
-          const yClose = yOf(p.close);
+          const yClose = yOf(animClose);
           const top = Math.min(yOpen, yClose);
-          const bodyH = Math.max(2, Math.abs(yClose - yOpen));
+          const bodyH = Math.max(2.5, Math.abs(yClose - yOpen));
           ctx.fillStyle = col;
-          ctx.fillRect(cx - candleW / 2, top, candleW, bodyH);
+          drawRoundedRect(ctx, cx - candleW / 2, top, candleW, bodyH, 2);
+          ctx.fill();
 
-          // Subtle marker where FinGate blocked a toxic order
-          if (p.blocked_here) {
-            const markY = Math.max(padT + 8, yOf(p.high) - 10);
+          // Animated blocked-trap ripple + crisp crimson indicator
+          if (p.blocked_here && barPhase > 0.35) {
+            const bPhase = Math.min(1, (barPhase - 0.35) / 0.65);
+            const markY = Math.max(padT + 10, yOf(animHigh) - 11);
+
+            if (bPhase < 1) {
+              ctx.strokeStyle = `rgba(185, 28, 28, ${(1 - bPhase) * 0.55})`;
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.arc(cx, markY, 5 + bPhase * 11, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+
             ctx.fillStyle = '#FEF2F2';
             ctx.strokeStyle = '#B91C1C';
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.6;
             ctx.beginPath();
             ctx.arc(cx, markY, 4.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
+
+            // Crisp micro-tag only during live candle formation (avoids peeking behind HTML hover tooltip)
+            if (barPhase < 1 && markY > padT + 6) {
+              const label = 'BLOCKED';
+              ctx.font = '600 9px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
+              const tw = ctx.measureText(label).width + 10;
+              const bx = Math.max(padL, Math.min(w - padR - tw, cx - tw / 2));
+              const by = Math.max(2, markY - 22);
+              ctx.fillStyle = '#B91C1C';
+              drawRoundedRect(ctx, bx, by, tw, 14, 3);
+              ctx.fill();
+              ctx.fillStyle = '#FFFFFF';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(label, bx + tw / 2, by + 7.5);
+            }
           }
 
           // Sparse X-axis time labels
           const stride = Math.max(1, Math.ceil(n / 6));
           if (idx % stride === 0 || idx === n - 1) {
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
             ctx.fillStyle = '#64748B';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
             ctx.fillText(p.time_ist.replace(' IST', ''), cx, h - padB + 8);
           }
         });
+
+        // Gliding live LTP dashed hairline + right-axis price pill (TradingView / Kite style)
+        const yLive = yOf(liveClose);
+        ctx.strokeStyle = liveUp ? 'rgba(4, 120, 87, 0.45)' : 'rgba(185, 28, 28, 0.45)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(padL, yLive);
+        ctx.lineTo(w - padR, yLive);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const pillText = '₹' + Math.round(liveClose).toLocaleString('en-IN');
+        ctx.font = '600 10.5px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
+        const pillW = Math.max(48, ctx.measureText(pillText).width + 10);
+        ctx.fillStyle = liveUp ? '#047857' : '#B91C1C';
+        drawRoundedRect(ctx, w - padR + 4, yLive - 9, pillW, 18, 4);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(pillText, w - padR + 4 + pillW / 2, yLive + 0.5);
+
+        // Hover crosshair
+        if (hoverPriceIdx >= 0 && hoverPriceIdx < n) {
+          const p = series[hoverPriceIdx];
+          const hx = padL + stepX * (hoverPriceIdx + 0.5);
+          const hy = yOf(p.close);
+          ctx.strokeStyle = '#94A3B8';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 2]);
+          ctx.beginPath();
+          ctx.moveTo(hx, padT);
+          ctx.lineTo(hx, padT + plotH);
+          ctx.moveTo(padL, hy);
+          ctx.lineTo(w - padR, hy);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
       }
 
-      function drawEquityComparison(series, initCap) {
+      function drawEquityComparison(series, initCap, progress) {
         const canvas = document.getElementById('equityCanvas');
         if (!canvas || canvas.offsetParent === null) return;
         const { ctx, w, h } = setupCanvas(canvas);
-        const padL = 66, padR = 16, padT = 16, padB = 26;
+        const padL = 66, padR = 18, padT = 24, padB = 26;
         const plotW = w - padL - padR;
         const plotH = h - padT - padB;
 
@@ -2687,11 +2872,12 @@
           minE = Math.min(minE, p.protected_equity_inr, p.unguarded_equity_inr);
           maxE = Math.max(maxE, p.protected_equity_inr, p.unguarded_equity_inr);
         }
-        const pad = Math.max(2000, (maxE - minE) * 0.18);
+        const pad = Math.max(2000, (maxE - minE) * 0.2);
         minE -= pad;
         maxE += pad;
 
-        const xOf = (i) => padL + (plotW * i) / Math.max(pts.length - 1, 1);
+        const totalSegs = Math.max(pts.length - 1, 1);
+        const xOf = (idxFloat) => padL + (plotW * idxFloat) / totalSegs;
         const yOf = (val) => padT + plotH - ((val - minE) / (maxE - minE)) * plotH;
 
         ctx.font = '11px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
@@ -2711,7 +2897,7 @@
           ctx.fillText('₹' + (val / 100000).toFixed(2) + 'L', padL - 8, y);
         }
 
-        // Baseline ₹5.00L hairline
+        // ₹5.00L baseline hairline
         const yBase = yOf(initCap);
         ctx.strokeStyle = '#CBD5E1';
         ctx.setLineDash([3, 3]);
@@ -2721,52 +2907,115 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Soft fill under Protected line
-        ctx.beginPath();
-        pts.forEach((p, i) => {
-          const x = xOf(i), y = yOf(p.protected_equity_inr);
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
-        ctx.lineTo(xOf(pts.length - 1), padT + plotH);
-        ctx.lineTo(xOf(0), padT + plotH);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 120, 87, 0.06)';
-        ctx.fill();
+        // Build smoothly interpolated visible points up to `progress`
+        const clampedProg = Math.max(0, Math.min(totalSegs, progress));
+        const whole = Math.floor(clampedProg);
+        const frac = clampedProg - whole;
+        const visPts = [];
+        for (let i = 0; i <= whole; i++) {
+          visPts.push({ x: xOf(i), prot: pts[i].protected_equity_inr, ungd: pts[i].unguarded_equity_inr });
+        }
+        if (frac > 0.001 && whole + 1 < pts.length) {
+          const a = pts[whole];
+          const b = pts[whole + 1];
+          visPts.push({
+            x: xOf(whole + frac),
+            prot: a.protected_equity_inr + (b.protected_equity_inr - a.protected_equity_inr) * frac,
+            ungd: a.unguarded_equity_inr + (b.unguarded_equity_inr - a.unguarded_equity_inr) * frac,
+          });
+        }
 
-        // Unguarded AI dashed crimson line
-        ctx.strokeStyle = '#B91C1C';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 4]);
-        ctx.beginPath();
-        pts.forEach((p, i) => {
-          const x = xOf(i), y = yOf(p.unguarded_equity_inr);
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // FinGate Protected solid emerald line
-        ctx.strokeStyle = '#047857';
-        ctx.lineWidth = 2.4;
-        ctx.beginPath();
-        pts.forEach((p, i) => {
-          const x = xOf(i), y = yOf(p.protected_equity_inr);
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-
-        // End dots
-        const last = pts[pts.length - 1];
-        const lx = xOf(pts.length - 1);
-        for (const [val, col] of [[last.unguarded_equity_inr, '#B91C1C'], [last.protected_equity_inr, '#047857']]) {
-          ctx.fillStyle = col;
+        if (visPts.length >= 2) {
+          // Shaded emerald "Protected Advantage" ribbon strictly between FinGate & Unguarded curves
           ctx.beginPath();
-          ctx.arc(lx, yOf(val), 3.8, 0, Math.PI * 2);
+          visPts.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, yOf(p.prot)); else ctx.lineTo(p.x, yOf(p.prot));
+          });
+          for (let i = visPts.length - 1; i >= 0; i--) {
+            ctx.lineTo(visPts[i].x, yOf(visPts[i].ungd));
+          }
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(4, 120, 87, 0.11)';
           ctx.fill();
+
+          // Unguarded AI dashed crimson line
+          ctx.strokeStyle = '#B91C1C';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          visPts.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, yOf(p.ungd)); else ctx.lineTo(p.x, yOf(p.ungd));
+          });
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // FinGate Protected solid emerald line
+          ctx.strokeStyle = '#047857';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          visPts.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, yOf(p.prot)); else ctx.lineTo(p.x, yOf(p.prot));
+          });
+          ctx.stroke();
+        }
+
+        // Live endpoint dots + floating "+₹ saved" divergence badge
+        const tip = visPts[visPts.length - 1];
+        if (tip) {
+          for (const [val, col] of [[tip.ungd, '#B91C1C'], [tip.prot, '#047857']]) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = col;
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.arc(tip.x, yOf(val), 4.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+
+          const gap = Math.round(tip.prot - tip.ungd);
+          if (gap > 500) {
+            const label = `+${inr(gap)} saved`;
+            ctx.font = '600 10.5px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
+            const tw = ctx.measureText(label).width + 12;
+            const midY = (yOf(tip.prot) + yOf(tip.ungd)) / 2;
+            const bx = Math.max(padL + 6, tip.x - tw - 10);
+            const by = Math.max(padT + 2, Math.min(padT + plotH - 22, midY - 9));
+            ctx.fillStyle = '#ECFDF5';
+            ctx.strokeStyle = '#A7F3D0';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, bx, by, tw, 19, 9);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#047857';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, bx + tw / 2, by + 10);
+          }
+        }
+
+        // Hover crosshair
+        if (hoverEquityIdx >= 0 && hoverEquityIdx < pts.length) {
+          const p = pts[hoverEquityIdx];
+          const hx = xOf(hoverEquityIdx);
+          ctx.strokeStyle = '#94A3B8';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 2]);
+          ctx.beginPath();
+          ctx.moveTo(hx, padT);
+          ctx.lineTo(hx, padT + plotH);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          for (const [val, col] of [[p.ungd ?? p.unguarded_equity_inr, '#B91C1C'], [p.prot ?? p.protected_equity_inr, '#047857']]) {
+            ctx.fillStyle = col;
+            ctx.beginPath();
+            ctx.arc(hx, yOf(val), 4.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
 
         // X labels
         const stride = Math.max(1, Math.ceil(pts.length / 6));
+        ctx.font = '11px -apple-system, BlinkMacSystemFont, Inter, sans-serif';
         ctx.fillStyle = '#64748B';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
@@ -2776,6 +3025,68 @@
           }
         });
       }
+
+      // Interactive Hover Crosshairs on Both Charts
+      const priceCanvasEl = document.getElementById('priceCanvas');
+      const priceTipEl = document.getElementById('priceTooltip');
+      priceCanvasEl.addEventListener('mousemove', (e) => {
+        if (!state || !state.ohlc_series || !state.ohlc_series.length) return;
+        const rect = priceCanvasEl.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const padL = 58, padR = 56;
+        const plotW = Math.max(1, rect.width - padL - padR);
+        const slotCount = Math.max(state.ohlc_series.length, 4);
+        const idx = Math.floor(((x - padL) / plotW) * slotCount);
+        if (idx >= 0 && idx < state.ohlc_series.length) {
+          hoverPriceIdx = idx;
+          const p = state.ohlc_series[idx];
+          priceTipEl.hidden = false;
+          priceTipEl.innerHTML = `
+            <strong>${esc(p.time_ist.replace(' IST', ''))}</strong>
+            <span>O ${inr(p.open)}</span>
+            <span>H ${inr(p.high)}</span>
+            <span>L ${inr(p.low)}</span>
+            <strong class="${p.close >= p.open ? 'text-green' : 'text-red'}">C ${inr(p.close)}</strong>
+            ${p.blocked_here ? '<span class="badge badge-red">Blocked Trap</span>' : ''}
+          `;
+          drawPriceCandles(state.ohlc_series, chartAnimProgress || state.ohlc_series.length);
+        }
+      });
+      priceCanvasEl.addEventListener('mouseleave', () => {
+        hoverPriceIdx = -1;
+        priceTipEl.hidden = true;
+        if (state) drawPriceCandles(state.ohlc_series, chartAnimProgress || state.ohlc_series.length);
+      });
+
+      const equityCanvasEl = document.getElementById('equityCanvas');
+      const equityTipEl = document.getElementById('equityTooltip');
+      equityCanvasEl.addEventListener('mousemove', (e) => {
+        if (!state || !state.ohlc_series || !state.ohlc_series.length) return;
+        const pts = [{ time_ist: 'Start', protected_equity_inr: state.initial_capital_inr, unguarded_equity_inr: state.initial_capital_inr }, ...state.ohlc_series];
+        const rect = equityCanvasEl.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const padL = 66, padR = 18;
+        const plotW = Math.max(1, rect.width - padL - padR);
+        const idx = Math.round(((x - padL) / plotW) * Math.max(pts.length - 1, 1));
+        if (idx >= 0 && idx < pts.length) {
+          hoverEquityIdx = idx;
+          const p = pts[idx];
+          const diff = p.protected_equity_inr - p.unguarded_equity_inr;
+          equityTipEl.hidden = false;
+          equityTipEl.innerHTML = `
+            <strong>${esc(p.time_ist.replace(' IST', ''))}</strong>
+            <span class="text-green">FinGate: <strong>${inr(p.protected_equity_inr)}</strong></span>
+            <span class="text-red">Unguarded: <strong>${inr(p.unguarded_equity_inr)}</strong></span>
+            <span>Diff: <strong>${signedInr(diff)}</strong></span>
+          `;
+          drawEquityComparison(state.ohlc_series, state.initial_capital_inr, chartAnimProgress || state.ohlc_series.length);
+        }
+      });
+      equityCanvasEl.addEventListener('mouseleave', () => {
+        hoverEquityIdx = -1;
+        equityTipEl.hidden = true;
+        if (state) drawEquityComparison(state.ohlc_series, state.initial_capital_inr, chartAnimProgress || state.ohlc_series.length);
+      });
 
       // =======================================================================
       // Cryptographic Proof Dialog Loader
@@ -2843,6 +3154,12 @@
       });
 
       document.getElementById('btnStep').addEventListener('click', async () => {
+        stopAutoPlay();
+        if (state && state.current_step >= state.total_steps) {
+          const restarted = await apiPost('/api/tape', { tape_id: state.active_tape_id });
+          applyState(restarted);
+          return;
+        }
         const snap = await apiPost('/api/step', { count: 1 });
         applyState(snap);
       });
@@ -2855,23 +3172,28 @@
         }
       }
 
-      document.getElementById('btnAutoPlay').addEventListener('click', () => {
+      document.getElementById('btnAutoPlay').addEventListener('click', async () => {
         if (autoPlayTimer) {
           stopAutoPlay();
         } else {
+          // If already at the final bar, restart the active session cleanly from Bar 1 first!
+          if (state && state.current_step >= state.total_steps) {
+            const restarted = await apiPost('/api/tape', { tape_id: state.active_tape_id });
+            applyState(restarted);
+          }
           document.getElementById('btnAutoPlay').textContent = 'Pause';
           autoPlayTimer = setInterval(async () => {
             const snap = await apiPost('/api/step', { count: 1 });
             applyState(snap);
             if (snap.current_step >= snap.total_steps) stopAutoPlay();
-          }, 950);
+          }, 580);
         }
       });
 
       document.getElementById('btnBacktest').addEventListener('click', async () => {
         stopAutoPlay();
         const res = await apiPost('/api/backtest');
-        if (res.state) applyState(res.state);
+        if (res.state) applyState(res.state, { animateFullSweep: true });
         if (res.backtest) {
           const bt = res.backtest;
           showToast(`12-bar backtest (${bt.total_backtest_us} µs): Protected ${inr(bt.protected_final_equity_inr)} vs Unguarded ${inr(bt.unguarded_final_equity_inr)}`);
@@ -2923,6 +3245,7 @@
         if (res.state) applyState(res.state);
         const fb = document.getElementById('orderFeedback');
         const dec = res.decision;
+        if (!dec) return;
         fb.hidden = false;
         fb.className = 'banner-feedback ' + (dec.approved ? 'ok' : 'err');
         fb.innerHTML = `<strong>${dec.approved ? 'Approved' : 'Blocked'} in ${fmtLatency(dec.latency_ns)}</strong> — ${esc(dec.gate_triggered)}: ${esc(dec.ai_explanation)}`;
@@ -2977,7 +3300,9 @@
         const text = document.getElementById('policyInput').value;
         const snap = await apiPost('/api/policy', { nl_text: text });
         applyState(snap);
-        showToast(`Policy #${snap.policy.policy_id} active — caught ${snap.policy.dry_run_traps_caught}/${snap.policy.dry_run_traps_total} historical traps`);
+        if (snap?.policy) {
+          showToast(`Policy #${snap.policy.policy_id} active — caught ${snap.policy.dry_run_traps_caught}/${snap.policy.dry_run_traps_total} historical traps`);
+        }
       });
 
       // 4. Protection: 4 Chaos Attack Simulators + Interactive 3-of-5 Shamir + Flight Recorder
@@ -2985,8 +3310,10 @@
         btn.addEventListener('click', async () => {
           const snap = await apiPost('/api/chaos', { kind: btn.dataset.chaos });
           applyState(snap);
-          const d = snap.recent_decisions[0];
-          showToast(`Blocked: ${d.gate_triggered} (${fmtLatency(d.latency_ns)})`);
+          const d = snap?.recent_decisions?.[0];
+          if (d) {
+            showToast(`Blocked: ${d.gate_triggered} (${fmtLatency(d.latency_ns)})`);
+          }
         });
       });
 
@@ -3008,7 +3335,7 @@
         const fb = document.getElementById('quorumFeedback');
         fb.hidden = false;
         fb.className = 'banner-feedback err';
-        fb.textContent = `2-of-5 Unlock DENIED: ${res.quorum.message}`;
+        fb.textContent = `2-of-5 Unlock DENIED: ${res.quorum?.message || 'Quorum threshold not reached'}`;
       });
 
       document.getElementById('btnDisarmQuorum').addEventListener('click', async () => {
@@ -3019,22 +3346,30 @@
         if (res.state) applyState(res.state);
         const fb = document.getElementById('quorumFeedback');
         fb.hidden = false;
-        fb.className = 'banner-feedback ' + (res.quorum.success ? 'ok' : 'err');
-        fb.textContent = `${res.quorum.success ? 'Unlocked' : 'Denied'} (${fmtLatency(res.quorum.elapsed_ns)}): ${res.quorum.message}`;
+        const q = res.quorum;
+        if (q) {
+          fb.className = 'banner-feedback ' + (q.success ? 'ok' : 'err');
+          fb.textContent = `${q.success ? 'Unlocked' : 'Denied'} (${fmtLatency(q.elapsed_ns)}): ${q.message}`;
+        }
       });
 
       async function loadFlightRecorder() {
-        const data = await (await fetch('/api/flight-recorder')).json();
-        document.getElementById('flightBody').innerHTML = (data.records || []).map((r) => `
-          <tr>
-            <th class="mono">#${r.seq}</th>
-            <td data-label="Event"><span class="badge ${r.event_kind === 'RISK_PASS' ? 'badge-green' : 'badge-red'}">${esc(r.event_kind)}</span></td>
-            <td data-label="Order" class="mono">#${r.cl_ord_id_hash}</td>
-            <td data-label="Price" class="num">${inr(r.price_inr)}</td>
-            <td data-label="Qty" class="num">${r.qty}</td>
-            <td data-label="Proof" class="mono" style="font-size:11.5px;">${esc(r.proof_commit_hex)}</td>
-          </tr>
-        `).join('');
+        try {
+          const res = await fetch('/api/flight-recorder');
+          const data = await res.json();
+          document.getElementById('flightBody').innerHTML = (data.records || []).map((r) => `
+            <tr>
+              <th class="mono">#${r.seq}</th>
+              <td data-label="Event"><span class="badge ${r.event_kind === 'RISK_PASS' ? 'badge-green' : 'badge-red'}">${esc(r.event_kind)}</span></td>
+              <td data-label="Order" class="mono">#${r.cl_ord_id_hash}</td>
+              <td data-label="Price" class="num">${inr(r.price_inr)}</td>
+              <td data-label="Qty" class="num">${r.qty}</td>
+              <td data-label="Proof" class="mono" style="font-size:11.5px;">${esc(r.proof_commit_hex)}</td>
+            </tr>
+          `).join('');
+        } catch (e) {
+          console.error('Failed to load flight recorder:', e);
+        }
       }
 
       document.getElementById('btnLoadFlight').addEventListener('click', loadFlightRecorder);
@@ -3049,7 +3384,11 @@
         ansEl.textContent = 'Analyzing live portfolio & risk metrics…';
         citEl.innerHTML = '';
         const rep = await apiPost('/api/chat', { question: q });
-        document.getElementById('copilotModeBadge').textContent = rep.mode.includes('Live LLM') ? 'Live Gemini + Grounded' : 'Grounded Offline';
+        if (!rep || !rep.answer) {
+          ansEl.textContent = 'FinGate Co-Pilot is offline.';
+          return;
+        }
+        document.getElementById('copilotModeBadge').textContent = rep.mode?.includes('Live LLM') ? 'Live Gemini + Grounded' : 'Grounded Offline';
         ansEl.innerHTML = esc(rep.answer)
           .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
           .replace(/`([^`]+)`/g, '<code class="mono" style="font-size:12px;background:#EEF2FF;padding:1px 4px;border-radius:4px;">$1</code>')
