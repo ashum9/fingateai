@@ -1,0 +1,18 @@
+[package]
+name = "fingate_ai"
+version = "0.1.0"
+edition = "2021"
+description = "FinGate AI — Neuro-Symbolic NSE Market Co-Pilot, Historical Event Backtester & Sub-Microsecond Rust Paper-Trading Firewall"
+
+[lib]
+name = "fingate_ai"
+path = "src/lib.rs"
+
+[[bin]]
+name = "fingateAI"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
