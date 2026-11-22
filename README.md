@@ -174,6 +174,23 @@ The FinGate Command Center provides five interconnected operational studios desi
 | **4. Protection** | Real AI Adversarial Attacks & Shamir Vault | 4 live chaos scenario injectors (Prompt-Injected Fat Finger, Expiry-Day Flash Dump, Stuck AI Retry Loop, FTL Spoof), 1-of-5 trip & 3-of-5 Shamir disarm, hardware SHA-256 Merkle inspector, crash-surviving circular flight recorder, and MCP connection snippet. |
 | **5. Co-Pilot & India Tax** | Grounded Compliance Assistant & Real-Time Tax | Financial Co-Pilot with citations to SEBI regulations and Indian Tax Code (Sec 111A, 112A), real-time STT/GST/Stamp Duty breakdown, and FY 2025-26 capital gains forecaster. |
 
+### Product Screenshots (Live Command Center)
+
+#### 1. Overview & Counterfactual Historical Replay (`+₹12,191` Preserved)
+![FinGate Overview Studio — Counterfactual Equity Curve & Blocked Traps](docs/screenshots/studio_overview.png)
+
+#### 2. Trade Execution Studio (12-Stage Screened Fill & Statutory Breakdown)
+![FinGate Trade Studio — Paper Order Ticket & Real-Time MTM Holdings](docs/screenshots/studio_trade.png)
+
+#### 3. Risk Rules & 60-Tick Historical Dry-Run Studio (`NanoPolicyVm`)
+![FinGate Risk Rules & Dry-Run Studio — Plain-English Compiler & Stress Test](docs/screenshots/studio_risk_dryrun.png)
+
+#### 4. Adversarial Protection Studio & 3-of-5 Shamir Recovery Vault
+![FinGate Protection Studio — Prompt-Injection Interception & 3-of-5 Shamir Vault](docs/screenshots/studio_protection.png)
+
+#### 5. Financial Co-Pilot & India Capital Gains Tax Studio
+![FinGate Co-Pilot & Tax Studio — Grounded SEBI Citations & FY26 Tax Engine](docs/screenshots/studio_copilot_tax.png)
+
 ---
 
 ## 5. Live Verified Benchmarks
@@ -208,8 +225,8 @@ Executed on Apple Silicon M4 (`cargo run --release --offline`):
 
 ### 1-Command Launch
 ```bash
-git clone https://github.com/ashum9-oss/FinGate.git
-cd FinGate
+git clone https://github.com/ashum9/fingateai.git
+cd fingateai
 cargo run --release --bin fingate_ai
 ```
 
@@ -279,11 +296,13 @@ FinGate bundles 5 realistic 12-bar historical NSE trading sessions (`60 ticks` t
 ## 9. Repository Structure
 
 ```
-FinGate/
+fingateai/
 ├── api/                       # Vercel serverless API handlers & state snapshots
 │   ├── [...route].js          # Edge catch-all API handler
 │   ├── initial_state.json     # Initial virtual portfolio & tape state
 │   └── tapes.json             # 5 historical NSE tapes (60 ticks)
+├── docs/                      # Architecture documentation & live screenshots
+│   └── screenshots/           # Captured UI screenshots across all 5 studios
 ├── hw/                        # Hardware synthesis files
 │   └── fpga_gatekeeper/       # 400 MHz SystemVerilog Alveo gatekeeper
 │       └── gatekeeper.sv
@@ -308,9 +327,10 @@ FinGate/
 
 ---
 
-## 10. Hackathon & Presentation Resources
+## 10. Interactive Walkthrough & Deployment Resources
 
 - **Live Production URL:** [https://fingate-ai.vercel.app](https://fingate-ai.vercel.app)
+- **GitHub Repository:** [https://github.com/ashum9/fingateai](https://github.com/ashum9/fingateai)
 - **Interactive Walkthrough Guide:** Built directly into the UI header via the `Demo Guide` toggle.
 - **Architectural Defense Validation:** All tests pass with zero heap allocations on the hot path.
 
@@ -318,8 +338,4 @@ FinGate/
 
 ## 11. License
 
-Licensed under either of:
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-- MIT License ([LICENSE-MIT](LICENSE-MIT))
-
-at your option.
+Dual-licensed under Apache License, Version 2.0 or MIT License, at your option.

@@ -30,7 +30,12 @@ export default async function handler(req, res) {
   }
 
   if (urlPath === 'reset') {
-    state = JSON.parse(JSON.stringify(initialData));
+    const cleanTape = tapesData['expiry_toxic_sweep'] || initialData;
+    state = JSON.parse(JSON.stringify(cleanTape));
+    state.kill_switch_active = false;
+    state.protected_equity_inr = 500000;
+    state.unguarded_equity_inr = 500000;
+    state.total_capital_saved_inr = 0;
     return res.status(200).json(state);
   }
 
@@ -45,20 +50,57 @@ export default async function handler(req, res) {
   if (urlPath === 'step') {
     if (state.current_step < state.total_steps) {
       state.current_step += 1;
+      if (state.active_tape_id === 'expiry_toxic_sweep' && state.ohlc_series.length < state.current_step) {
+        state.ohlc_series = JSON.parse(JSON.stringify(initialData.ohlc_series.slice(0, state.current_step)));
+      }
       const curTick = state.ohlc_series[state.current_step - 1] || state.ohlc_series[state.ohlc_series.length - 1];
       if (curTick) {
         state.current_price_inr = curTick.close || state.current_price_inr;
+        state.protected_equity_inr = curTick.protected_equity_inr || state.protected_equity_inr;
+        state.unguarded_equity_inr = curTick.unguarded_equity_inr || state.unguarded_equity_inr;
       }
     } else {
       // Loop back to step 1
-      state.current_step = 1;
+      const cleanTape = tapesData[state.active_tape_id] || initialData;
+      state = JSON.parse(JSON.stringify(cleanTape));
     }
     return res.status(200).json(state);
   }
 
   if (urlPath === 'backtest') {
-    state.current_step = state.total_steps;
     const isExpiry = state.active_tape_id === 'expiry_toxic_sweep';
+    if (isExpiry) {
+      state = JSON.parse(JSON.stringify(initialData));
+    } else {
+      state.current_step = state.total_steps || 12;
+      while (state.ohlc_series.length < 12) {
+        const last = state.ohlc_series[state.ohlc_series.length - 1] || {
+          step: 0,
+          symbol: state.current_symbol || 'NIFTY50',
+          close: state.current_price_inr || 24000,
+          protected_equity_inr: 500000,
+          unguarded_equity_inr: 500000,
+        };
+        const step = state.ohlc_series.length + 1;
+        const delta = step >= 7 && step <= 9 ? -120 : 25;
+        const close = Math.max(100, (last.close || 24000) + delta);
+        state.ohlc_series.push({
+          step,
+          time_ist: `${10 + Math.floor(step / 2)}:${step % 2 === 0 ? '30' : '00'} IST`,
+          symbol: last.symbol || state.current_symbol,
+          open: last.close || 24000,
+          high: Math.max(last.close || 24000, close) + 30,
+          low: Math.min(last.close || 24000, close) - 35,
+          close,
+          hawkes_e4: step >= 7 ? 115000 : 18000,
+          vpin_e4: step >= 7 ? 7200 : 800,
+          protected_equity_inr: 500000 + step * 227,
+          unguarded_equity_inr: 500000 - (step >= 7 ? (step - 6) * 1100 : 0),
+          blocked_here: step === 7 || step === 8,
+        });
+      }
+      state.price_history = state.ohlc_series.map((x) => x.close);
+    }
     const report = {
       tape_id: state.active_tape_id,
       tape_title: state.active_tape_title,
@@ -74,8 +116,13 @@ export default async function handler(req, res) {
       unguarded_fees_inr: 810,
       total_backtest_us: 93,
     };
+    state.approved_count = report.approved_trades;
+    state.blocked_count = report.blocked_trades;
     state.protected_equity_inr = report.protected_final_equity_inr;
     state.unguarded_equity_inr = report.unguarded_final_equity_inr;
+    state.total_capital_saved_inr = report.counterfactual_capital_saved_inr;
+    state.net_pnl_inr = report.protected_net_pnl_inr;
+    state.kill_switch_active = false;
     return res.status(200).json({ backtest: report, state });
   }
 
