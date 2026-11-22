@@ -3,447 +3,1398 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FinGate AI — NSE Market Co-Pilot & 111ns Rust Paper-Trading Firewall</title>
+  <title>FinGate AI — Production NSE Co-Pilot & 12-Stage Singularity Rust Firewall</title>
   <style>
     :root {
-      --bg: #0b0f17;
-      --card: #121826;
-      --border: #1f293d;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --green: #10b981;
-      --red: #ef4444;
+      --bg: #070b12;
+      --surface: #0e1420;
+      --surface-2: #131b2b;
+      --border: #1e2a3f;
+      --border-hi: #2d3e5c;
+      --text: #e6edf7;
+      --muted: #8b9bb4;
+      --emerald: #10b981;
+      --emerald-dim: rgba(16, 185, 129, 0.14);
+      --crimson: #ef4444;
+      --crimson-dim: rgba(239, 68, 68, 0.14);
       --amber: #f59e0b;
+      --amber-dim: rgba(245, 158, 11, 0.14);
       --blue: #3b82f6;
-      --purple: #8b5cf6;
+      --cyan: #06b6d4;
+      --violet: #8b5cf6;
+      --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.45;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Header Command Bar */
     header {
-      background: #0f1523;
+      background: linear-gradient(180deg, #0d1320 0%, #090e18 100%);
       border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
+      padding: 12px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-badge {
-      background: linear-gradient(135deg, var(--blue), var(--purple));
-      color: #fff; font-weight: 800; padding: 6px 12px; border-radius: 8px; font-size: 15px;
+    .brand-logo {
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      padding: 7px 12px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
     }
-    .brand-sub { font-size: 12px; color: var(--muted); }
-    .top-stats { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .stat-pill {
-      background: var(--card); border: 1px solid var(--border);
-      padding: 8px 14px; border-radius: 8px; display: flex; flex-direction: column;
+    .brand-title { font-weight: 700; font-size: 14.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .brand-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 2px 8px; border-radius: 999px;
+      background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16,185,129,0.4);
     }
-    .stat-pill span.lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-    .stat-pill span.val { font-size: 16px; font-weight: 700; margin-top: 2px; }
-    .saved-pill { border-color: rgba(16,185,129,0.5); background: rgba(16,185,129,0.08); }
-    .saved-pill span.val { color: var(--green); font-size: 18px; }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); animation: pulse 1.8s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+    .kpi-strip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      min-width: 118px;
+    }
+    .kpi-lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .kpi-val { font-size: 15px; font-weight: 700; font-family: var(--mono); margin-top: 1px; }
+    .kpi-saved { border-color: rgba(16,185,129,0.55); background: rgba(16,185,129,0.09); }
+    .kpi-saved .kpi-val { color: var(--emerald); font-size: 16.5px; }
 
     .kill-btn {
-      padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 12px;
-      cursor: pointer; border: none; transition: 0.15s;
+      padding: 9px 14px; border-radius: 8px; font-weight: 800; font-size: 11.5px;
+      letter-spacing: 0.04em; cursor: pointer; border: 1px solid transparent; transition: 0.15s;
     }
-    .kill-armed { background: var(--red); color: #fff; }
-    .kill-disarm { background: var(--amber); color: #111; }
+    .kill-armed { background: var(--crimson); color: #fff; }
+    .kill-armed:hover { filter: brightness(1.1); }
+    .kill-locked { background: var(--amber); color: #111; animation: pulse 1.2s infinite; }
 
-    main {
+    /* Main 2-Column Workspace (Left: Live Market & Dual Charts | Right: Interactive Multi-Tab Terminal) */
+    .shell {
       display: grid;
-      grid-template-columns: 1fr 1.1fr 1.2fr;
-      gap: 16px;
-      padding: 16px;
+      grid-template-columns: 440px 1fr;
+      gap: 14px;
+      padding: 14px 18px 20px;
       flex: 1;
+      align-items: start;
     }
-    @media (max-width: 1180px) { main { grid-template-columns: 1fr; } }
+    @media (max-width: 1120px) { .shell { grid-template-columns: 1fr; } }
 
-    .col { display: flex; flex-direction: column; gap: 14px; }
+    .stack { display: flex; flex-direction: column; gap: 12px; }
     .card {
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 10px;
+      padding: 14px;
     }
-    .col-header {
-      font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
-      color: var(--blue); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+    .card-hd {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      margin-bottom: 10px;
     }
-    select, textarea, button {
-      font-size: 13px; border-radius: 8px; border: 1px solid var(--border);
-      background: #0b101b; color: var(--text); padding: 9px 12px;
+    .card-title {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--cyan);
     }
-    select { width: 100%; cursor: pointer; font-weight: 600; }
-    textarea { width: 100%; min-height: 66px; resize: vertical; line-height: 1.4; }
-    .btn {
-      cursor: pointer; font-weight: 700; border: none; padding: 9px 14px;
-      border-radius: 8px; transition: 0.15s;
+    .tag {
+      font-size: 10.5px; font-weight: 600; font-family: var(--mono);
+      padding: 2px 7px; border-radius: 5px;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--muted);
     }
-    .btn-primary { background: var(--blue); color: #fff; }
-    .btn-green { background: var(--green); color: #052e16; }
-    .btn-danger { background: rgba(239,68,68,0.16); color: #fca5a5; border: 1px solid rgba(239,68,68,0.45); }
-    .btn-danger:hover { background: var(--red); color: #fff; }
+    .tag-ok { color: var(--emerald); border-color: rgba(16,185,129,0.4); background: var(--emerald-dim); }
+    .tag-bad { color: var(--crimson); border-color: rgba(239,68,68,0.4); background: var(--crimson-dim); }
+    .tag-warn { color: var(--amber); border-color: rgba(245,158,11,0.4); background: var(--amber-dim); }
 
-    .news-box {
-      background: #0b101b; border-left: 3px solid var(--blue);
-      padding: 12px; border-radius: 8px; margin-top: 10px;
+    select, input, textarea {
+      width: 100%;
+      background: #080d16;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      font-family: var(--sans);
     }
-    .news-headline { font-size: 14px; font-weight: 600; line-height: 1.4; }
-    .news-source { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    select:focus, input:focus, textarea:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+    textarea { resize: vertical; min-height: 68px; line-height: 1.45; }
+
+    .btn-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .btn {
+      cursor: pointer; border-radius: 7px; border: 1px solid var(--border);
+      background: var(--surface-2); color: var(--text); font-weight: 700;
+      font-size: 12px; padding: 7px 12px; transition: 0.14s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn:hover { border-color: var(--border-hi); background: #192439; }
+    .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-emerald { background: var(--emerald); border-color: var(--emerald); color: #04251a; }
+    .btn-emerald:hover { filter: brightness(1.08); }
+    .btn-danger {
+      background: var(--crimson-dim); border-color: rgba(239,68,68,0.45); color: #fca5a5;
+      justify-content: flex-start; text-align: left;
+    }
+    .btn-danger:hover { background: var(--crimson); color: #fff; }
+    .btn-amber { background: var(--amber-dim); border-color: rgba(245,158,11,0.5); color: #fcd34d; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+    /* Dual Canvas Charts */
+    canvas.chart {
+      width: 100%;
+      height: 165px;
+      display: block;
+      background: #060a11;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    canvas.chart-sm { height: 138px; }
+    .legend { display: flex; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+    .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+
+    .news-card {
+      background: #080d16;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--blue);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-top: 10px;
+    }
+    .news-hl { font-size: 13px; font-weight: 600; line-height: 1.4; }
+    .news-src { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* Accessible Modern Tabs (from modern-web-guidance `tabs` guide) */
+    .tabs-shell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .tablist {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: inline proximity;
+      border-bottom: 1px solid var(--border);
+      background: #0a101b;
+      scrollbar-width: none;
+    }
+    .tablist::-webkit-scrollbar { display: none; }
+    .tablist button[role="tab"] {
+      position: relative;
+      flex: none;
+      scroll-snap-align: start;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 12px 15px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tablist button[role="tab"]:hover { color: var(--text); }
+    .tablist button[role="tab"][aria-selected="true"] {
+      color: var(--cyan);
+    }
+    /* MANDATORY: shape indicator via border on pseudo-element (works in forced-colors mode, zero layout shift) */
+    .tablist button[role="tab"][aria-selected="true"]::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      border-block-end: 3px solid var(--cyan);
+    }
+    /* Place all tabpanels in a single grid cell so hidden="until-found" adds zero gaps */
+    .tabpanels-grid { display: grid; }
+    .tabpanels-grid > [role="tabpanel"] { grid-area: 1 / 1; }
+    .panel-inner { padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Telemetry & Shockwave Grids */
+    .meter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    @media (max-width: 780px) { .meter-grid { grid-template-columns: repeat(2, 1fr); } }
+    .meter {
+      background: #080d16; border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px;
+    }
+    .meter-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .meter-val { font-size: 15px; font-weight: 700; font-family: var(--mono); margin-top: 2px; }
+    .meter-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .shock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    @media (max-width: 720px) { .shock-grid { grid-template-columns: repeat(2, 1fr); } }
+    .shock-cell {
+      background: #080d16; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+    }
+
+    .stage-bars { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    @media (max-width: 720px) { .stage-bars { grid-template-columns: 1fr; } }
+    .stage-row {
+      background: #080d16; border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px;
+    }
+    .stage-top { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+    .bar-track { height: 5px; border-radius: 4px; background: #162033; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); border-radius: 4px; }
 
     .code-box {
-      background: #070a12; border: 1px solid #1e293b; border-radius: 8px;
-      padding: 10px; font-family: "JetBrains Mono", "Fira Code", monospace;
-      font-size: 11.5px; color: #38bdf8; white-space: pre-wrap; margin-top: 8px;
+      background: #05080f; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; font-family: var(--mono); font-size: 11.5px; color: #38bdf8;
+      white-space: pre-wrap; overflow-x: auto;
     }
 
-    .meter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-    .meter-item { background: #0b101b; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
-    .meter-item .m-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
-    .meter-item .m-val { font-size: 15px; font-weight: 700; margin-top: 3px; }
-
-    .decision-list { display: flex; flex-direction: column; gap: 10px; max-height: 330px; overflow-y: auto; }
-    .dec-item {
-      background: #0b101b; border-radius: 8px; padding: 11px;
-      border-left: 4px solid var(--green); border-top: 1px solid var(--border);
-      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    /* Responsive Accessible Data Tables (from modern-web-guidance `responsive-table` guide) */
+    .table-wrapper {
+      overflow: auto;
+      max-inline-size: 100%;
+      max-block-size: min(380px, 55vh);
+      container-type: inline-size;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #080d16;
     }
-    .dec-item.blocked { border-left-color: var(--red); background: rgba(239,68,68,0.06); }
-    .dec-top { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
-    .badge-pass { color: var(--green); }
-    .badge-block { color: var(--red); }
-    .dec-gate { font-size: 11px; color: var(--amber); margin-top: 4px; font-weight: 600; }
-    .dec-exp { font-size: 12px; color: #cbd5e1; margin-top: 5px; line-height: 1.38; }
+    table.fg-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 11.5px;
+    }
+    table.fg-table thead {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+      background: #0e1626;
+    }
+    table.fg-table th {
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    table.fg-table td, table.fg-table tbody th {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(30,42,63,0.65);
+      vertical-align: top;
+      font-weight: 500;
+      color: var(--text);
+    }
+    table.fg-table tbody th {
+      position: sticky;
+      inset-inline-start: 0;
+      background: #0a101b;
+      z-index: 1;
+      font-family: var(--mono);
+    }
+    table.fg-table tr.row-blocked { background: rgba(239, 68, 68, 0.06); }
+    table.fg-table tr.row-blocked th { background: #191019; }
 
-    .shock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-    .shock-cell { background: #0b101b; padding: 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; }
-    .tax-box { font-size: 12px; color: #cbd5e1; line-height: 1.45; margin-top: 8px; background: #0b101b; padding: 10px; border-radius: 8px; }
-    canvas { width: 100%; height: 135px; background: #080c14; border-radius: 8px; border: 1px solid var(--border); margin-top: 8px; }
+    @container (width < 520px) {
+      table.fg-table, table.fg-table thead, table.fg-table tbody,
+      table.fg-table tr, table.fg-table th, table.fg-table td { display: block; }
+      table.fg-table thead { display: none; }
+      table.fg-table tr { margin: 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+      table.fg-table tbody th { position: sticky; inset-block-start: 0; z-index: 2; background: #111a2c; }
+      table.fg-table td::before {
+        content: attr(data-label) ": ";
+        color: var(--muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 10px;
+      }
+    }
+
+    /* Form Grid & Custodians */
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (max-width: 720px) { .form-grid { grid-template-columns: 1fr; } }
+    .field label { display: block; font-size: 10.5px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .custodian-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 8px; }
+    .cust-card {
+      background: #080d16; border: 1px solid var(--border); border-radius: 8px;
+      padding: 9px 10px; display: flex; gap: 8px; align-items: flex-start; cursor: pointer;
+    }
+    .cust-card input[type="checkbox"] { width: auto; margin-top: 2px; accent-color: var(--emerald); }
+
+    /* Chat Box */
+    .chat-log {
+      background: #060a11; border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px; max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+    }
+    .chat-msg { padding: 9px 11px; border-radius: 8px; font-size: 12.5px; line-height: 1.48; }
+    .chat-user { background: #13223d; border: 1px solid #243e6b; align-self: flex-end; max-width: 85%; }
+    .chat-ai { background: #0d1624; border: 1px solid var(--border); align-self: flex-start; max-width: 94%; }
+    .chat-cite { font-size: 10.5px; color: var(--cyan); font-family: var(--mono); margin-top: 6px; border-top: 1px solid var(--border); padding-top: 5px; }
+
+    /* Native <dialog> Modal (from modern-web-guidance `dialog` guide) */
+    dialog {
+      margin: auto;
+      max-width: 680px;
+      width: calc(100% - 32px);
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border-hi);
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.72);
+    }
+    dialog[open] { display: flex; flex-direction: column; }
+    dialog:modal { overscroll-behavior: contain; }
+    dialog::backdrop {
+      background: rgba(3, 6, 12, 0.76);
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+    .dlg-hd {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .dlg-body { padding: 16px; overflow-y: auto; max-height: 70vh; display: flex; flex-direction: column; gap: 10px; }
+    .dlg-ft { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
   </style>
 </head>
 <body>
   <header>
     <div class="brand">
-      <div class="brand-badge">FinGate AI</div>
+      <div class="brand-logo">FinGate AI</div>
       <div>
-        <div style="font-weight:700; font-size:15px;">NSE Market Co-Pilot & 111ns Rust Paper-Trading Firewall</div>
-        <div class="brand-sub">Historical NSE Replay & Paper Trading Only (Zero Real Money) • Neuro-Symbolic AI + Silicon Safety</div>
+        <div class="brand-title">
+          <span>Production NSE Co-Pilot &amp; 12-Stage Singularity Rust Firewall</span>
+          <span class="live-pill" id="sseBadge"><span class="live-dot"></span> SSE Live</span>
+        </div>
+        <div class="brand-sub">Historical NSE OHLCV &amp; Paper Trading Only (Zero Real Money) • ARMv8 SHA2 / PQ Lattice / 400 MHz FPGA BAR0 Mirror</div>
       </div>
     </div>
-    <div class="top-stats">
-      <div class="stat-pill">
-        <span class="lbl">Paper Cash + Invested</span>
-        <span class="val" id="topPortfolio">₹5,00,000</span>
+
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="kpi-lbl">Protected Equity</div>
+        <div class="kpi-val" id="kpiProtected">₹5,00,000</div>
       </div>
-      <div class="stat-pill">
-        <span class="lbl">Paper MTM P&L</span>
-        <span class="val" id="topPnl" style="color:var(--green)">+₹0</span>
+      <div class="kpi">
+        <div class="kpi-lbl">Unguarded AI</div>
+        <div class="kpi-val" id="kpiUnguarded" style="color:var(--muted)">₹5,00,000</div>
       </div>
-      <div class="stat-pill saved-pill">
-        <span class="lbl">Money Saved by Firewall</span>
-        <span class="val" id="topSaved">₹0</span>
+      <div class="kpi">
+        <div class="kpi-lbl">Real Net MTM P&amp;L</div>
+        <div class="kpi-val" id="kpiPnl">+₹0</div>
       </div>
-      <button id="killBtn" class="kill-btn kill-armed" onclick="toggleKillSwitch()">TRIP 1-OF-5 KILL SWITCH</button>
+      <div class="kpi kpi-saved">
+        <div class="kpi-lbl">Counterfactual ₹ Saved</div>
+        <div class="kpi-val" id="kpiSaved">₹0</div>
+      </div>
+      <button type="button" id="killTopBtn" class="kill-btn kill-armed" onclick="handleTopKillBtn()">
+        TRIP 1-OF-5 KILL SWITCH
+      </button>
     </div>
   </header>
 
-  <main>
-    <section class="col">
-      <div class="card">
-        <div class="col-header">
-          <span>1. NSE Historical Market & News Tape</span>
-          <span id="stepBadge" style="color:var(--muted)">Step 1/3</span>
+  <div class="shell">
+    <!-- LEFT COLUMN: Live NSE Tape Streamer, Candlestick + Toxicity Chart, & Dual Equity Curve -->
+    <aside class="stack">
+      <section class="card">
+        <div class="card-hd">
+          <span class="card-title">1. Historical NSE Market Tape Replay</span>
+          <span class="tag" id="stepTag">Bar 1 / 12</span>
         </div>
-        <select id="tapeSelect" onchange="changeTape(this.value)">
-          <option value="rbi_mpc_shock">Tape 1: RBI Surprise Repo Rate & Liquidity Cut (BANKNIFTY / HDFCBANK)</option>
-          <option value="expiry_toxic_sweep">Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)</option>
-          <option value="union_budget_tax">Tape 3: Union Budget Capex & STCG/LTCG Tax Revision (RELIANCE / TCS)</option>
-          <option value="fake_news_attack">Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)</option>
-          <option value="sip_portfolio_guide">Tape 5: Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)</option>
+        <select id="tapeSelect" aria-label="Select NSE historical event tape" onchange="selectTape(this.value)">
+          <option value="rbi_mpc_shock">Tape 1: RBI Surprise Repo Cut &amp; CRR Boost (12 bars)</option>
+          <option value="expiry_toxic_sweep">Tape 2: Weekly Expiry HFT 'Two-Patch' Toxic Sweep (12 bars)</option>
+          <option value="union_budget_tax">Tape 3: Union Budget Capex &amp; STCG/LTCG Tax Shock (12 bars)</option>
+          <option value="fake_news_attack">Tape 4: Adversarial Fake-News Prompt-Injection Scam (12 bars)</option>
+          <option value="sip_portfolio_guide">Tape 5: 12-Month Smart SIP, ETF &amp; Gold Hedge (12 bars)</option>
         </select>
-        <p id="tapeSummary" style="font-size:12px; color:var(--muted); margin-top:8px; line-height:1.4;"></p>
-        <div style="display:flex; gap:8px; margin-top:12px;">
-          <button class="btn btn-green" style="flex:1" onclick="stepTick()">▶ Step Next NSE Tick & AI Trade</button>
-          <button class="btn" style="background:#1e293b; color:#fff;" onclick="resetEngine()">↺ Reset</button>
+        <p id="tapeSummary" style="font-size:11.5px; color:var(--muted); margin-top:8px;"></p>
+
+        <div class="btn-row" style="margin-top:10px;">
+          <button type="button" class="btn btn-emerald" id="playBtn" style="flex:1" onclick="toggleAutoPlay()">▶ Auto-Play</button>
+          <button type="button" class="btn btn-primary" onclick="stepTick(1)">⏭ Step 1</button>
+          <button type="button" class="btn btn-amber" onclick="runBacktest()">⚡ Backtest All</button>
+          <button type="button" class="btn" onclick="resetEngine()">↺ Reset</button>
         </div>
+        <div id="backtestBanner" style="display:none; margin-top:9px; padding:8px 10px; border-radius:7px; background:var(--emerald-dim); border:1px solid rgba(16,185,129,0.45); font-size:11.5px;"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <span class="card-title">OHLCV Price Tape (<span id="curSym">HDFCBANK</span>)</span>
+          <span style="font-family:var(--mono); font-weight:800; font-size:15px; color:var(--emerald);" id="curPx">₹1,652</span>
+        </div>
+        <canvas id="ohlcChart" class="chart" width="410" height="165"></canvas>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:var(--emerald)"></span>Up Bar</span>
+          <span><span class="legend-dot" style="background:var(--crimson)"></span>Down Bar</span>
+          <span><span class="legend-dot" style="background:var(--amber)"></span>VPIN Toxicity</span>
+          <span><span class="legend-dot" style="background:#fff"></span>Blocked Trap</span>
+        </div>
+        <div class="news-card">
+          <div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--cyan);">Grounded NSE / RBI / Filing Feed</div>
+          <div class="news-hl" id="newsHeadline">Loading NSE headline...</div>
+          <div class="news-src" id="newsSource">Source: NSE Historical Archive</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <span class="card-title">Live Dual Equity Curve (Real MTM Counterfactual)</span>
+          <span class="tag tag-ok" id="equityDeltaTag">+₹0 Edge</span>
+        </div>
+        <canvas id="equityChart" class="chart chart-sm" width="410" height="138"></canvas>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:var(--emerald)"></span>FinGate Protected</span>
+          <span><span class="legend-dot" style="background:var(--crimson)"></span>Unguarded AI (No Firewall)</span>
+        </div>
+      </section>
+    </aside>
+
+    <!-- RIGHT COLUMN: Production Multi-Tab Institutional Command Center -->
+    <main class="tabs-shell">
+      <div class="tablist" role="tablist" aria-label="FinGate AI Production Workstation">
+        <button type="button" role="tab" id="tab-terminal" aria-selected="true">1. Firewall &amp; Chaos Terminal</button>
+        <button type="button" role="tab" id="tab-policy" aria-selected="false">2. Plain-English Policy Studio</button>
+        <button type="button" role="tab" id="tab-trading" aria-selected="false">3. Paper Order Ticket &amp; Holdings</button>
+        <button type="button" role="tab" id="tab-crypto" aria-selected="false">4. Crypto Audit &amp; 3-of-5 Shamir</button>
+        <button type="button" role="tab" id="tab-copilot" aria-selected="false">5. AI Co-Pilot &amp; India Tax</button>
       </div>
 
-      <div class="card">
-        <div class="col-header">
-          <span>Live NSE Price Tape (<span id="curSymbol">HDFCBANK</span>)</span>
-          <span id="curPrice" style="color:var(--green); font-size:15px;">₹1,680</span>
-        </div>
-        <canvas id="priceChart" width="380" height="135"></canvas>
-        <div class="news-box">
-          <div style="font-size:10px; text-transform:uppercase; color:var(--blue); font-weight:700;">Breaking NSE / RBI / Filing Feed</div>
-          <div class="news-headline" id="newsHeadline">Loading NSE headline...</div>
-          <div class="news-source" id="newsSource">Source: NSE Historical Archive</div>
-        </div>
-      </div>
+      <div class="tabpanels-grid">
+        <!-- TAB 1: Firewall & Chaos Terminal -->
+        <div role="tabpanel" aria-labelledby="tab-terminal" tabindex="0">
+          <div class="panel-inner">
+            <!-- Top Microstructure Meters -->
+            <div class="meter-grid">
+              <div class="meter">
+                <div class="meter-lbl">Hawkes Intensity (λ)</div>
+                <div class="meter-val" id="mHawkes">10,000</div>
+                <div class="meter-sub">Point-Process 2.85 ns</div>
+              </div>
+              <div class="meter">
+                <div class="meter-lbl">VPIN Informed Flow</div>
+                <div class="meter-val" id="mVpin">0.00</div>
+                <div class="meter-sub">16-Bucket O(1) Shield</div>
+              </div>
+              <div class="meter">
+                <div class="meter-lbl">AI Action Entropy</div>
+                <div class="meter-val" id="mEntropy">3.60 bits</div>
+                <div class="meter-sub">Floor &lt; 0.35 = Halt</div>
+              </div>
+              <div class="meter">
+                <div class="meter-lbl">Pass / Block Ratio</div>
+                <div class="meter-val" id="mRatio">1 / 0</div>
+                <div class="meter-sub" id="mShaBackend">Silicon SHA-256</div>
+              </div>
+            </div>
 
-      <div class="card">
-        <div class="col-header">
-          <span>6-Shockwave Flash-Crash Stress Test (5.7 ns)</span>
-          <span style="color:var(--muted); font-size:11px;">16-Pt SIMD SPAN</span>
-        </div>
-        <div class="shock-grid" id="shockGrid"></div>
-      </div>
-    </section>
+            <!-- 4 Adversarial Chaos Buttons -->
+            <div class="card" style="padding:12px;">
+              <div class="card-hd">
+                <span class="card-title" style="color:var(--crimson);">Adversarial Attack &amp; SessionBench Chaos Injector (4 Distinct Engines)</span>
+                <span class="tag">Click to Inject</span>
+              </div>
+              <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
+                <button type="button" class="btn btn-danger" onclick="triggerChaos('fake_news')">
+                  🚨 1. Fake News Prompt Injection (₹1.21 Cr 500-Lot Buy → Policy VM)
+                </button>
+                <button type="button" class="btn btn-danger" onclick="triggerChaos('toxic_sweep')">
+                  📉 2. Expiry HFT 'Two-Patch' Dump (VPIN &gt; 0.85 → Hawkes Shield)
+                </button>
+                <button type="button" class="btn btn-danger" onclick="triggerChaos('martingale_loop')">
+                  🔁 3. AI Reconnect Amnesia Loop (64 Dups → Entropy Sentinel)
+                </button>
+                <button type="button" class="btn btn-danger" onclick="triggerChaos('ftl_spoof')">
+                  ⚡ 4. Relativistic FTL Signal Spoof (SG1→NSE 0.2ms → Light-Cone)
+                </button>
+              </div>
+            </div>
 
-    <section class="col">
-      <div class="card">
-        <div class="col-header">
-          <span>2. Your Money Rules (Plain English → 4.7ns Rust Bytecode)</span>
-          <span style="color:var(--green)">Formally Verified</span>
-        </div>
-        <textarea id="nlInput">Max ₹35,000 per trade, max 150 quantity, block buys when Hawkes > 120000 and VPIN > 7000, halt if SPAN crash loss > ₹60,000</textarea>
-        <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="compilePolicy()">⚡ Compile Plain-English Rule into NanoPolicyVm Bytecode</button>
-        <div class="code-box" id="dslBox">Loading compiled bytecode...</div>
-        <div id="dryRunBox" style="font-size:11.5px; color:var(--green); margin-top:8px; line-height:1.35;"></div>
-      </div>
+            <!-- 12-Stage Live Latency + 6-Shockwave SPAN -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+              <div class="card" style="padding:12px;">
+                <div class="card-hd">
+                  <span class="card-title">Live Per-Stage Nanosecond Telemetry</span>
+                  <span class="tag tag-ok">0 B Heap Alloc</span>
+                </div>
+                <div class="stage-bars" id="stageBars"></div>
+              </div>
+              <div class="card" style="padding:12px;">
+                <div class="card-hd">
+                  <span class="card-title">6-Shockwave Flash-Crash Counterfactual</span>
+                  <span class="tag">16-Pt SIMD SPAN</span>
+                </div>
+                <div class="shock-grid" id="shockGrid"></div>
+              </div>
+            </div>
 
-      <div class="card">
-        <div class="col-header">
-          <span style="color:var(--red)">Adversarial Stress & Scam Simulator (For Judges)</span>
-          <span style="color:var(--muted); font-size:11px;">SessionBench Modes</span>
-        </div>
-        <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">
-          Click any attack below to trick the AI bot into a catastrophic trade and watch FinGate's Rust Firewall intercept it in nanoseconds:
-        </p>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn btn-danger" onclick="triggerChaos('fake_news')">
-            🚨 1. Inject Prompt-Injected Fake News Scam (AI Tries ₹1.21 Cr 500-Lot Buy)
-          </button>
-          <button class="btn btn-danger" onclick="triggerChaos('toxic_sweep')">
-            📉 2. Trigger Expiry-Day HFT 'Two-Patch' Toxic Dump (Hawkes + VPIN > 0.85)
-          </button>
-          <button class="btn btn-danger" onclick="triggerChaos('martingale_loop')">
-            🔁 3. Trigger AI Reconnect Amnesia Loop (64 Duplicate Orders → Entropy Collapse)
-          </button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="col-header">
-          <span>India STT, Brokerage, GST & Old vs. New Tax Regime Guide</span>
-          <span style="color:var(--amber)">Tax Co-Pilot</span>
-        </div>
-        <div class="tax-box" id="taxBox">Loading India tax & transaction cost analysis...</div>
-      </div>
-    </section>
-
-    <section class="col">
-      <div class="card">
-        <div class="col-header">
-          <span>3. FinGate Rust & Silicon Firewall Telemetry</span>
-          <span id="hwShaBadge" style="color:var(--green)">ARMv8 SHA2 Silicon Active</span>
-        </div>
-        <div class="meter-grid">
-          <div class="meter-item">
-            <div class="m-lbl">Hawkes Cascade</div>
-            <div class="m-val" id="mHawkes">10,000</div>
+            <!-- Forensic Decision Blotter -->
+            <div class="card" style="padding:12px;">
+              <div class="card-hd">
+                <span class="card-title">Real-Time 12-Stage Forensic Decision Blotter</span>
+                <span class="tag">Click "Verify Proof" for Live HW SHA-256 + PQ Lattice Audit</span>
+              </div>
+              <div class="table-wrapper" tabindex="0" role="region" aria-label="Forensic firewall decisions blotter">
+                <table class="fg-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Time / Symbol</th>
+                      <th>Order</th>
+                      <th>Verdict &amp; Gate</th>
+                      <th>Latency / FPGA</th>
+                      <th>Forensic Explanation</th>
+                      <th>Proof</th>
+                    </tr>
+                  </thead>
+                  <tbody id="decisionBody"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div class="meter-item">
-            <div class="m-lbl">VPIN Toxicity</div>
-            <div class="m-val" id="mVpin">0.15</div>
-          </div>
-          <div class="meter-item">
-            <div class="m-lbl">AI Entropy</div>
-            <div class="m-val" id="mEntropy">3.60 bits</div>
-          </div>
         </div>
-        <div style="font-size:11px; color:var(--muted); margin-top:10px; display:flex; flex-direction:column; gap:4px;">
-          <div><strong>Quorum Guard:</strong> <span id="quorumStatus">1-of-5 Halt | 3-of-5 Shamir F_(2^61-1) Disarm</span></div>
-          <div><strong>SHA-256 Merkle Root:</strong> <code id="merkleRoot" style="color:#38bdf8">0000</code></div>
-          <div><strong>Post-Quantum Lattice Commit:</strong> <code id="homoCommit" style="color:#a78bfa">0000</code></div>
-        </div>
-      </div>
 
-      <div class="card" style="flex:1; display:flex; flex-direction:column;">
-        <div class="col-header">
-          <span>Live Firewall Verdicts & 3-Second AI Forensic Post-Mortems</span>
-          <span id="verdictCounts" style="color:var(--muted)">0 Approved • 0 Blocked</span>
+        <!-- TAB 2: Plain-English Policy Studio -->
+        <div role="tabpanel" aria-labelledby="tab-policy" hidden="until-found">
+          <div class="panel-inner">
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">Neuro-Symbolic Policy Compiler (Plain English or Raw DSL → 1.09 ns SIMD Bytecode)</span>
+                <span class="tag tag-ok" id="policySimdBadge">SIMD Predicate-Matrix Active</span>
+              </div>
+              <textarea id="nlPolicyInput" aria-label="Plain English risk rules or raw DSL">Max ₹35,000 per trade, max 150 quantity, block buys when Hawkes > 120000 and VPIN > 7000, halt if SPAN crash loss > ₹60,000</textarea>
+              <div class="btn-row" style="margin-top:8px;">
+                <button type="button" class="btn btn-primary" onclick="compilePolicy()">⚡ Compile, Formally Verify &amp; Dry-Run on 60 NSE Bars</button>
+                <button type="button" class="btn btn-sm" onclick="setPresetPolicy('strict')">Preset: Strict Retail (₹20k Cap)</button>
+                <button type="button" class="btn btn-sm" onclick="setPresetPolicy('prop')">Preset: Prop Desk (₹1.5L Cap)</button>
+                <button type="button" class="btn btn-sm" onclick="setPresetPolicy('raw')">Preset: Raw NanoPolicyVm DSL</button>
+              </div>
+              <div class="code-box" id="compiledDslBox" style="margin-top:10px;"></div>
+              <div id="dryRunSummary" style="margin-top:8px; font-size:12px; color:var(--emerald); font-weight:600;"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">REAL 60-Tick Historical NSE Dry-Run Verification Results</span>
+                <span class="tag" id="dryRunStatsTag">0 µs</span>
+              </div>
+              <div class="table-wrapper" tabindex="0" role="region" aria-label="Policy dry-run results across historical NSE tapes">
+                <table class="fg-table">
+                  <thead>
+                    <tr>
+                      <th>Tape</th>
+                      <th>Bar</th>
+                      <th>Symbol</th>
+                      <th>Notional</th>
+                      <th>Ground Truth</th>
+                      <th>Compiled Bytecode Verdict</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dryRunBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="decision-list" id="decisionList"></div>
+
+        <!-- TAB 3: Manual Paper Order Ticket & Real Holdings -->
+        <div role="tabpanel" aria-labelledby="tab-trading" hidden="until-found">
+          <div class="panel-inner">
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">Manual Paper Order Ticket (Routes Live Through All 12 FinGate Rust Stages + FPGA BAR0)</span>
+                <span class="tag">Paper Trading Only</span>
+              </div>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="ordSym">NSE Symbol</label>
+                  <select id="ordSym">
+                    <option value="HDFCBANK">HDFCBANK (₹1,680 ref)</option>
+                    <option value="NIFTY50">NIFTY50 (₹24,200 ref)</option>
+                    <option value="BANKNIFTY">BANKNIFTY (₹51,400 ref)</option>
+                    <option value="RELIANCE">RELIANCE (₹2,940 ref)</option>
+                    <option value="TCS">TCS (₹4,120 ref)</option>
+                    <option value="NIFTYBEES">NIFTYBEES ETF (₹265 ref)</option>
+                    <option value="GOLDBEES">GOLDBEES ETF (₹65 ref)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="ordSide">Side</label>
+                  <select id="ordSide">
+                    <option value="BUY">BUY</option>
+                    <option value="SELL">SELL</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="ordSeg">Segment (Tax &amp; STT)</label>
+                  <select id="ordSeg">
+                    <option value="false">NSE Equity Delivery</option>
+                    <option value="true">NSE F&amp;O Derivatives</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="ordQty">Quantity</label>
+                  <input id="ordQty" type="number" min="1" max="50000" value="15" />
+                </div>
+                <div class="field">
+                  <label for="ordPx">Limit Price (₹)</label>
+                  <input id="ordPx" type="number" min="1" value="1680" />
+                </div>
+                <div class="field" style="display:flex; align-items:flex-end;">
+                  <button type="button" class="btn btn-emerald" style="width:100%;" onclick="submitManualOrder()">
+                    🚀 Route Through 12-Stage Firewall
+                  </button>
+                </div>
+              </div>
+              <div id="manualOrderResult" style="margin-top:10px; font-size:12px;"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">Real Mark-to-Market Paper Holdings &amp; P&amp;L Ledger (Zero Fake PnL)</span>
+                <span class="tag" id="ledgerFeesTag">Fees Paid: ₹0</span>
+              </div>
+              <div class="table-wrapper" tabindex="0" role="region" aria-label="Paper trading open positions and MTM P&L">
+                <table class="fg-table">
+                  <thead>
+                    <tr>
+                      <th>Symbol</th>
+                      <th>Open Qty</th>
+                      <th>Avg Entry</th>
+                      <th>Last Price</th>
+                      <th>Market Value</th>
+                      <th>Unrealized MTM</th>
+                      <th>Realized P&amp;L</th>
+                    </tr>
+                  </thead>
+                  <tbody id="positionsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Cryptographic Audit Vault & Interactive 3-of-5 Shamir Quorum -->
+        <div role="tabpanel" aria-labelledby="tab-crypto" hidden="until-found">
+          <div class="panel-inner">
+            <!-- Interactive 3-of-5 Shamir Custodian Console -->
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">Interactive Asymmetric 1-of-5 Trip / 3-of-5 Shamir F_(2^61-1) Disarm Console</span>
+                <span class="tag" id="quorumStatusTag">Nonce #1</span>
+              </div>
+              <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+                Test information-theoretic threshold security live: select <strong>2 custodians</strong> (must FAIL), select <strong>3 custodians + Tamper 1 Bit</strong> (must FAIL HMAC), or select any <strong>3 valid custodians</strong> (reconstructs secret via Montgomery Batch + 70-mul Addition Chain &amp; disarms in ~300 ns!).
+              </p>
+              <div class="custodian-grid" id="custodianGrid"></div>
+              <div class="btn-row" style="margin-top:10px; align-items:center;">
+                <button type="button" class="btn btn-danger" onclick="tripKillSwitch()">🔴 Trip 1-of-5 Emergency Halt (&lt; 1 ns)</button>
+                <button type="button" class="btn btn-emerald" onclick="attemptShamirDisarm()">🔐 Submit Selected Shares to Disarm</button>
+                <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--amber); cursor:pointer;">
+                  <input type="checkbox" id="tamperToggle" style="width:auto;" /> Simulate 1-Bit Share Tamper Attack
+                </label>
+              </div>
+              <div id="quorumLog" class="code-box" style="margin-top:10px; color:var(--text);">Ready — trip Kill Switch and test 2-of-5 vs. 3-of-5 Shamir shares.</div>
+            </div>
+
+            <!-- Hardware SHA-256 Merkle + Post-Quantum Ajtai-SIS Lattice + 400 MHz FPGA BAR0 -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+              <div class="card">
+                <div class="card-hd">
+                  <span class="card-title">Post-Quantum Ajtai-SIS Lattice &amp; HW SHA-256 Vault</span>
+                  <span class="tag tag-ok" id="sisStatusTag">SIS Binding VALID</span>
+                </div>
+                <div class="code-box" id="cryptoVaultBox"></div>
+              </div>
+              <div class="card">
+                <div class="card-hd">
+                  <span class="card-title">400 MHz AMD Alveo FPGA PCIe BAR0 Seqlock Mirror</span>
+                  <span class="tag tag-ok">4 Cycles = 10.0 ns</span>
+                </div>
+                <div class="code-box" id="fpgaBar0Box"></div>
+              </div>
+            </div>
+
+            <!-- Crash-Surviving MAP_SHARED Black-Box Flight Recorder -->
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">Crash-Surviving MAP_SHARED 64B Binary Flight Recorder</span>
+                <button type="button" class="btn btn-sm" onclick="refreshFlightRecorder()">🔄 Read Live mmap Ring</button>
+              </div>
+              <div class="table-wrapper" tabindex="0" role="region" aria-label="Black-box flight recorder binary ring dump">
+                <table class="fg-table">
+                  <thead>
+                    <tr>
+                      <th>Seq</th>
+                      <th>Kind</th>
+                      <th>Order ID</th>
+                      <th>Price</th>
+                      <th>Qty</th>
+                      <th>Entropy</th>
+                      <th>SPAN Worst</th>
+                      <th>ARX Commit</th>
+                    </tr>
+                  </thead>
+                  <tbody id="flightBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: Grounded AI Financial Co-Pilot & Dynamic India Tax Workbench -->
+        <div role="tabpanel" aria-labelledby="tab-copilot" hidden="until-found">
+          <div class="panel-inner">
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">Grounded AI NSE Financial, Risk &amp; Tax Co-Pilot</span>
+                <span class="tag tag-ok" id="copilotModeTag">Citation-Backed (Optional GEMINI_API_KEY)</span>
+              </div>
+              <div class="chat-log" id="chatLog">
+                <div class="chat-msg chat-ai">
+                  <strong>FinGate AI Co-Pilot:</strong> Ask me anything about the active NSE headline, your 6-shockwave SPAN crash survival, why a trade was blocked, SIP allocation, or your exact India Old vs. New Tax Regime &amp; STT/STCG/LTCG liability. Every figure is cited directly from the live Rust engine.
+                </div>
+              </div>
+              <div class="btn-row" style="margin-top:8px;">
+                <button type="button" class="btn btn-sm" onclick="askPreset('Is my portfolio safe in a -20% flash crash?')">Crash Risk?</button>
+                <button type="button" class="btn btn-sm" onclick="askPreset('Compare Old vs New Tax Regime and my STT/STCG/LTCG impact')">Tax &amp; STT?</button>
+                <button type="button" class="btn btn-sm" onclick="askPreset('Should I buy on this NSE news headline right now?')">Analyze News?</button>
+                <button type="button" class="btn btn-sm" onclick="askPreset('Verify our Merkle, Post-Quantum Lattice and Shamir crypto proofs')">Crypto Status?</button>
+              </div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <input id="chatInput" type="text" placeholder="Ask a question grounded in your live NSE portfolio & risk telemetry..." onkeydown="if(event.key==='Enter') sendChat()" />
+                <button type="button" class="btn btn-primary" onclick="sendChat()">Ask</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-hd">
+                <span class="card-title">Dynamic India Old vs. New Tax Regime, STT &amp; STCG/LTCG Workbench</span>
+                <span class="tag tag-warn" id="taxRecBadge">New Tax Regime</span>
+              </div>
+              <div class="form-grid" style="grid-template-columns: 1fr 1fr auto;">
+                <div class="field">
+                  <label for="taxIncome">Annual Income (₹)</label>
+                  <input id="taxIncome" type="number" step="50000" value="1500000" />
+                </div>
+                <div class="field">
+                  <label for="taxDed">80C / 80D / HRA Deductions (₹)</label>
+                  <input id="taxDed" type="number" step="25000" value="200000" />
+                </div>
+                <div class="field" style="display:flex; align-items:flex-end;">
+                  <button type="button" class="btn btn-primary" onclick="recalcTax()">Recalculate Tax</button>
+                </div>
+              </div>
+              <div class="code-box" id="taxDetailBox" style="margin-top:10px; color:var(--text);"></div>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
-  </main>
+    </main>
+  </div>
+
+  <!-- Native Modal <dialog> for Live Hardware SHA-256 Merkle & Post-Quantum Lattice Verification -->
+  <dialog id="proofDialog" closedby="any" aria-labelledby="proofDialogTitle">
+    <div class="dlg-hd">
+      <h2 id="proofDialogTitle" style="font-size:14px; color:var(--cyan);">Cryptographic Proof Inspector (HW SHA-256 Merkle + Post-Quantum Ajtai-SIS Lattice)</h2>
+    </div>
+    <div class="dlg-body" id="proofDialogBody">Loading proof...</div>
+    <div class="dlg-ft">
+      <form method="dialog">
+        <button type="submit" class="btn btn-primary" value="close" autofocus>Close Verifier</button>
+      </form>
+    </div>
+  </dialog>
 
   <script>
-    let currentState = null;
+    let STATE = null;
+    let autoPlayTimer = null;
 
-    function fmtINR(n) {
-      const sign = n < 0 ? "-" : "";
-      const abs = Math.abs(Math.trunc(n));
-      return sign + "₹" + abs.toLocaleString("en-IN");
+    const fmtINR = (n) => {
+      const v = Math.round(Number(n) || 0);
+      const sign = v < 0 ? '-' : '';
+      return sign + '₹' + Math.abs(v).toLocaleString('en-IN');
+    };
+    const fmtSignedINR = (n) => (Number(n) >= 0 ? '+' : '') + fmtINR(n);
+
+    // -------------------------------------------------------------------------
+    // Accessible Tabs (following modern-web-guidance `tabs` guide + beforematch)
+    // -------------------------------------------------------------------------
+    const tabButtons = Array.from(document.querySelectorAll('.tablist [role="tab"]'));
+    const tabPanels = Array.from(document.querySelectorAll('.tabpanels-grid > [role="tabpanel"]'));
+
+    function activateTab(tab) {
+      for (const t of tabButtons) {
+        const sel = t === tab;
+        t.setAttribute('aria-selected', sel ? 'true' : 'false');
+        t.tabIndex = sel ? 0 : -1;
+      }
+      for (const p of tabPanels) {
+        const match = p.getAttribute('aria-labelledby') === tab.id;
+        if (match) {
+          p.removeAttribute('hidden');
+          p.tabIndex = 0;
+        } else {
+          p.setAttribute('hidden', 'until-found');
+          p.removeAttribute('tabindex');
+        }
+      }
+      tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      if (tab.id === 'tab-crypto') refreshFlightRecorder();
     }
 
-    async function fetchState() {
-      const res = await fetch("/api/state");
-      currentState = await res.json();
-      render(currentState);
-    }
-
-    async function stepTick() {
-      const res = await fetch("/api/step", { method: "POST" });
-      currentState = await res.json();
-      render(currentState);
-    }
-
-    async function changeTape(id) {
-      const res = await fetch("/api/tape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tape_id: id })
+    tabButtons.forEach((btn, idx) => {
+      btn.addEventListener('click', () => activateTab(btn));
+      btn.addEventListener('keydown', (e) => {
+        let next = null;
+        if (e.key === 'ArrowRight') next = tabButtons[(idx + 1) % tabButtons.length];
+        else if (e.key === 'ArrowLeft') next = tabButtons[(idx - 1 + tabButtons.length) % tabButtons.length];
+        else if (e.key === 'Home') next = tabButtons[0];
+        else if (e.key === 'End') next = tabButtons[tabButtons.length - 1];
+        if (next) {
+          e.preventDefault();
+          next.focus();
+          activateTab(next);
+        }
       });
-      currentState = await res.json();
-      render(currentState);
+    });
+
+    tabPanels.forEach((panel) => {
+      panel.addEventListener('beforematch', () => {
+        const tab = document.getElementById(panel.getAttribute('aria-labelledby'));
+        if (tab) activateTab(tab);
+      });
+    });
+
+    // Native <dialog> Safari `closedby="any"` fallback + returnValue cleanup
+    const proofDialog = document.getElementById('proofDialog');
+    proofDialog.addEventListener('close', () => { proofDialog.returnValue = ''; });
+    if (!('closedBy' in HTMLDialogElement.prototype)) {
+      const outside = (e, dlg) => {
+        const r = dlg.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      let pressedOutside = false;
+      proofDialog.addEventListener('pointerdown', (e) => { pressedOutside = outside(e, proofDialog); });
+      proofDialog.addEventListener('pointerup', (e) => { if (pressedOutside && outside(e, proofDialog)) proofDialog.close(); });
     }
 
-    async function compilePolicy() {
-      const text = document.getElementById("nlInput").value;
-      const res = await fetch("/api/policy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nl_text: text })
+    // -------------------------------------------------------------------------
+    // Real-Time Server-Sent Events (`/api/stream`) + Initial Fetch
+    // -------------------------------------------------------------------------
+    function connectSse() {
+      const badge = document.getElementById('sseBadge');
+      const es = new EventSource('/api/stream');
+      es.addEventListener('state', (ev) => {
+        try {
+          const snap = JSON.parse(ev.data);
+          renderAll(snap);
+          badge.innerHTML = '<span class="live-dot"></span> SSE Live';
+        } catch (_) {}
       });
-      currentState = await res.json();
-      render(currentState);
+      es.onerror = () => {
+        badge.textContent = 'SSE Reconnecting...';
+      };
+    }
+
+    async function apiPost(path, payload) {
+      const r = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload || {})
+      });
+      return r.json();
+    }
+
+    async function stepTick(n) { renderAll(await apiPost('/api/step', { count: n })); }
+    async function selectTape(id) {
+      stopAutoPlay();
+      document.getElementById('backtestBanner').style.display = 'none';
+      renderAll(await apiPost('/api/tape', { tape_id: id }));
+    }
+    async function resetEngine() {
+      stopAutoPlay();
+      document.getElementById('backtestBanner').style.display = 'none';
+      renderAll(await apiPost('/api/reset', {}));
+    }
+    async function runBacktest() {
+      stopAutoPlay();
+      const res = await apiPost('/api/backtest', {});
+      if (res.state) renderAll(res.state);
+      const bt = res.backtest;
+      if (bt) {
+        const b = document.getElementById('backtestBanner');
+        b.style.display = 'block';
+        b.innerHTML = `<strong>Full ${bt.ticks_replayed}-Bar Backtest (${bt.total_backtest_us} µs):</strong> Protected <strong>${fmtINR(bt.protected_final_equity_inr)}</strong> vs Unguarded <strong>${fmtINR(bt.unguarded_final_equity_inr)}</strong> → Saved <strong>${fmtINR(bt.counterfactual_capital_saved_inr)}</strong> (${bt.approved_trades} pass / ${bt.blocked_trades} blocked)`;
+      }
+    }
+
+    function toggleAutoPlay() {
+      if (autoPlayTimer) {
+        stopAutoPlay();
+      } else {
+        document.getElementById('playBtn').textContent = '⏸ Pause Live';
+        autoPlayTimer = setInterval(() => stepTick(1), 950);
+      }
+    }
+    function stopAutoPlay() {
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+      }
+      document.getElementById('playBtn').textContent = '▶ Auto-Play';
     }
 
     async function triggerChaos(kind) {
-      const res = await fetch("/api/chaos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind })
+      stopAutoPlay();
+      renderAll(await apiPost('/api/chaos', { kind }));
+    }
+
+    async function handleTopKillBtn() {
+      if (STATE && STATE.kill_switch_active) {
+        activateTab(document.getElementById('tab-crypto'));
+      } else {
+        await tripKillSwitch();
+      }
+    }
+    async function tripKillSwitch() { renderAll(await apiPost('/api/quorum/trip', {})); }
+
+    async function attemptShamirDisarm() {
+      const ids = Array.from(document.querySelectorAll('#custodianGrid input[type="checkbox"]:checked'))
+        .map((el) => Number(el.value));
+      const tamper = document.getElementById('tamperToggle').checked;
+      const res = await apiPost('/api/quorum/disarm', { custodian_ids: ids, tamper_share: tamper });
+      if (res.state) renderAll(res.state);
+      const q = res.quorum;
+      const box = document.getElementById('quorumLog');
+      box.style.color = q.success ? 'var(--emerald)' : '#fca5a5';
+      box.textContent = `[${q.success ? 'QUORUM VERIFIED' : 'ACCESS DENIED'} • ${q.elapsed_ns} ns • Shares: [${q.custodian_ids_used.join(', ')}]${q.tampered ? ' (TAMPERED)' : ''}]\n${q.message}`;
+    }
+
+    async function compilePolicy() {
+      const nl = document.getElementById('nlPolicyInput').value;
+      renderAll(await apiPost('/api/policy', { nl_text: nl }));
+    }
+    function setPresetPolicy(kind) {
+      const el = document.getElementById('nlPolicyInput');
+      if (kind === 'strict') el.value = 'Max ₹20,000 per trade, max 75 quantity, block buys when Hawkes > 100000 and VPIN > 6500, halt if SPAN crash loss > ₹30,000';
+      else if (kind === 'prop') el.value = 'Max ₹1,50,000 per trade, max 400 quantity, block buys when Hawkes > 140000 and VPIN > 7500, halt if SPAN crash loss > ₹1,20,000';
+      else el.value = 'REJECT 101 IF notional > 40000\nREJECT 102 IF hawkes > 115000 AND vpin > 6800\nREJECT 103 IF span < -50000\nREJECT 104 IF qty > 120';
+      compilePolicy();
+    }
+
+    async function submitManualOrder() {
+      const payload = {
+        symbol: document.getElementById('ordSym').value,
+        side: document.getElementById('ordSide').value,
+        is_fno: document.getElementById('ordSeg').value === 'true',
+        qty: Number(document.getElementById('ordQty').value),
+        price_inr: Number(document.getElementById('ordPx').value)
+      };
+      const res = await apiPost('/api/order', payload);
+      if (res.state) renderAll(res.state);
+      const d = res.decision;
+      const el = document.getElementById('manualOrderResult');
+      el.innerHTML = `<div class="code-box" style="color:${d.approved ? 'var(--emerald)' : '#fca5a5'}">[Order #${d.id} • ${d.approved ? 'APPROVED' : 'BLOCKED'} in ${d.latency_ns} ns | FPGA BAR0: ${d.fpga_verdict} (${d.fpga_cycles} cycles)]\nGate: ${d.gate_triggered}\n${d.ai_explanation}</div>`;
+    }
+
+    async function inspectProof(id) {
+      const body = document.getElementById('proofDialogBody');
+      body.textContent = 'Running live ARMv8 SHA2 Merkle & Post-Quantum Ajtai-SIS Lattice verification...';
+      proofDialog.showModal();
+      const r = await fetch(`/api/proof/verify?id=${id}`);
+      const p = await r.json();
+      if (p.error) {
+        body.innerHTML = `<div class="code-box" style="color:#fca5a5">${p.error}</div>`;
+        return;
+      }
+      body.innerHTML = `
+        <div class="meter-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="meter">
+            <div class="meter-lbl">Hardware SHA-256 Merkle Proof</div>
+            <div class="meter-val" style="color:${p.merkle_proof_valid ? 'var(--emerald)' : 'var(--crimson)'}">${p.merkle_proof_valid ? 'VERIFIED VALID' : 'INVALID'}</div>
+            <div class="meter-sub">Verified in ${p.merkle_verify_ns} ns (Leaf #${p.merkle_leaf_idx})</div>
+          </div>
+          <div class="meter">
+            <div class="meter-lbl">Post-Quantum Ajtai-SIS Lattice Audit</div>
+            <div class="meter-val" style="color:${p.lattice_sis_valid ? 'var(--emerald)' : 'var(--crimson)'}">${p.lattice_sis_valid ? 'SIS NORM VALID' : 'INVALID'}</div>
+            <div class="meter-sub">Verified in ${p.lattice_verify_ns} ns (Bound: ${p.lattice_norm_bound})</div>
+          </div>
+        </div>
+        <div class="code-box">Decision ID     : #${p.decision_id}
+Leaf SHA-256    : ${p.merkle_leaf_hash_hex}
+Chained Root    : ${p.merkle_root_hex}
+O(log N) Path   : [${p.merkle_sibling_hashes_hex.join(' -> ')}]</div>
+      `;
+    }
+
+    async function refreshFlightRecorder() {
+      const r = await fetch('/api/flight-recorder');
+      const data = await r.json();
+      const tbody = document.getElementById('flightBody');
+      tbody.innerHTML = (data.records || []).map((row) => `
+        <tr class="${row.event_kind !== 'PASS' ? 'row-blocked' : ''}">
+          <th>#${row.seq}</th>
+          <td data-label="Kind"><span class="tag ${row.event_kind === 'PASS' ? 'tag-ok' : 'tag-bad'}">${row.event_kind}</span></td>
+          <td data-label="Order ID">${row.cl_ord_id_hash}</td>
+          <td data-label="Price">${fmtINR(row.price_inr)}</td>
+          <td data-label="Qty">${row.qty}</td>
+          <td data-label="Entropy">${(row.entropy_e4 / 10000).toFixed(2)}b</td>
+          <td data-label="SPAN">${fmtINR(row.post_span_worst)}</td>
+          <td data-label="ARX" style="font-family:var(--mono); color:var(--cyan);">${row.proof_commit_hex}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function recalcTax() {
+      const inc = Number(document.getElementById('taxIncome').value) || 1500000;
+      const ded = Number(document.getElementById('taxDed').value) || 200000;
+      renderAll(await apiPost('/api/tax', { annual_income_inr: inc, deductions_80c_hra_inr: ded }));
+    }
+
+    function askPreset(q) {
+      document.getElementById('chatInput').value = q;
+      sendChat();
+    }
+    async function sendChat() {
+      const inp = document.getElementById('chatInput');
+      const q = inp.value.trim();
+      if (!q) return;
+      inp.value = '';
+      const log = document.getElementById('chatLog');
+      log.insertAdjacentHTML('beforeend', `<div class="chat-msg chat-user">${escapeHtml(q)}</div>`);
+      const rep = await apiPost('/api/chat', { question: q });
+      document.getElementById('copilotModeTag').textContent = rep.mode;
+      const cites = (rep.citations || []).map((c) => `• ${escapeHtml(c)}`).join('<br/>');
+      log.insertAdjacentHTML('beforeend', `<div class="chat-msg chat-ai"><div>${escapeHtml(rep.answer)}</div><div class="chat-cite">${cites}</div></div>`);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // -------------------------------------------------------------------------
+    // High-DPI Canvas Renderers (OHLC + VPIN Chart & Dual Equity Curve Chart)
+    // -------------------------------------------------------------------------
+    function drawOhlcChart(series) {
+      const c = document.getElementById('ohlcChart');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+      if (!series || !series.length) return;
+
+      const padL = 48, padR = 10, padT = 12, padB = 22;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      let minP = Infinity, maxP = -Infinity;
+      for (const b of series) { minP = Math.min(minP, b.low); maxP = Math.max(maxP, b.high); }
+      const range = Math.max(maxP - minP, 10);
+      minP -= range * 0.08; maxP += range * 0.08;
+
+      const yOf = (p) => padT + (1 - (p - minP) / (maxP - minP)) * plotH;
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(30,42,63,0.7)';
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px ui-monospace, monospace';
+      for (let g = 0; g <= 3; g++) {
+        const y = padT + (g / 3) * plotH;
+        const val = Math.round(maxP - (g / 3) * (maxP - minP));
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+        ctx.fillText(val.toLocaleString('en-IN'), 4, y + 3);
+      }
+
+      const stepX = plotW / Math.max(series.length, 1);
+      const candleW = Math.max(5, Math.min(18, stepX * 0.56));
+
+      // VPIN Toxicity Overlay Ribbon (amber translucent bars along bottom)
+      series.forEach((b, i) => {
+        const cx = padL + (i + 0.5) * stepX;
+        const vpinFrac = Math.min(1, (b.vpin_e4 || 0) / 10000);
+        if (vpinFrac > 0.05) {
+          const vh = vpinFrac * (plotH * 0.35);
+          ctx.fillStyle = vpinFrac >= 0.7 ? 'rgba(239,68,68,0.28)' : 'rgba(245,158,11,0.18)';
+          ctx.fillRect(cx - candleW / 2, padT + plotH - vh, candleW, vh);
+        }
       });
-      currentState = await res.json();
-      render(currentState);
-    }
 
-    async function toggleKillSwitch() {
-      const disarm = currentState && currentState.kill_switch_active;
-      const res = await fetch("/api/killswitch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ disarm })
+      // OHLC Candlesticks + Blocked Trap Markers
+      series.forEach((b, i) => {
+        const cx = padL + (i + 0.5) * stepX;
+        const up = b.close >= b.open;
+        ctx.strokeStyle = up ? '#10b981' : '#ef4444';
+        ctx.fillStyle = up ? '#10b981' : '#ef4444';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, yOf(b.high));
+        ctx.lineTo(cx, yOf(b.low));
+        ctx.stroke();
+
+        const yO = yOf(b.open), yC = yOf(b.close);
+        const top = Math.min(yO, yC), bh = Math.max(2.5, Math.abs(yC - yO));
+        ctx.fillRect(cx - candleW / 2, top, candleW, bh);
+
+        if (b.blocked_here) {
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(cx, Math.max(padT + 5, yOf(b.high) - 6), 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
       });
-      currentState = await res.json();
-      render(currentState);
     }
 
-    async function resetEngine() {
-      const res = await fetch("/api/reset", { method: "POST" });
-      currentState = await res.json();
-      render(currentState);
-    }
+    function drawEquityChart(series) {
+      const c = document.getElementById('equityChart');
+      const ctx = c.getContext('2d');
+      const W = c.width, H = c.height;
+      ctx.clearRect(0, 0, W, H);
+      if (!series || !series.length) return;
 
-    function drawChart(prices) {
-      const canvas = document.getElementById("priceChart");
-      const ctx = canvas.getContext("2d");
-      const w = canvas.width, h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-      if (!prices || prices.length < 2) return;
-      const min = Math.min(...prices) * 0.998;
-      const max = Math.max(...prices) * 1.002;
-      const range = Math.max(max - min, 1);
+      const padL = 56, padR = 10, padT = 12, padB = 18;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      const vals = series.flatMap((b) => [b.protected_equity_inr, b.unguarded_equity_inr]);
+      let minV = Math.min(...vals, 495000);
+      let maxV = Math.max(...vals, 505000);
+      const rng = Math.max(maxV - minV, 5000);
+      minV -= rng * 0.08; maxV += rng * 0.08;
 
-      ctx.strokeStyle = "#3b82f6";
-      ctx.lineWidth = 2.5;
+      const xOf = (i) => padL + (series.length === 1 ? plotW / 2 : (i / (series.length - 1)) * plotW);
+      const yOf = (v) => padT + (1 - (v - minV) / (maxV - minV)) * plotH;
+
+      ctx.strokeStyle = 'rgba(30,42,63,0.7)';
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px ui-monospace, monospace';
+      for (let g = 0; g <= 2; g++) {
+        const y = padT + (g / 2) * plotH;
+        const val = Math.round(maxV - (g / 2) * (maxV - minV));
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+        ctx.fillText((val / 1000).toFixed(0) + 'k', 6, y + 3);
+      }
+
+      // Unguarded AI Equity (Crimson Dashed)
+      ctx.save();
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
       ctx.beginPath();
-      prices.forEach((p, idx) => {
-        const x = 14 + (idx / (prices.length - 1)) * (w - 28);
-        const y = h - 16 - ((p - min) / range) * (h - 32);
-        if (idx === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      series.forEach((b, i) => {
+        const x = xOf(i), y = yOf(b.unguarded_equity_inr);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.restore();
+
+      // FinGate Protected Equity (Emerald Solid)
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      series.forEach((b, i) => {
+        const x = xOf(i), y = yOf(b.protected_equity_inr);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       });
       ctx.stroke();
     }
 
-    function render(s) {
-      document.getElementById("tapeSelect").value = s.active_tape_id;
-      document.getElementById("tapeSummary").textContent = s.active_tape_summary;
-      document.getElementById("stepBadge").textContent = `Step ${s.current_step}/${s.total_steps}`;
-      document.getElementById("curSymbol").textContent = s.current_symbol;
-      document.getElementById("curPrice").textContent = fmtINR(s.current_price_inr);
-      document.getElementById("newsHeadline").textContent = s.current_headline;
-      document.getElementById("newsSource").textContent = "Source: " + s.current_source;
+    // -------------------------------------------------------------------------
+    // Master UI State Renderer
+    // -------------------------------------------------------------------------
+    function renderAll(s) {
+      STATE = s;
 
-      const totalVal = s.cash_available_inr + s.invested_value_inr;
-      document.getElementById("topPortfolio").textContent = `${fmtINR(totalVal)} (Cash: ${fmtINR(s.cash_available_inr)})`;
-      const pnlEl = document.getElementById("topPnl");
-      pnlEl.textContent = (s.unrealized_pnl_inr >= 0 ? "+" : "") + fmtINR(s.unrealized_pnl_inr);
-      pnlEl.style.color = s.unrealized_pnl_inr >= 0 ? "var(--green)" : "var(--red)";
-      document.getElementById("topSaved").textContent = fmtINR(s.total_capital_saved_inr);
+      // Top KPIs
+      document.getElementById('kpiProtected').textContent = fmtINR(s.protected_equity_inr);
+      document.getElementById('kpiUnguarded').textContent = fmtINR(s.unguarded_equity_inr);
+      document.getElementById('kpiUnguarded').style.color = s.unguarded_equity_inr < s.initial_capital_inr ? 'var(--crimson)' : 'var(--muted)';
+      const pnlEl = document.getElementById('kpiPnl');
+      pnlEl.textContent = fmtSignedINR(s.net_pnl_inr);
+      pnlEl.style.color = s.net_pnl_inr >= 0 ? 'var(--emerald)' : 'var(--crimson)';
+      document.getElementById('kpiSaved').textContent = fmtINR(s.total_capital_saved_inr);
 
-      const kb = document.getElementById("killBtn");
+      const kBtn = document.getElementById('killTopBtn');
       if (s.kill_switch_active) {
-        kb.textContent = "🔓 DISARM KILL SWITCH (3-OF-5 SHAMIR QUORUM)";
-        kb.className = "kill-btn kill-disarm";
+        kBtn.textContent = '🔒 LOCKED — OPEN 3-OF-5 SHAMIR DISARM';
+        kBtn.className = 'kill-btn kill-locked';
       } else {
-        kb.textContent = "🛑 TRIP 1-OF-5 EMERGENCY KILL SWITCH";
-        kb.className = "kill-btn kill-armed";
+        kBtn.textContent = 'TRIP 1-OF-5 KILL SWITCH';
+        kBtn.className = 'kill-btn kill-armed';
       }
 
-      document.getElementById("dslBox").textContent = s.policy.compiled_dsl;
-      document.getElementById("dryRunBox").textContent = "✓ " + s.policy.dry_run_summary;
+      // Left Column Market
+      document.getElementById('tapeSelect').value = s.active_tape_id;
+      document.getElementById('stepTag').textContent = `Bar ${s.current_step} / ${s.total_steps}`;
+      document.getElementById('tapeSummary').textContent = s.active_tape_summary;
+      document.getElementById('curSym').textContent = s.current_symbol;
+      document.getElementById('curPx').textContent = fmtINR(s.current_price_inr);
+      document.getElementById('newsHeadline').textContent = s.current_headline;
+      document.getElementById('newsSource').textContent = 'Source: ' + s.current_source;
 
-      document.getElementById("mHawkes").textContent = s.hawkes_intensity_e4.toLocaleString("en-IN");
-      document.getElementById("mHawkes").style.color = s.hawkes_intensity_e4 >= 120000 ? "var(--red)" : "var(--green)";
-      const vpin = (s.vpin_toxicity_e4 / 10000).toFixed(2);
-      document.getElementById("mVpin").textContent = vpin;
-      document.getElementById("mVpin").style.color = s.vpin_toxicity_e4 >= 7000 ? "var(--red)" : "var(--green)";
-      const ent = (s.shannon_entropy_e4 / 10000).toFixed(2) + " bits";
-      document.getElementById("mEntropy").textContent = ent;
-      document.getElementById("mEntropy").style.color = s.shannon_entropy_e4 < 5000 ? "var(--red)" : "var(--green)";
+      const edge = s.protected_equity_inr - s.unguarded_equity_inr;
+      document.getElementById('equityDeltaTag').textContent = (edge >= 0 ? '+' : '') + fmtINR(edge) + ' vs Unguarded';
+      drawOhlcChart(s.ohlc_series);
+      drawEquityChart(s.ohlc_series);
 
-      document.getElementById("quorumStatus").textContent = s.shamir_quorum_status;
-      document.getElementById("merkleRoot").textContent = s.latest_merkle_root_hex;
-      document.getElementById("homoCommit").textContent = s.homomorphic_commitment_hex;
-      document.getElementById("hwShaBadge").textContent = s.hw_sha256_active ? "Silicon SHA-256 Active" : "Zero-Alloc SHA-256";
+      // Meters
+      const hEl = document.getElementById('mHawkes');
+      hEl.textContent = Number(s.hawkes_intensity_e4).toLocaleString('en-IN');
+      hEl.style.color = s.hawkes_intensity_e4 > 110000 ? 'var(--crimson)' : 'var(--emerald)';
+      const vEl = document.getElementById('mVpin');
+      vEl.textContent = (s.vpin_toxicity_e4 / 10000).toFixed(2);
+      vEl.style.color = s.vpin_toxicity_e4 >= 7000 ? 'var(--crimson)' : 'var(--emerald)';
+      const eEl = document.getElementById('mEntropy');
+      eEl.textContent = (s.shannon_entropy_e4 / 10000).toFixed(2) + ' bits';
+      eEl.style.color = s.shannon_entropy_e4 < 8000 ? 'var(--crimson)' : 'var(--cyan)';
+      document.getElementById('mRatio').textContent = `${s.approved_count} / ${s.blocked_count}`;
+      document.getElementById('mShaBackend').textContent = s.crypto_audit.sha256_backend;
 
-      const sg = document.getElementById("shockGrid");
-      sg.innerHTML = s.shockwaves.map(sw => {
-        const col = sw.projected_pnl_inr < 0 ? "var(--red)" : "var(--green)";
-        return `<div class="shock-cell">
-          <div style="color:var(--muted)">${sw.label}</div>
-          <div style="font-weight:700; color:${col}; margin-top:2px;">${fmtINR(sw.projected_pnl_inr)}</div>
-        </div>`;
-      }).join("");
-
-      const t = s.tax_report;
-      document.getElementById("taxBox").innerHTML = `
-        <div><strong>Turnover:</strong> ${fmtINR(t.gross_turnover_inr)} • <strong>STT:</strong> ${fmtINR(t.stt_inr)} • <strong>Brokerage+GST+Stamp:</strong> ${fmtINR(t.total_statutory_charges_inr - t.stt_inr)}</div>
-        <div style="margin-top:4px;"><strong>STCG (20%):</strong> ${fmtINR(t.stcg_20pct_tax_inr)} vs. <strong>LTCG (12.5% > ₹1.25L):</strong> ${fmtINR(t.ltcg_12_5pct_tax_inr)}</div>
-        <div style="margin-top:4px;"><strong>₹15L Income Regime Check:</strong> Old Regime ${fmtINR(t.old_regime_tax_for_15l_income)} vs. New Regime <span style="color:var(--green); font-weight:700;">${fmtINR(t.new_regime_tax_for_15l_income)} (Saves ₹57,200)</span></div>
-        <div style="margin-top:6px; color:var(--muted); font-size:11.5px;">${t.plain_english_advice}</div>
-      `;
-
-      document.getElementById("verdictCounts").textContent = `${s.approved_count} Approved • ${s.blocked_count} Blocked`;
-      const dl = document.getElementById("decisionList");
-      dl.innerHTML = s.recent_decisions.map(d => {
-        const cls = d.approved ? "dec-item" : "dec-item blocked";
-        const badge = d.approved
-          ? `<span class="badge-pass">✓ PASS (${d.latency_ns} ns)</span>`
-          : `<span class="badge-block">✗ BLOCKED (${d.latency_ns} ns) • Saved ${fmtINR(d.capital_saved_inr)}</span>`;
-        return `<div class="${cls}">
-          <div class="dec-top">
-            <span>#${d.id} ${d.time_ist} • ${d.side} ${d.qty} ${d.symbol} @ ${fmtINR(d.price_inr)} (${fmtINR(d.notional_inr)})</span>
-            ${badge}
+      // Stage Latency Bars
+      const maxMean = Math.max(...s.stage_telemetry.map((st) => st.p50_ns), 100);
+      document.getElementById('stageBars').innerHTML = s.stage_telemetry.map((st) => `
+        <div class="stage-row">
+          <div class="stage-top">
+            <span style="color:var(--text); font-weight:600;">${st.stage}</span>
+            <span style="font-family:var(--mono); color:var(--cyan);">p50 ${st.p50_ns}ns · p99 ${st.p99_ns}ns</span>
           </div>
-          <div class="dec-gate">Gate: ${d.gate_triggered} • Merkle Leaf: <code>${d.merkle_leaf_hex}</code></div>
-          <div class="dec-exp">${d.ai_explanation}</div>
-        </div>`;
-      }).join("");
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, Math.max(8, (st.p50_ns / maxMean) * 100))}%"></div></div>
+        </div>
+      `).join('');
 
-      drawChart(s.price_history);
+      // 6-Shockwave SPAN Grid
+      document.getElementById('shockGrid').innerHTML = s.shockwaves.map((sw) => `
+        <div class="shock-cell">
+          <div style="font-size:10px; color:var(--muted);">${sw.label}</div>
+          <div style="font-family:var(--mono); font-weight:700; font-size:13px; margin-top:2px; color:${sw.projected_pnl_inr < 0 ? 'var(--crimson)' : 'var(--emerald)'}">
+            ${fmtSignedINR(sw.projected_pnl_inr)}
+          </div>
+          <div style="font-size:10px; color:${sw.survives ? 'var(--emerald)' : 'var(--crimson)'};">${sw.survives ? '✓ Survives' : '✕ Margin Call'}</div>
+        </div>
+      `).join('');
+
+      // Forensic Decisions Table
+      document.getElementById('decisionBody').innerHTML = s.recent_decisions.map((d) => `
+        <tr class="${d.approved ? '' : 'row-blocked'}">
+          <th>#${d.id}</th>
+          <td data-label="Time / Sym"><strong>${escapeHtml(d.symbol)}</strong><br/><span style="color:var(--muted); font-size:10px;">${escapeHtml(d.time_ist)}</span></td>
+          <td data-label="Order" style="font-family:var(--mono);">${d.side} ${d.qty}<br/>@ ${fmtINR(d.price_inr)}</td>
+          <td data-label="Verdict">
+            <span class="tag ${d.approved ? 'tag-ok' : 'tag-bad'}">${d.approved ? 'PASS' : 'BLOCK'}</span>
+            <div style="font-size:10.5px; color:var(--amber); margin-top:3px; font-weight:600;">${escapeHtml(d.gate_triggered)}</div>
+          </td>
+          <td data-label="Latency" style="font-family:var(--mono); font-size:10.5px;">${d.latency_ns} ns<br/><span style="color:var(--muted);">FPGA: ${escapeHtml(d.fpga_verdict)}</span></td>
+          <td data-label="Explanation" style="font-size:11px; color:#cbd5e1; max-width:290px;">${escapeHtml(d.ai_explanation)}</td>
+          <td data-label="Proof"><button type="button" class="btn btn-sm" onclick="inspectProof(${d.id})">Verify</button></td>
+        </tr>
+      `).join('');
+
+      // Tab 2: Policy Studio + 60-Tick Dry-Run
+      document.getElementById('policySimdBadge').textContent = s.policy.simd_fast_path_active
+        ? `SIMD Predicate-Matrix Active (${s.policy.instruction_count} ops)`
+        : `DAG VM (${s.policy.instruction_count} ops)`;
+      document.getElementById('compiledDslBox').textContent = `# Policy #${s.policy.policy_id} (${s.policy.compiler_source})\n` + s.policy.compiled_dsl;
+      document.getElementById('dryRunSummary').textContent = s.policy.dry_run_summary;
+      document.getElementById('dryRunStatsTag').textContent = `${s.policy.dry_run_total_ticks} ticks in ${s.policy.dry_run_elapsed_us} µs`;
+      document.getElementById('dryRunBody').innerHTML = (s.policy.dry_run_samples || []).map((r) => `
+        <tr class="${r.verdict.startsWith('REJECT') ? 'row-blocked' : ''}">
+          <th>${escapeHtml(r.tape_id)}</th>
+          <td data-label="Bar">#${r.step}</td>
+          <td data-label="Symbol">${escapeHtml(r.symbol)}</td>
+          <td data-label="Notional" style="font-family:var(--mono);">${fmtINR(r.notional_inr)}</td>
+          <td data-label="Type">${r.is_toxic_or_trap ? '<span class="tag tag-bad">ADVERSARIAL TRAP</span>' : '<span class="tag">Normal Bar</span>'}</td>
+          <td data-label="Verdict"><span class="tag ${r.verdict === 'ALLOW' ? 'tag-ok' : 'tag-bad'}">${escapeHtml(r.verdict)}</span></td>
+        </tr>
+      `).join('');
+
+      // Tab 3: Holdings Blotter
+      document.getElementById('ledgerFeesTag').textContent = `Cash: ${fmtINR(s.cash_available_inr)} · Fees Paid: ${fmtINR(s.total_fees_paid_inr)}`;
+      const posBody = document.getElementById('positionsBody');
+      if (!s.positions || !s.positions.length) {
+        posBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:16px;">No open paper positions yet — step a tape or place a manual paper order above.</td></tr>';
+      } else {
+        posBody.innerHTML = s.positions.map((p) => `
+          <tr>
+            <th>${escapeHtml(p.symbol)}</th>
+            <td data-label="Qty" style="font-family:var(--mono);">${p.qty}</td>
+            <td data-label="Avg Entry" style="font-family:var(--mono);">${fmtINR(p.avg_entry_price_inr)}</td>
+            <td data-label="Last Px" style="font-family:var(--mono);">${fmtINR(p.last_price_inr)}</td>
+            <td data-label="Mkt Value" style="font-family:var(--mono);">${fmtINR(p.market_value_inr)}</td>
+            <td data-label="Unrealized" style="font-family:var(--mono); color:${p.unrealized_pnl_inr >= 0 ? 'var(--emerald)' : 'var(--crimson)'}">${fmtSignedINR(p.unrealized_pnl_inr)}</td>
+            <td data-label="Realized" style="font-family:var(--mono); color:${p.realized_pnl_inr >= 0 ? 'var(--emerald)' : 'var(--crimson)'}">${fmtSignedINR(p.realized_pnl_inr)}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Tab 4: Custodians, PQ Lattice & FPGA BAR0
+      document.getElementById('quorumStatusTag').textContent = `Nonce #${s.disarm_nonce} · Denied: ${s.rejected_disarm_attempts}`;
+      const cg = document.getElementById('custodianGrid');
+      if (cg.children.length === 0 && s.custodians) {
+        cg.innerHTML = s.custodians.map((c, idx) => `
+          <label class="cust-card">
+            <input type="checkbox" value="${c.id}" ${idx === 0 || idx === 2 || idx === 4 ? 'checked' : ''} />
+            <div>
+              <div style="font-weight:700; font-size:12px;">#${c.id}: ${escapeHtml(c.role)}</div>
+              <div style="font-family:var(--mono); font-size:10px; color:var(--cyan); margin-top:2px;">y = 0x${c.share_preview_hex}</div>
+            </div>
+          </label>
+        `).join('');
+      }
+
+      const ca = s.crypto_audit;
+      document.getElementById('sisStatusTag').textContent = ca.lattice_sis_verified ? 'SIS Norm Binding VALID' : 'INVALID';
+      document.getElementById('cryptoVaultBox').textContent =
+`SHA-256 Engine   : ${ca.sha256_backend} (hw=${ca.hw_sha256_active})
+Chained Root     : 0x${ca.latest_merkle_root_hex}... (${ca.merkle_leaves_committed} leaves)
+PQ Lattice (Zq^4): [${ca.lattice_lanes_hex[0]}, ${ca.lattice_lanes_hex[1]},
+                    ${ca.lattice_lanes_hex[2]}, ${ca.lattice_lanes_hex[3]}]
+Hidden Exposure  : ${fmtINR(ca.lattice_exposure_sum_inr)} across ${ca.lattice_orders_committed} commits
+epsilon-DP View  : ${fmtINR(ca.dp_privatized_exposure_inr)} (Laplace alpha-safe)
+Flight Recorder  : ${ca.flight_recorder_total_events} mmap records | WAL: ${ca.wal_records_enqueued} recs`;
+
+      const fb = s.fpga_bar0;
+      document.getElementById('fpgaBar0Box').textContent =
+`Target Silicon   : AMD Alveo 400 MHz (${fb.pipeline_cycles} cycles = ${fb.modeled_latency_ns.toFixed(1)} ns)
+BAR0 Kill Bit 0  : ${fb.silicon_kill_bit ? 'TRIPPED (HARD HARDWARE DROP)' : 'CLEAR (ARMED)'}
+Seqlock Version  : v${fb.seqlock_version} (lock-free 64B cache line)
+Max Order Qty    : ${fb.max_qty} units
+Max Notional     : ${fmtINR(fb.max_notional)}
+Collar Band      : ${fmtINR(fb.collar_min_px)} .. ${fmtINR(fb.collar_max_px)}`;
+
+      // Tab 5: India Tax Report
+      const t = s.tax_report;
+      document.getElementById('taxRecBadge').textContent = `${t.recommended_regime} (Saves ${fmtINR(t.regime_savings_inr)}/yr)`;
+      document.getElementById('taxDetailBox').textContent =
+`Gross Paper Turnover   : ${fmtINR(t.gross_turnover_inr)}
+Statutory Charges      : ${fmtINR(t.total_statutory_charges_inr)} (Brokerage ${fmtINR(t.brokerage_inr)} | STT ${fmtINR(t.stt_inr)} | NSE Txn ${fmtINR(t.exchange_txn_inr)} | Stamp ${fmtINR(t.stamp_duty_inr)} | 18% GST ${fmtINR(t.gst_18pct_inr)})
+Capital Gains Est.     : STCG @ 20% = ${fmtINR(t.stcg_20pct_tax_inr)}  |  LTCG @ 12.5% (above ₹1.25L exempt) = ${fmtINR(t.ltcg_12_5pct_tax_inr)}
+Income Tax Comparison  : Old Regime = ${fmtINR(t.old_regime_tax_for_15l_income)}  vs  New Regime = ${fmtINR(t.new_regime_tax_for_15l_income)}
+Recommendation         : ${t.recommended_regime} saves ${fmtINR(t.regime_savings_inr)}/yr
+
+${t.plain_english_advice}`;
     }
 
-    fetchState();
+    // Boot
+    fetch('/api/state').then((r) => r.json()).then(renderAll);
+    connectSse();
   </script>
 </body>
 </html>
