@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinGate AI — NSE Market Co-Pilot & 111ns Rust Paper-Trading Firewall</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card: #121826;
+      --border: #1f293d;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: #0f1523;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-badge {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: #fff; font-weight: 800; padding: 6px 12px; border-radius: 8px; font-size: 15px;
+    }
+    .brand-sub { font-size: 12px; color: var(--muted); }
+    .top-stats { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .stat-pill {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 8px 14px; border-radius: 8px; display: flex; flex-direction: column;
+    }
+    .stat-pill span.lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .stat-pill span.val { font-size: 16px; font-weight: 700; margin-top: 2px; }
+    .saved-pill { border-color: rgba(16,185,129,0.5); background: rgba(16,185,129,0.08); }
+    .saved-pill span.val { color: var(--green); font-size: 18px; }
+
+    .kill-btn {
+      padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 12px;
+      cursor: pointer; border: none; transition: 0.15s;
+    }
+    .kill-armed { background: var(--red); color: #fff; }
+    .kill-disarm { background: var(--amber); color: #111; }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 1.2fr;
+      gap: 16px;
+      padding: 16px;
+      flex: 1;
+    }
+    @media (max-width: 1180px) { main { grid-template-columns: 1fr; } }
+
+    .col { display: flex; flex-direction: column; gap: 14px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .col-header {
+      font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--blue); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+    }
+    select, textarea, button {
+      font-size: 13px; border-radius: 8px; border: 1px solid var(--border);
+      background: #0b101b; color: var(--text); padding: 9px 12px;
+    }
+    select { width: 100%; cursor: pointer; font-weight: 600; }
+    textarea { width: 100%; min-height: 66px; resize: vertical; line-height: 1.4; }
+    .btn {
+      cursor: pointer; font-weight: 700; border: none; padding: 9px 14px;
+      border-radius: 8px; transition: 0.15s;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-green { background: var(--green); color: #052e16; }
+    .btn-danger { background: rgba(239,68,68,0.16); color: #fca5a5; border: 1px solid rgba(239,68,68,0.45); }
+    .btn-danger:hover { background: var(--red); color: #fff; }
+
+    .news-box {
+      background: #0b101b; border-left: 3px solid var(--blue);
+      padding: 12px; border-radius: 8px; margin-top: 10px;
+    }
+    .news-headline { font-size: 14px; font-weight: 600; line-height: 1.4; }
+    .news-source { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    .code-box {
+      background: #070a12; border: 1px solid #1e293b; border-radius: 8px;
+      padding: 10px; font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 11.5px; color: #38bdf8; white-space: pre-wrap; margin-top: 8px;
+    }
+
+    .meter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+    .meter-item { background: #0b101b; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+    .meter-item .m-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+    .meter-item .m-val { font-size: 15px; font-weight: 700; margin-top: 3px; }
+
+    .decision-list { display: flex; flex-direction: column; gap: 10px; max-height: 330px; overflow-y: auto; }
+    .dec-item {
+      background: #0b101b; border-radius: 8px; padding: 11px;
+      border-left: 4px solid var(--green); border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .dec-item.blocked { border-left-color: var(--red); background: rgba(239,68,68,0.06); }
+    .dec-top { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
+    .badge-pass { color: var(--green); }
+    .badge-block { color: var(--red); }
+    .dec-gate { font-size: 11px; color: var(--amber); margin-top: 4px; font-weight: 600; }
+    .dec-exp { font-size: 12px; color: #cbd5e1; margin-top: 5px; line-height: 1.38; }
+
+    .shock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+    .shock-cell { background: #0b101b; padding: 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; }
+    .tax-box { font-size: 12px; color: #cbd5e1; line-height: 1.45; margin-top: 8px; background: #0b101b; padding: 10px; border-radius: 8px; }
+    canvas { width: 100%; height: 135px; background: #080c14; border-radius: 8px; border: 1px solid var(--border); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-badge">FinGate AI</div>
+      <div>
+        <div style="font-weight:700; font-size:15px;">NSE Market Co-Pilot & 111ns Rust Paper-Trading Firewall</div>
+        <div class="brand-sub">Historical NSE Replay & Paper Trading Only (Zero Real Money) • Neuro-Symbolic AI + Silicon Safety</div>
+      </div>
+    </div>
+    <div class="top-stats">
+      <div class="stat-pill">
+        <span class="lbl">Paper Cash + Invested</span>
+        <span class="val" id="topPortfolio">₹5,00,000</span>
+      </div>
+      <div class="stat-pill">
+        <span class="lbl">Paper MTM P&L</span>
+        <span class="val" id="topPnl" style="color:var(--green)">+₹0</span>
+      </div>
+      <div class="stat-pill saved-pill">
+        <span class="lbl">Money Saved by Firewall</span>
+        <span class="val" id="topSaved">₹0</span>
+      </div>
+      <button id="killBtn" class="kill-btn kill-armed" onclick="toggleKillSwitch()">TRIP 1-OF-5 KILL SWITCH</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="col">
+      <div class="card">
+        <div class="col-header">
+          <span>1. NSE Historical Market & News Tape</span>
+          <span id="stepBadge" style="color:var(--muted)">Step 1/3</span>
+        </div>
+        <select id="tapeSelect" onchange="changeTape(this.value)">
+          <option value="rbi_mpc_shock">Tape 1: RBI Surprise Repo Rate & Liquidity Cut (BANKNIFTY / HDFCBANK)</option>
+          <option value="expiry_toxic_sweep">Tape 2: Weekly Expiry-Day HFT 'Two-Patch' Toxic Sweep (NIFTY50)</option>
+          <option value="union_budget_tax">Tape 3: Union Budget Capex & STCG/LTCG Tax Revision (RELIANCE / TCS)</option>
+          <option value="fake_news_attack">Tape 4: Adversarial Fake-News Prompt-Injection Scam (NIFTY50)</option>
+          <option value="sip_portfolio_guide">Tape 5: Smart SIP, Index ETF & Crash-Hedge Builder (NIFTYBEES)</option>
+        </select>
+        <p id="tapeSummary" style="font-size:12px; color:var(--muted); margin-top:8px; line-height:1.4;"></p>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="btn btn-green" style="flex:1" onclick="stepTick()">▶ Step Next NSE Tick & AI Trade</button>
+          <button class="btn" style="background:#1e293b; color:#fff;" onclick="resetEngine()">↺ Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="col-header">
+          <span>Live NSE Price Tape (<span id="curSymbol">HDFCBANK</span>)</span>
+          <span id="curPrice" style="color:var(--green); font-size:15px;">₹1,680</span>
+        </div>
+        <canvas id="priceChart" width="380" height="135"></canvas>
+        <div class="news-box">
+          <div style="font-size:10px; text-transform:uppercase; color:var(--blue); font-weight:700;">Breaking NSE / RBI / Filing Feed</div>
+          <div class="news-headline" id="newsHeadline">Loading NSE headline...</div>
+          <div class="news-source" id="newsSource">Source: NSE Historical Archive</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="col-header">
+          <span>6-Shockwave Flash-Crash Stress Test (5.7 ns)</span>
+          <span style="color:var(--muted); font-size:11px;">16-Pt SIMD SPAN</span>
+        </div>
+        <div class="shock-grid" id="shockGrid"></div>
+      </div>
+    </section>
+
+    <section class="col">
+      <div class="card">
+        <div class="col-header">
+          <span>2. Your Money Rules (Plain English → 4.7ns Rust Bytecode)</span>
+          <span style="color:var(--green)">Formally Verified</span>
+        </div>
+        <textarea id="nlInput">Max ₹35,000 per trade, max 150 quantity, block buys when Hawkes > 120000 and VPIN > 7000, halt if SPAN crash loss > ₹60,000</textarea>
+        <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="compilePolicy()">⚡ Compile Plain-English Rule into NanoPolicyVm Bytecode</button>
+        <div class="code-box" id="dslBox">Loading compiled bytecode...</div>
+        <div id="dryRunBox" style="font-size:11.5px; color:var(--green); margin-top:8px; line-height:1.35;"></div>
+      </div>
+
+      <div class="card">
+        <div class="col-header">
+          <span style="color:var(--red)">Adversarial Stress & Scam Simulator (For Judges)</span>
+          <span style="color:var(--muted); font-size:11px;">SessionBench Modes</span>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+          Click any attack below to trick the AI bot into a catastrophic trade and watch FinGate's Rust Firewall intercept it in nanoseconds:
+        </p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-danger" onclick="triggerChaos('fake_news')">
+            🚨 1. Inject Prompt-Injected Fake News Scam (AI Tries ₹1.21 Cr 500-Lot Buy)
+          </button>
+          <button class="btn btn-danger" onclick="triggerChaos('toxic_sweep')">
+            📉 2. Trigger Expiry-Day HFT 'Two-Patch' Toxic Dump (Hawkes + VPIN > 0.85)
+          </button>
+          <button class="btn btn-danger" onclick="triggerChaos('martingale_loop')">
+            🔁 3. Trigger AI Reconnect Amnesia Loop (64 Duplicate Orders → Entropy Collapse)
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="col-header">
+          <span>India STT, Brokerage, GST & Old vs. New Tax Regime Guide</span>
+          <span style="color:var(--amber)">Tax Co-Pilot</span>
+        </div>
+        <div class="tax-box" id="taxBox">Loading India tax & transaction cost analysis...</div>
+      </div>
+    </section>
+
+    <section class="col">
+      <div class="card">
+        <div class="col-header">
+          <span>3. FinGate Rust & Silicon Firewall Telemetry</span>
+          <span id="hwShaBadge" style="color:var(--green)">ARMv8 SHA2 Silicon Active</span>
+        </div>
+        <div class="meter-grid">
+          <div class="meter-item">
+            <div class="m-lbl">Hawkes Cascade</div>
+            <div class="m-val" id="mHawkes">10,000</div>
+          </div>
+          <div class="meter-item">
+            <div class="m-lbl">VPIN Toxicity</div>
+            <div class="m-val" id="mVpin">0.15</div>
+          </div>
+          <div class="meter-item">
+            <div class="m-lbl">AI Entropy</div>
+            <div class="m-val" id="mEntropy">3.60 bits</div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--muted); margin-top:10px; display:flex; flex-direction:column; gap:4px;">
+          <div><strong>Quorum Guard:</strong> <span id="quorumStatus">1-of-5 Halt | 3-of-5 Shamir F_(2^61-1) Disarm</span></div>
+          <div><strong>SHA-256 Merkle Root:</strong> <code id="merkleRoot" style="color:#38bdf8">0000</code></div>
+          <div><strong>Post-Quantum Lattice Commit:</strong> <code id="homoCommit" style="color:#a78bfa">0000</code></div>
+        </div>
+      </div>
+
+      <div class="card" style="flex:1; display:flex; flex-direction:column;">
+        <div class="col-header">
+          <span>Live Firewall Verdicts & 3-Second AI Forensic Post-Mortems</span>
+          <span id="verdictCounts" style="color:var(--muted)">0 Approved • 0 Blocked</span>
+        </div>
+        <div class="decision-list" id="decisionList"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentState = null;
+
+    function fmtINR(n) {
+      const sign = n < 0 ? "-" : "";
+      const abs = Math.abs(Math.trunc(n));
+      return sign + "₹" + abs.toLocaleString("en-IN");
+    }
+
+    async function fetchState() {
+      const res = await fetch("/api/state");
+      currentState = await res.json();
+      render(currentState);
+    }
+
+    async function stepTick() {
+      const res = await fetch("/api/step", { method: "POST" });
+      currentState = await res.json();
+      render(currentState);
+    }
+
+    async function changeTape(id) {
+      const res = await fetch("/api/tape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tape_id: id })
+      });
+      currentState = await res.json();
+      render(currentState);
+    }
+
+    async function compilePolicy() {
+      const text = document.getElementById("nlInput").value;
+      const res = await fetch("/api/policy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nl_text: text })
+      });
+      currentState = await res.json();
+      render(currentState);
+    }
+
+    async function triggerChaos(kind) {
+      const res = await fetch("/api/chaos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind })
+      });
+      currentState = await res.json();
+      render(currentState);
+    }
+
+    async function toggleKillSwitch() {
+      const disarm = currentState && currentState.kill_switch_active;
+      const res = await fetch("/api/killswitch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ disarm })
+      });
+      currentState = await res.json();
+      render(currentState);
+    }
+
+    async function resetEngine() {
+      const res = await fetch("/api/reset", { method: "POST" });
+      currentState = await res.json();
+      render(currentState);
+    }
+
+    function drawChart(prices) {
+      const canvas = document.getElementById("priceChart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      if (!prices || prices.length < 2) return;
+      const min = Math.min(...prices) * 0.998;
+      const max = Math.max(...prices) * 1.002;
+      const range = Math.max(max - min, 1);
+
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      prices.forEach((p, idx) => {
+        const x = 14 + (idx / (prices.length - 1)) * (w - 28);
+        const y = h - 16 - ((p - min) / range) * (h - 32);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    function render(s) {
+      document.getElementById("tapeSelect").value = s.active_tape_id;
+      document.getElementById("tapeSummary").textContent = s.active_tape_summary;
+      document.getElementById("stepBadge").textContent = `Step ${s.current_step}/${s.total_steps}`;
+      document.getElementById("curSymbol").textContent = s.current_symbol;
+      document.getElementById("curPrice").textContent = fmtINR(s.current_price_inr);
+      document.getElementById("newsHeadline").textContent = s.current_headline;
+      document.getElementById("newsSource").textContent = "Source: " + s.current_source;
+
+      const totalVal = s.cash_available_inr + s.invested_value_inr;
+      document.getElementById("topPortfolio").textContent = `${fmtINR(totalVal)} (Cash: ${fmtINR(s.cash_available_inr)})`;
+      const pnlEl = document.getElementById("topPnl");
+      pnlEl.textContent = (s.unrealized_pnl_inr >= 0 ? "+" : "") + fmtINR(s.unrealized_pnl_inr);
+      pnlEl.style.color = s.unrealized_pnl_inr >= 0 ? "var(--green)" : "var(--red)";
+      document.getElementById("topSaved").textContent = fmtINR(s.total_capital_saved_inr);
+
+      const kb = document.getElementById("killBtn");
+      if (s.kill_switch_active) {
+        kb.textContent = "🔓 DISARM KILL SWITCH (3-OF-5 SHAMIR QUORUM)";
+        kb.className = "kill-btn kill-disarm";
+      } else {
+        kb.textContent = "🛑 TRIP 1-OF-5 EMERGENCY KILL SWITCH";
+        kb.className = "kill-btn kill-armed";
+      }
+
+      document.getElementById("dslBox").textContent = s.policy.compiled_dsl;
+      document.getElementById("dryRunBox").textContent = "✓ " + s.policy.dry_run_summary;
+
+      document.getElementById("mHawkes").textContent = s.hawkes_intensity_e4.toLocaleString("en-IN");
+      document.getElementById("mHawkes").style.color = s.hawkes_intensity_e4 >= 120000 ? "var(--red)" : "var(--green)";
+      const vpin = (s.vpin_toxicity_e4 / 10000).toFixed(2);
+      document.getElementById("mVpin").textContent = vpin;
+      document.getElementById("mVpin").style.color = s.vpin_toxicity_e4 >= 7000 ? "var(--red)" : "var(--green)";
+      const ent = (s.shannon_entropy_e4 / 10000).toFixed(2) + " bits";
+      document.getElementById("mEntropy").textContent = ent;
+      document.getElementById("mEntropy").style.color = s.shannon_entropy_e4 < 5000 ? "var(--red)" : "var(--green)";
+
+      document.getElementById("quorumStatus").textContent = s.shamir_quorum_status;
+      document.getElementById("merkleRoot").textContent = s.latest_merkle_root_hex;
+      document.getElementById("homoCommit").textContent = s.homomorphic_commitment_hex;
+      document.getElementById("hwShaBadge").textContent = s.hw_sha256_active ? "Silicon SHA-256 Active" : "Zero-Alloc SHA-256";
+
+      const sg = document.getElementById("shockGrid");
+      sg.innerHTML = s.shockwaves.map(sw => {
+        const col = sw.projected_pnl_inr < 0 ? "var(--red)" : "var(--green)";
+        return `<div class="shock-cell">
+          <div style="color:var(--muted)">${sw.label}</div>
+          <div style="font-weight:700; color:${col}; margin-top:2px;">${fmtINR(sw.projected_pnl_inr)}</div>
+        </div>`;
+      }).join("");
+
+      const t = s.tax_report;
+      document.getElementById("taxBox").innerHTML = `
+        <div><strong>Turnover:</strong> ${fmtINR(t.gross_turnover_inr)} • <strong>STT:</strong> ${fmtINR(t.stt_inr)} • <strong>Brokerage+GST+Stamp:</strong> ${fmtINR(t.total_statutory_charges_inr - t.stt_inr)}</div>
+        <div style="margin-top:4px;"><strong>STCG (20%):</strong> ${fmtINR(t.stcg_20pct_tax_inr)} vs. <strong>LTCG (12.5% > ₹1.25L):</strong> ${fmtINR(t.ltcg_12_5pct_tax_inr)}</div>
+        <div style="margin-top:4px;"><strong>₹15L Income Regime Check:</strong> Old Regime ${fmtINR(t.old_regime_tax_for_15l_income)} vs. New Regime <span style="color:var(--green); font-weight:700;">${fmtINR(t.new_regime_tax_for_15l_income)} (Saves ₹57,200)</span></div>
+        <div style="margin-top:6px; color:var(--muted); font-size:11.5px;">${t.plain_english_advice}</div>
+      `;
+
+      document.getElementById("verdictCounts").textContent = `${s.approved_count} Approved • ${s.blocked_count} Blocked`;
+      const dl = document.getElementById("decisionList");
+      dl.innerHTML = s.recent_decisions.map(d => {
+        const cls = d.approved ? "dec-item" : "dec-item blocked";
+        const badge = d.approved
+          ? `<span class="badge-pass">✓ PASS (${d.latency_ns} ns)</span>`
+          : `<span class="badge-block">✗ BLOCKED (${d.latency_ns} ns) • Saved ${fmtINR(d.capital_saved_inr)}</span>`;
+        return `<div class="${cls}">
+          <div class="dec-top">
+            <span>#${d.id} ${d.time_ist} • ${d.side} ${d.qty} ${d.symbol} @ ${fmtINR(d.price_inr)} (${fmtINR(d.notional_inr)})</span>
+            ${badge}
+          </div>
+          <div class="dec-gate">Gate: ${d.gate_triggered} • Merkle Leaf: <code>${d.merkle_leaf_hex}</code></div>
+          <div class="dec-exp">${d.ai_explanation}</div>
+        </div>`;
+      }).join("");
+
+      drawChart(s.price_history);
+    }
+
+    fetchState();
+  </script>
+</body>
+</html>

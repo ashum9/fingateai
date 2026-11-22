@@ -595,7 +595,7 @@ pub fn compile_natural_language_policy(policy_id: u64, nl_text: &str) -> (Verifi
     let mut max_hawkes_e4: i64 = 120_000;
     let mut max_span_loss: i64 = 60_000;
 
-    let cleaned = nl_text.replace([',', '₹', '$'], " ");
+    let cleaned = nl_text.replace(',', "").replace(['₹', '$'], " ");
     let words: Vec<&str> = cleaned.split_whitespace().collect();
     for (i, w) in words.iter().enumerate() {
         let lower = w.to_ascii_lowercase();
@@ -611,25 +611,25 @@ pub fn compile_natural_language_policy(policy_id: u64, nl_text: &str) -> (Verifi
             let ctx_prev = if i > 0 { words[i - 1].to_ascii_lowercase() } else { String::new() };
             let ctx_prev2 = if i > 1 { words[i - 2].to_ascii_lowercase() } else { String::new() };
             let ctx_next = if i + 1 < words.len() { words[i + 1].to_ascii_lowercase() } else { String::new() };
+            let window = format!("{} {} {}", ctx_prev2, ctx_prev, ctx_next);
 
-            if ctx_prev.contains("qty")
-                || ctx_prev.contains("quantity")
-                || ctx_next.contains("qty")
-                || ctx_next.contains("lots")
-                || ctx_next.contains("shares")
-                || (val >= 5 && val <= 1_000 && !ctx_prev.contains("vpin"))
-            {
-                max_qty = val.clamp(1, 50_000);
-            } else if ctx_prev.contains("span")
-                || ctx_prev.contains("crash")
-                || ctx_prev.contains("loss")
-                || ctx_prev2.contains("crash")
+            if window.contains("vpin") {
+                max_vpin_e4 = if val <= 100 { val * 100 } else { val.clamp(1_000, 9_900) };
+            } else if window.contains("hawkes") {
+                max_hawkes_e4 = val.clamp(20_000, 400_000);
+            } else if window.contains("span")
+                || window.contains("crash")
+                || window.contains("loss")
+                || window.contains("drawdown")
             {
                 max_span_loss = val.abs().clamp(5_000, 500_000);
-            } else if ctx_prev.contains("vpin") {
-                max_vpin_e4 = if val <= 100 { val * 100 } else { val.clamp(1_000, 9_900) };
-            } else if ctx_prev.contains("hawkes") {
-                max_hawkes_e4 = val.clamp(20_000, 400_000);
+            } else if window.contains("qty")
+                || window.contains("quantity")
+                || window.contains("lots")
+                || window.contains("shares")
+                || (val >= 5 && val <= 1_000)
+            {
+                max_qty = val.clamp(1, 50_000);
             } else if val >= 5_000 {
                 max_notional = val.clamp(5_000, 5_000_000);
             }
