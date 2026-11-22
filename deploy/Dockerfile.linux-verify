@@ -1,0 +1,31 @@
+# Track F (F3): Self-Contained Ubuntu 24.04 Linux Verification & Bare-Metal Benchmark Container
+# Verifies Rust tests, real Verilator RTL sim, real clang -target bpf XDP compile, C11/C++17 ABI,
+# Python SHM interop, and release benchmarks on Linux!
+#
+# Build & run:
+#   docker build -f deploy/Dockerfile.linux-verify -t fingate-linux-verify .
+#   docker run --rm fingate-linux-verify
+
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential ca-certificates curl git clang llvm \
+    verilator libbpf-dev linux-libc-dev python3 pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+WORKDIR /workspace
+COPY . .
+
+RUN cc -std=c11 -Wall -Wextra -Werror -fsyntax-only include/fingate.h \
+ && c++ -std=c++17 -Wall -Wextra -Werror -x c++ -fsyntax-only include/fingate.h \
+ && python3 sdk/python/fingate_shm.py --self-test \
+ && clang -O2 -g -target bpf -c crates/fingate-xdp-ebpf/c_ref/fingate_xdp_kern.c -o /tmp/fingate_xdp_kern.o \
+ && bash hw/fpga_gatekeeper/build_and_sim.sh \
+ && cargo test \
+ && cargo build --release --bin fingate_singularity_gate --bin fingate_horizon_bench --bin fingate_frontier_bench --bin fingate_moat_gate --bin fingate_gap_closure --bin fingate_ship_gate --bin fingate_track_c
+
+CMD ["bash", "-lc", "./target/release/fingate_singularity_gate && ./target/release/fingate_moat_gate --offline && ./target/release/fingate_gap_closure"]

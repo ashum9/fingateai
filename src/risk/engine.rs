@@ -515,20 +515,37 @@ impl PreTradeRiskEngine {
         is_done: bool,
     ) {
         if let Some(slot) = self.get_account_slot(account_id) {
-            let acc_state = &self.accounts[slot].state;
-            let filled_notional = fill_qty.saturating_mul(price);
-            let cur = acc_state.open_working_notional.load(Ordering::Relaxed);
-            acc_state
-                .open_working_notional
-                .store(cur.saturating_sub(filled_notional), Ordering::Relaxed);
+            self.on_execution_report_slot(slot, symbol_id, cl_ord_id_hash, fill_qty, price, is_done);
+        }
+    }
 
-            if is_done {
-                let sym_idx = symbol_id as usize;
-                if sym_idx < FAST_SYMBOL_TABLE_SIZE {
-                    self.fast_stp[sym_idx].clear_order(cl_ord_id_hash);
-                } else if let Some(tbl) = self.overflow_stp.get_mut(&symbol_id) {
-                    tbl.clear_order(cl_ord_id_hash);
-                }
+    /// Track I8: Zero-lookup O(1) slot-indexed execution report handler (clears working notional & STP, `0 B` alloc!).
+    #[inline(always)]
+    pub fn on_execution_report_slot(
+        &mut self,
+        account_slot: usize,
+        symbol_id: u32,
+        cl_ord_id_hash: u64,
+        fill_qty: u64,
+        price: u64,
+        is_done: bool,
+    ) {
+        if account_slot >= self.accounts.len() {
+            return;
+        }
+        let acc_state = &self.accounts[account_slot].state;
+        let filled_notional = fill_qty.saturating_mul(price);
+        let cur = acc_state.open_working_notional.load(Ordering::Relaxed);
+        acc_state
+            .open_working_notional
+            .store(cur.saturating_sub(filled_notional), Ordering::Relaxed);
+
+        if is_done {
+            let sym_idx = symbol_id as usize;
+            if sym_idx < FAST_SYMBOL_TABLE_SIZE {
+                self.fast_stp[sym_idx].clear_order(cl_ord_id_hash);
+            } else if let Some(tbl) = self.overflow_stp.get_mut(&symbol_id) {
+                tbl.clear_order(cl_ord_id_hash);
             }
         }
     }

@@ -156,6 +156,10 @@ typedef struct fingate_stamped_shm_layout {
     uint32_t gateway_kill_flag;
     uint64_t pod_heartbeat_tsc;
     uint8_t  _pad_hdr[88];
+    FINGATE_ALIGN128 uint64_t req_head;
+    uint8_t  _pad_req_head[120];
+    FINGATE_ALIGN128 uint64_t resp_head;
+    uint8_t  _pad_resp_head[120];
     fingate_stamped_req_slot_t  req_slots[FINGATE_SHM_RING_CAP];
     fingate_stamped_resp_slot_t resp_slots[FINGATE_SHM_RING_CAP];
 } fingate_stamped_shm_layout_t;
@@ -163,7 +167,9 @@ typedef struct fingate_stamped_shm_layout {
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
 _Static_assert(sizeof(fingate_stamped_req_slot_t) == 128, "StampedReqSlot must be 128 bytes");
 _Static_assert(sizeof(fingate_stamped_resp_slot_t) == 128, "StampedRespSlot must be 128 bytes");
-_Static_assert(offsetof(fingate_stamped_shm_layout_t, req_slots) == 128, "stamped req_slots offset must be 128");
+_Static_assert(offsetof(fingate_stamped_shm_layout_t, req_head) == 128, "stamped req_head offset must be 128");
+_Static_assert(offsetof(fingate_stamped_shm_layout_t, resp_head) == 256, "stamped resp_head offset must be 256");
+_Static_assert(offsetof(fingate_stamped_shm_layout_t, req_slots) == 384, "stamped req_slots offset must be 384");
 #endif
 
 uint32_t fingate_abi_version(void);

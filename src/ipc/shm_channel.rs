@@ -540,24 +540,42 @@ pub struct StampedRespSlot {
 const _: () = assert!(std::mem::size_of::<StampedRespSlot>() == 128);
 
 /// Complete 128-byte cache-line isolated sequence-stamped POSIX `MAP_SHARED` channel (`FGSHM002`).
+///
+/// Zero-Dependency Single-MESI Design:
+/// - Each 128B slot co-locates `seq_stamp` + 64B payload on ONE physical Apple Silicon / Xeon cache line.
+/// - Consumer NEVER dirties `slot.seq_stamp` — it polls ONE cache line (`seq_stamp == seq + 1`) and
+///   immediately gets BOTH readiness & payload in 1 single MESI transfer, updating 128B-isolated
+///   `req_head` / `resp_head` credit watermarks lazily (cutting cross-core cache misses from 2 -> 1!).
 #[repr(C, align(128))]
 pub struct ShmStampedLayout {
-    pub magic: [u8; 8],             // 0..8
-    pub version: u32,               // 8..12
-    pub ring_capacity: u32,         // 12..16
-    pub pod_slot: u16,              // 16..18
-    pub _pad0: u16,                 // 18..20
-    pub pod_pid: AtomicU32,         // 20..24
-    pub gateway_pid: AtomicU32,     // 24..28
-    pub gateway_kill_flag: AtomicU32,// 28..32
-    pub pod_heartbeat_tsc: AtomicU64,// 32..40
-    pub _pad_hdr: [u8; 88],         // 40..128
+    // Cache line 0 (0..128): Metadata & liveness
+    pub magic: [u8; 8],               // 0..8
+    pub version: u32,                 // 8..12
+    pub ring_capacity: u32,           // 12..16
+    pub pod_slot: u16,                // 16..18
+    pub _pad0: u16,                   // 18..20
+    pub pod_pid: AtomicU32,           // 20..24
+    pub gateway_pid: AtomicU32,       // 24..28
+    pub gateway_kill_flag: AtomicU32, // 28..32
+    pub pod_heartbeat_tsc: AtomicU64, // 32..40
+    pub _pad_hdr: [u8; 88],           // 40..128
 
+    // Cache line 1 (128..256): Consumer-updated request credit watermark (128B isolated!)
+    pub req_head: AtomicU64,
+    pub _pad_req_head: [u8; 120],
+
+    // Cache line 2 (256..384): Consumer-updated response credit watermark (128B isolated!)
+    pub resp_head: AtomicU64,
+    pub _pad_resp_head: [u8; 120],
+
+    // Slots (384..): 256 x 128B requests + 256 x 128B verdicts
     pub req_slots: [StampedReqSlot; SHM_RING_CAP],
     pub resp_slots: [StampedRespSlot; SHM_RING_CAP],
 }
 
-const _: () = assert!(std::mem::offset_of!(ShmStampedLayout, req_slots) == 128);
+const _: () = assert!(std::mem::offset_of!(ShmStampedLayout, req_head) == 128);
+const _: () = assert!(std::mem::offset_of!(ShmStampedLayout, resp_head) == 256);
+const _: () = assert!(std::mem::offset_of!(ShmStampedLayout, req_slots) == 384);
 
 /// Track I6: Wait-free 128B sequence-stamped POSIX SHM channel (1 MESI line transfer per message).
 pub struct FastStampedShmChannel {
@@ -593,9 +611,11 @@ impl FastStampedShmChannel {
             layout.ring_capacity = SHM_RING_CAP as u32;
             layout.pod_slot = pod_slot;
             layout.gateway_pid.store(std::process::id(), Ordering::Release);
+            layout.req_head.store(0, Ordering::Relaxed);
+            layout.resp_head.store(0, Ordering::Relaxed);
             for i in 0..SHM_RING_CAP {
-                layout.req_slots[i].seq_stamp.store(i as u64, Ordering::Relaxed);
-                layout.resp_slots[i].seq_stamp.store(i as u64, Ordering::Relaxed);
+                layout.req_slots[i].seq_stamp.store(0, Ordering::Relaxed);
+                layout.resp_slots[i].seq_stamp.store(0, Ordering::Relaxed);
             }
             std::sync::atomic::fence(Ordering::Release);
         }
@@ -659,6 +679,7 @@ impl FastStampedShmChannel {
         StampedPodEndpoint {
             chan: self,
             req_seq: 0,
+            cached_req_head: 0,
             resp_seq: 0,
         }
     }
@@ -669,6 +690,7 @@ impl FastStampedShmChannel {
             chan: self,
             req_seq: 0,
             resp_seq: 0,
+            cached_resp_head: 0,
         }
     }
 }
@@ -688,35 +710,42 @@ impl Drop for FastStampedShmChannel {
 pub struct StampedPodEndpoint<'a> {
     chan: &'a FastStampedShmChannel,
     req_seq: u64,
+    cached_req_head: u64,
     resp_seq: u64,
 }
 
 impl<'a> StampedPodEndpoint<'a> {
+    /// Zero-acquire fast publish: writes 64B payload + `seq_stamp` in ONE 128B cache line!
     #[inline(always)]
     pub fn try_publish_order_in_place<F: FnOnce(&mut NormalizedOrderEvent)>(&mut self, writer: F) -> bool {
         let seq = self.req_seq;
+        if seq.wrapping_sub(self.cached_req_head) >= (SHM_RING_CAP as u64) - 1 {
+            self.cached_req_head = self.chan.layout().req_head.load(Ordering::Acquire);
+            if seq.wrapping_sub(self.cached_req_head) >= (SHM_RING_CAP as u64) - 1 {
+                return false;
+            }
+        }
+        let next = seq.wrapping_add(1);
         unsafe {
             let slot = &mut *(*self.chan.ptr.as_ptr())
                 .req_slots
                 .as_mut_ptr()
                 .add((seq as usize) & SHM_RING_MASK);
-            if slot.seq_stamp.load(Ordering::Acquire) != seq {
-                return false;
-            }
             writer(&mut slot.payload);
-            slot.seq_stamp.store(seq.wrapping_add(1), Ordering::Release);
+            slot.seq_stamp.store(next, Ordering::Release);
         }
-        self.req_seq = seq.wrapping_add(1);
+        self.req_seq = next;
         true
     }
 
-    /// Wait for the next verdict in ONE single 128B cache-line transfer (`seq_stamp` + `ShmOrderVerdict` co-located!).
+    /// Wait for the next verdict in ONE single 128B MESI transfer (zero write-back to `slot.seq_stamp`!).
     #[inline(always)]
     pub fn wait_verdict_in_place<R, F: FnOnce(&ShmOrderVerdict) -> R>(&mut self, reader: F) -> R {
         let seq = self.resp_seq;
         let expected = seq.wrapping_add(1);
         unsafe {
-            let slot = &*(*self.chan.ptr.as_ptr())
+            let base = self.chan.ptr.as_ptr();
+            let slot = &*(*base)
                 .resp_slots
                 .as_ptr()
                 .add((seq as usize) & SHM_RING_MASK);
@@ -728,9 +757,11 @@ impl<'a> StampedPodEndpoint<'a> {
                 }
             }
             let res = reader(&slot.payload);
-            slot.seq_stamp
-                .store(seq.wrapping_add(SHM_RING_CAP as u64), Ordering::Release);
             self.resp_seq = expected;
+            // Lazy credit release every 32 slots (avoids remote cache-line invalidation on every message!)
+            if (expected & 31) == 0 {
+                (*base).resp_head.store(expected, Ordering::Release);
+            }
             res
         }
     }
@@ -740,7 +771,8 @@ impl<'a> StampedPodEndpoint<'a> {
         let seq = self.resp_seq;
         let expected = seq.wrapping_add(1);
         unsafe {
-            let slot = &*(*self.chan.ptr.as_ptr())
+            let base = self.chan.ptr.as_ptr();
+            let slot = &*(*base)
                 .resp_slots
                 .as_ptr()
                 .add((seq as usize) & SHM_RING_MASK);
@@ -748,9 +780,10 @@ impl<'a> StampedPodEndpoint<'a> {
                 return None;
             }
             let res = reader(&slot.payload);
-            slot.seq_stamp
-                .store(seq.wrapping_add(SHM_RING_CAP as u64), Ordering::Release);
             self.resp_seq = expected;
+            if (expected & 31) == 0 {
+                (*base).resp_head.store(expected, Ordering::Release);
+            }
             Some(res)
         }
     }
@@ -761,6 +794,7 @@ pub struct StampedGatewayEndpoint<'a> {
     chan: &'a FastStampedShmChannel,
     req_seq: u64,
     resp_seq: u64,
+    cached_resp_head: u64,
 }
 
 impl<'a> StampedGatewayEndpoint<'a> {
@@ -769,7 +803,8 @@ impl<'a> StampedGatewayEndpoint<'a> {
         let seq = self.req_seq;
         let expected = seq.wrapping_add(1);
         unsafe {
-            let slot = &*(*self.chan.ptr.as_ptr())
+            let base = self.chan.ptr.as_ptr();
+            let slot = &*(*base)
                 .req_slots
                 .as_ptr()
                 .add((seq as usize) & SHM_RING_MASK);
@@ -777,9 +812,10 @@ impl<'a> StampedGatewayEndpoint<'a> {
                 return None;
             }
             let res = reader(&slot.payload);
-            slot.seq_stamp
-                .store(seq.wrapping_add(SHM_RING_CAP as u64), Ordering::Release);
             self.req_seq = expected;
+            if (expected & 31) == 0 {
+                (*base).req_head.store(expected, Ordering::Release);
+            }
             Some(res)
         }
     }
@@ -787,18 +823,22 @@ impl<'a> StampedGatewayEndpoint<'a> {
     #[inline(always)]
     pub fn try_publish_verdict_in_place<F: FnOnce(&mut ShmOrderVerdict)>(&mut self, writer: F) -> bool {
         let seq = self.resp_seq;
+        if seq.wrapping_sub(self.cached_resp_head) >= (SHM_RING_CAP as u64) - 1 {
+            self.cached_resp_head = self.chan.layout().resp_head.load(Ordering::Acquire);
+            if seq.wrapping_sub(self.cached_resp_head) >= (SHM_RING_CAP as u64) - 1 {
+                return false;
+            }
+        }
+        let next = seq.wrapping_add(1);
         unsafe {
             let slot = &mut *(*self.chan.ptr.as_ptr())
                 .resp_slots
                 .as_mut_ptr()
                 .add((seq as usize) & SHM_RING_MASK);
-            if slot.seq_stamp.load(Ordering::Acquire) != seq {
-                return false;
-            }
             writer(&mut slot.payload);
-            slot.seq_stamp.store(seq.wrapping_add(1), Ordering::Release);
+            slot.seq_stamp.store(next, Ordering::Release);
         }
-        self.resp_seq = seq.wrapping_add(1);
+        self.resp_seq = next;
         true
     }
 }
