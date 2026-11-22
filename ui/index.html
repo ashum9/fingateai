@@ -1903,7 +1903,7 @@
       <div class="nav-tabs" role="tablist" focusgroup="tablist nomemory" aria-label="FinGate workspace sections">
         <button type="button" role="tab" id="tab-overview" aria-selected="true" focusgroupstart data-panel="panel-overview">Overview</button>
         <button type="button" role="tab" id="tab-trade" aria-selected="false" data-panel="panel-trade">Trade</button>
-        <button type="button" role="tab" id="tab-rules" aria-selected="false" data-panel="panel-rules">Risk Rules</button>
+        <button type="button" role="tab" id="tab-rules" aria-selected="false" data-panel="panel-rules">Risk Rules &amp; Dry-Run</button>
         <button type="button" role="tab" id="tab-protection" aria-selected="false" data-panel="panel-protection">Protection</button>
         <button type="button" role="tab" id="tab-copilot" aria-selected="false" data-panel="panel-copilot">Co-Pilot &amp; Tax</button>
       </div>
@@ -1922,7 +1922,7 @@
       <div class="guide-top">
         <div class="guide-steps" id="guideSteps">
           <button type="button" class="step-chip active" data-step="0">1. Replay Crash</button>
-          <button type="button" class="step-chip" data-step="1">2. Risk Rule</button>
+          <button type="button" class="step-chip" data-step="1">2. Rules &amp; Dry-Run</button>
           <button type="button" class="step-chip" data-step="2">3. Block Attack</button>
           <button type="button" class="step-chip" data-step="3">4. 3-of-5 Unlock &amp; Proof</button>
           <button type="button" class="step-chip" data-step="4">5. Co-Pilot &amp; Tax</button>
@@ -2391,11 +2391,14 @@
             </div>
 
             <!-- Instant 60-Tick Historical NSE Dry-Run Proof -->
-            <div class="card">
+            <div class="card" id="dryRunCard">
               <div class="card-header">
                 <div>
-                  <h3 class="card-title">Instant 60-Tick Historical Verification</h3>
-                  <p class="card-sub">Every rule change is automatically backtested across all 5 NSE sessions before going live</p>
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                    <span class="badge badge-blue">Historical Dry-Run</span>
+                    <h3 class="card-title" style="margin:0;">Instant 60-Tick Dry-Run Verification</h3>
+                  </div>
+                  <p class="card-sub">Every rule change is automatically dry-run tested across all 5 NSE sessions (60 ticks) before going live</p>
                 </div>
                 <span class="badge badge-green num" id="dryRunSpeedBadge">0 µs</span>
               </div>
@@ -3007,9 +3010,9 @@
           }
         },
         {
-          title: 'Step 2 — Compile a Plain-English Risk Rule & Backtest on 60 Ticks',
-          desc: 'Switch to Risk Rules, write a strict plain-English limit, and watch FinGate compile it to SIMD bytecode and backtest all 60 NSE bars in microseconds.',
-          cta: 'Compile & Backtest Rule →',
+          title: 'Step 2 — Compile a Plain-English Rule & Run 60-Tick Dry-Run',
+          desc: 'Switch to Risk Rules & Dry-Run, write a plain-English limit, and watch FinGate compile it to SIMD bytecode and dry-run verify all 60 NSE bars in microseconds.',
+          cta: 'Compile & Dry-Run Rule →',
           tabId: 'tab-rules',
           run: async () => {
             selectTab(document.getElementById('tab-rules'));
