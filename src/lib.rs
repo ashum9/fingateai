@@ -27,3 +27,5 @@ pub mod uplink;
 pub mod ffi;
 pub mod frontier;
 pub mod horizon;
+pub mod nse;
+pub mod ai;
